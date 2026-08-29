@@ -12,12 +12,12 @@
 <div class="nav-inner">
 <a class="brand" href="#"><span class="brand-mark">◈</span> FLOIN</a>
 <div class="nav-links">
-<a href="#module1">Module 1 ✓</a>
-<a href="#module2" style="color:var(--accent2);font-weight:700">● Module 2</a>
-<a href="#simulation">Simulation</a>
-<a href="#pipeline">Pipeline</a>
+<a href="#module1">M1 ✓</a>
+<a href="#module2">M2 ✓</a>
+<a href="#module3" style="color:var(--accent2);font-weight:700">● M3 Store</a>
+<a href="#simulation">Sim</a>
 </div>
-<a class="btn btn-primary nav-cta" href="#module2">Module 2 →</a>
+<a class="btn btn-primary nav-cta" href="#module3">M3 →</a>
 </div>
 </nav>
 
@@ -116,6 +116,7 @@
 </section>
 
 <section id="module2" class="section" style="background:#0f1e2e;border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+<!-- updated: M1->M2 now M2 ✓ -->
 <div class="container">
 <div class="section-head">
 <div class="pill" style="margin-bottom:10px"><span class="dot"></span> MODULE 2 — PREPROCESS • CURRENT FOCUS</div>
@@ -158,10 +159,57 @@ imd_rainfall.csv: 8/8 stations in bounds
 
 <div class="why-card" style="margin-top:16px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center">
 <div>
-<h4>✅ Module 2 Validation</h4>
-<p style="font-size:.82rem;margin-top:4px">✔ 9 vectors cleaned • ✔ 4 rasters verified • ✔ Bounds 80.10/12.88–80.35/13.25 • ✔ Manifest generated. <b>Next: Module 3 loads these into PostGIS via <code>ogr2ogr</code> / <code>raster2pgsql</code>.</b></p>
+<h4>✅ Module 2 Validation — Complete</h4>
+<p style="font-size:.82rem;margin-top:4px">✔ 9 vectors cleaned • ✔ 4 rasters verified • ✔ Manifest generated. <b>→ Now Module 3.</b></p>
 </div>
-<a href="#pipeline" class="btn btn-ghost">Module 3 — PostGIS →</a>
+<a href="#module3" class="btn btn-ghost">Go to M3 →</a>
+</div>
+</div>
+</section>
+
+<section id="module3" class="section" style="background:linear-gradient(180deg,#0a1626 0%, #0f1e2e 100%);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+<div class="container">
+<div class="section-head">
+<div class="pill" style="margin-bottom:10px"><span class="dot"></span> MODULE 3 — STORE & ORGANIZE • CURRENT FOCUS</div>
+<h2>Module 3: Store & Organize — PostgreSQL + PostGIS</h2>
+<p>Persistent spatial database: <code>geometry</code> columns for vectors, <code>raster</code> tiles for DEM/Flow. Run <code>docker compose up -d</code> then loader.</p>
+</div>
+<div class="algo-grid" style="grid-template-columns:repeat(2,1fr)">
+<div class="algo-card" style="border-left:3px solid #22d3ee"><h4>Vector → PostGIS</h4><code>ogr2ogr → geometry</code><p>5 tables: buildings, highway, natural_water, waterway, rainfall_stations<br><code>geom geometry(MultiPolygon/Point,4326)</code></p><span class="mono" style="color:#34d399">● 5 TABLES</span></div>
+<div class="algo-card" style="border-left:3px solid var(--amber)"><h4>Raster → PostGIS</h4><code>raster2pgsql → raster</code><p>5 tables: dem, flow_dir/acc, watershed, streams<br><code>rast raster • -I index -C constraints -M vacuum</code></p><span class="mono" style="color:#34d399">● 5 TABLES TILED 256x256</span></div>
+</div>
+<div class="pipe-cards" style="margin-top:16px">
+<div class="pipe-card">
+<h4>⚙️ Run (Docker)</h4>
+<pre style="font-size:.7rem">docker compose up -d        # postgis:16-3.4 at :5432
+# floin / floin / floin
+python scripts/load_postgis.py --dry-run
+python scripts/load_postgis.py
+# or: .\scripts\load_postgis.ps1 -DryRun
+# verify:
+psql "host=localhost dbname=floin user=floin" -c "\d buildings"
+psql -c "SELECT count(*) FROM buildings; SELECT ST_AsText(geom) FROM buildings LIMIT 1;"</pre>
+<a href="docker-compose.yml" download class="btn btn-outline" style="margin-top:8px;width:100%;padding:7px;font-size:.75rem">⤓ docker-compose.yml</a>
+</div>
+<div class="pipe-card">
+<h4>🔄 Translation</h4>
+<pre style="font-size:.68rem">GeoJSON ──ogr2ogr──▶ geom column
+  properties → columns
+  coordinates → PostGIS geometry
+
+GeoTIFF ──raster2pgsql──▶ rast column
+  pixels → tiled raster rows
+  + spatial index (-I)</pre>
+<table><tr><th>Before</th><th>After</th></tr><tr><td>buildings.geojson</td><td>buildings(id, geom)</td></tr><tr><td>DEM.tif</td><td>dem(rid, rast)</td></tr></table>
+<small>PostGIS then enables <code>ST_Intersects, ST_DWithin, ST_Value</code> for Module 4 simulation queries.</small>
+</div>
+</div>
+<div class="why-card" style="margin-top:16px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center">
+<div>
+<h4>✅ Module 3 Ready</h4>
+<p style="font-size:.82rem;margin-top:4px">✔ docker-compose.yml • ✔ scripts/load_postgis.py/.ps1 • ✔ 10 tables (5 vector + 5 raster). <b>Next: Module 4 Python simulation reads from PostGIS.</b></p>
+</div>
+<span class="mono" style="color:var(--muted)">docker compose up -d → loader → verify</span>
 </div>
 </div>
 </section>

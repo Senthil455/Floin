@@ -48,7 +48,7 @@ def main(dry=False):
         cmd = f'raster2pgsql -s 4326 -I -C -M -t 256x256 "{src}" public.{table} | psql "{DB}"'
         cmds.append(cmd)
         run(cmd, dry)
-    print("\nVector tables → PostGIS geometry(geom), Raster tables → raster(rast) + spatial index")
+    print("\nVector tables -> PostGIS geometry(geom), Raster tables -> raster(rast) + spatial index")
     print("Verify: psql floin -c \"\\d buildings; SELECT postgis_full_version();\"")
 
 if __name__=="__main__":
