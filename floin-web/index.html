@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FLOIN — 3D Flood Simulation Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<nav id="nav">
+<div class="nav-inner">
+<a class="brand" href="#"><span class="brand-mark">◈</span> FLOIN</a>
+<div class="nav-links">
+<a href="#simulation">Simulation</a>
+<a href="#architecture">Architecture</a>
+<a href="#algorithms">Algorithms</a>
+<a href="#pipeline">Data Pipeline</a>
+</div>
+<a class="btn btn-primary nav-cta" href="#simulation">Launch Demo →</a>
+</div>
+</nav>
+
+<section id="hero">
+<div class="hero-bg"></div>
+<div class="hero-grid">
+<div class="hero-copy">
+<div class="pill"><span class="dot"></span> TEAM FLOIN • CHENNAI FLOOD MODEL • 2026</div>
+<h1>Floods are hard to predict.<br><span class="accent">Seeing them in 3D</span> makes them understandable.</h1>
+<p class="lead">FLOIN turns static 2D maps into an interactive 3D flood simulation — rainfall → runoff → flow → depth — so you can see water depth, affected roads &amp; buildings before the flood arrives.</p>
+<div class="hero-actions">
+<a href="#simulation" class="btn btn-primary btn-lg">▶ Run 3D Simulation</a>
+<a href="#architecture" class="btn btn-ghost btn-lg">How it works</a>
+</div>
+<div class="hero-stats">
+<div><b>4</b><span>Layers<br>SRTM • OSM • IMD • DEM</span></div>
+<div><b>8</b><span>Algorithms<br>SCS-CN • D8 • Routing</span></div>
+<div><b>3D</b><span>WebGL<br>Three.js + PostGIS</span></div>
+</div>
+</div>
+<div class="hero-card">
+<div class="hero-card-head">
+<span class="live"><span class="live-dot"></span> LIVE SIMULATION</span>
+<span class="mono">13.0827°N, 80.2707°E • Chennai</span>
+</div>
+<div id="hero-preview"></div>
+<div class="hero-card-foot">
+<div><small>WATER DEPTH</small><b id="hero-depth">0.00 m</b></div>
+<div><small>RUNOFF (Q)</small><b id="hero-runoff">0 mm</b></div>
+<div><small>STATUS</small><b class="ok">● IDLE</b></div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="problem" class="section">
+<div class="container">
+<div class="split">
+<div class="card problem-card">
+<h3>The Problem</h3>
+<p>Existing systems show <b>static 2D maps</b>. People cannot see how water will flow, how deep it becomes, or which buildings/roads will be affected.</p>
+<ul class="check bad">
+<li>Flat choropleths hide terrain</li>
+<li>No time-based water propagation</li>
+<li>No building / road impact</li>
+</ul>
+</div>
+<div class="card solution-card">
+<h3>The Solution — FLOIN</h3>
+<p>Rainfall + geography → numerical simulation → <b>interactive 3D</b> terrain with water propagation, depth shading &amp; infrastructure overlay.</p>
+<ul class="check good">
+<li>SCS Curve Number runoff</li>
+<li>D8 flow direction &amp; accumulation</li>
+<li>Three.js time-step flood extent</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+
+<section id="simulation" class="section dark">
+<div class="container">
+<div class="section-head">
+<h2>Interactive 3D Flood Simulation</h2>
+<p>Procedural Chennai terrain displaced from SRTM DEM structure • Buildings extruded from <code>buildings.geojson</code> • Water plane driven by SCS-CN + time routing. Drag to orbit, scroll to zoom.</p>
+</div>
+<div class="sim-layout">
+<div class="sim-canvas-wrap">
+<div id="sim-status" class="sim-status">Loading terrain &amp; vectors…</div>
+<canvas id="sim"></canvas>
+<div class="sim-legend">
+<span><i class="swatch" style="background:#0ea5e9"></i> 0–0.5m shallow</span>
+<span><i class="swatch" style="background:#f59e0b"></i> 0.5–1.5m moderate</span>
+<span><i class="swatch" style="background:#ef4444"></i> &gt;1.5m deep</span>
+</div>
+<div class="sim-hint">◈ Drag • Scroll • Shift+Drag to pan</div>
+</div>
+<div class="sim-controls">
+<div class="ctrl-group">
+<label>Rainfall P <span id="vP">120</span> mm</label>
+<input id="sP" type="range" min="0" max="300" value="120" />
+</div>
+<div class="ctrl-group">
+<label>Curve Number <span id="vCN">78</span></label>
+<input id="sCN" type="range" min="30" max="98" value="78" />
+</div>
+<div class="ctrl-group">
+<label>Time step <span id="vT">45</span>%</label>
+<input id="sT" type="range" min="0" max="100" value="45" />
+</div>
+<div class="ctrl-row">
+<button id="btnPlay" class="btn btn-primary flex1">⏸ Pause</button>
+<button id="btnReset" class="btn btn-ghost flex1">Reset</button>
+</div>
+<div class="metrics">
+<div class="metric"><small>S = (25400/CN)-254</small><b id="mS">71.64 mm</b></div>
+<div class="metric"><small>Ia = 0.2S</small><b id="mIa">14.33 mm</b></div>
+<div class="metric"><small>Runoff Q</small><b id="mQ" class="accent-text">56.2 mm</b></div>
+<div class="metric"><small>Flood Depth</small><b id="mD">1.12 m</b></div>
+<div class="metric"><small>Affected Buildings</small><b id="mB">~1,240</b></div>
+<div class="metric"><small>Flow Velocity</small><b id="mV">0.8 m/s</b></div>
+</div>
+<div class="formula">
+<code>Q = (P − 0.2S)² / (P + 0.8S)</code> if P &gt; 0.2S else 0
+</div>
+<div class="cta-row">
+<button id="btnExport" class="btn btn-outline wfull">⤓ Export GeoJSON snapshot</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="architecture" class="section">
+<div class="container">
+<div class="section-head">
+<h2>Birdside View — Overall Architecture</h2>
+<p>From raw data to dynamic 3D flood: QGIS → PostGIS → Python/NumPy → Three.js/WebGL</p>
+</div>
+<div class="arch">
+<div class="arch-step">
+<div class="arch-icon">①</div>
+<h4>Collect</h4>
+<small>SRTM DEM • IMD rainfall • OSM roads/buildings/rivers</small>
+<code>GeoTIFF + GeoJSON</code>
+</div>
+<div class="arch-arrow">→</div>
+<div class="arch-step">
+<div class="arch-icon">②</div>
+<h4>Preprocess</h4>
+<small>CRS align • clean • terrain analysis • D8 • accumulation</small>
+<code>QGIS</code>
+</div>
+<div class="arch-arrow">→</div>
+<div class="arch-step highlight">
+<div class="arch-icon">③</div>
+<h4>Store &amp; Organize</h4>
+<small>Persistent spatial DB</small>
+<code>PostgreSQL + PostGIS</code>
+</div>
+<div class="arch-arrow">→</div>
+<div class="arch-step">
+<div class="arch-icon">④</div>
+<h4>Simulate</h4>
+<small>Rainfall→Runoff→Flow→Depth</small>
+<code>Python + NumPy</code>
+</div>
+<div class="arch-arrow">→</div>
+<div class="arch-step">
+<div class="arch-icon">⑤</div>
+<h4>Visualize</h4>
+<small>3D terrain • water • impact</small>
+<code>Three.js + WebGL</code>
+</div>
+</div>
+<div class="pipeline-detail">
+<div class="pipe-col">
+<h4>QGIS — Prepare</h4>
+<ul><li>Load DEM / roads / buildings / rivers</li><li>Reproject CRS • Clip to Chennai</li><li>Clean & export GeoJSON / GeoTIFF</li></ul>
+</div>
+<div class="pipe-col">
+<h4>PostGIS — Store</h4>
+<ul><li><code>ogr2ogr</code> → vector → <code>geometry</code> column</li><li><code>raster2pgsql</code> → DEM → tiled <code>raster</code></li><li>Spatial index (-I) + constraints (-C)</li></ul>
+</div>
+<div class="pipe-col">
+<h4>Python — Calculate</h4>
+<ul><li>SCS-CN runoff per cell</li><li>D8 flow direction / accumulation</li><li>Time-step routing & depth threshold</li></ul>
+</div>
+</div>
+</div>
+</section>
+
+<section id="algorithms" class="section dark">
+<div class="container">
+<div class="section-head">
+<h2>Algorithms Used</h2>
+</div>
+<div class="algo-grid">
+<div class="algo-card"><h4>Rainfall → Runoff</h4><code>SCS Curve Number</code><p>Estimates surface runoff from P and CN (soil/land use).</p></div>
+<div class="algo-card"><h4>Flow Direction</h4><code>D8 Algorithm</code><p>Steepest slope to 1 of 8 neighbors → direction code.</p></div>
+<div class="algo-card"><h4>Flow Accumulation</h4><code>Grid accumulation</code><p>Identifies drainage convergence &amp; watershed cells.</p></div>
+<div class="algo-card"><h4>Flow Routing</h4><code>Terrain-based routing</code><p>Moves water between cells per direction.</p></div>
+<div class="algo-card"><h4>Flood Depth</h4><code>Water balance</code><p>Depth = accumulated volume − terrain capacity.</p></div>
+<div class="algo-card"><h4>Flood Extent</h4><code>Depth threshold</code><p>Marks cells where depth &gt; threshold as flooded.</p></div>
+</div>
+<div class="scs-box">
+<div>
+<h3>SCS Curve Number</h3>
+<pre>S = (25400 / CN) − 254
+if P ≤ 0.2S:  Q = 0
+else:        Q = (P − 0.2S)² / (P + 0.8S)</pre>
+<p>Try the sliders above — S, Ia and Q update live and drive the water level.</p>
+</div>
+<div class="d8-diagram">
+<div class="d8-grid">
+<span>↖ 32</span><span>↑ 64</span><span>↗ 128</span>
+<span>← 16</span><span class="center">●</span><span>→ 1</span>
+<span>↙ 8</span><span>↓ 4</span><span>↘ 2</span>
+</div>
+<small>D8 direction codes — steepest descent wins</small>
+</div>
+</div>
+</div>
+</section>
+
+<section id="pipeline" class="section">
+<div class="container">
+<div class="section-head">
+<h2>How GeoJSON &amp; TIFF Become PostGIS</h2>
+<p>Vector and raster speak different languages — <code>ogr2ogr</code> and <code>raster2pgsql</code> are the translators.</p>
+</div>
+<div class="pipe-cards">
+<div class="pipe-card">
+<h4>GeoJSON (Vector)</h4>
+<pre>{
+ "properties": { "name": "Anna Salai" },
+ "geometry": {
+  "type": "LineString",
+  "coordinates": [[80.27,13.08], ...]
+ }
+}</pre>
+<p>→ <code>ogr2ogr -f PostgreSQL PG:"dbname=floin" roads.geojson -nln roads</code></p>
+<table><tr><th>id</th><th>name</th><th>geom</th></tr><tr><td>1</td><td>Anna Salai</td><td>LINESTRING(...)</td></tr></table>
+</div>
+<div class="pipe-card">
+<h4>GeoTIFF (Raster)</h4>
+<pre>100 102 105  ← elevation (m)
+ 98 101 103  + CRS, pixel size, extent
+Raster tiled → SQL → psql</pre>
+<p>→ <code>raster2pgsql -s 4326 -I -C -M dem.tif public.dem | psql -d floin</code></p>
+<table><tr><th>rid</th><th>rast</th></tr><tr><td>1</td><td>Raster tile</td></tr><tr><td>2</td><td>Raster tile</td></tr></table>
+<small>-I index • -C constraints • -M vacuum analyze • Tiled for performance</small>
+</div>
+</div>
+<div class="why-card">
+<h4>Why QGIS + Why not alternatives?</h4>
+<p><b>QGIS</b> gives one free, open workbench for CRS, clipping, cleaning &amp; visual QA before PostGIS. You <em>could</em> do it in Python (GDAL/Rasterio/GeoPandas), GRASS, SAGA, ArcGIS or Earth Engine — but you'd write more code or pay for licenses. QGIS lets you <em>see</em> that roads/buildings/DEM actually align before simulation.</p>
+</div>
+</div>
+</section>
+
+<section id="sdg" class="section dark">
+<div class="container">
+<div class="section-head">
+<h2>SDG Deliverables &amp; Outcomes</h2>
+</div>
+<div class="sdg-grid">
+<div class="sdg"><span>6</span><h4>Clean Water &amp; Sanitation</h4><p>Better drainage &amp; runoff understanding</p></div>
+<div class="sdg"><span>9</span><h4>Industry, Innovation &amp; Infrastructure</h4><p>Geospatial infrastructure platform</p></div>
+<div class="sdg"><span>11</span><h4>Sustainable Cities</h4><p>Resilient, prepared urban planning</p></div>
+<div class="sdg"><span>13</span><h4>Climate Action</h4><p>Scenario-based climate adaptation</p></div>
+</div>
+</div>
+</section>
+
+<footer>
+<div class="container foot">
+<span>◈ TEAM FLOIN — Flood Simulation for Chennai</span>
+<span class="mono">SRTM DEM • IMD • OpenStreetMap • QGIS → PostGIS → Python → Three.js</span>
+</div>
+</footer>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
