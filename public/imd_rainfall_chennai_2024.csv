@@ -1,0 +1,9 @@
+station_id,station,lat,lon,date,rainfall_mm,intensity,cn_zone,source
+IMD-CHN-01,Nungambakkam,13.060,80.244,2024-12-03,187.5,very_heavy,82,IMD
+IMD-CHN-02,Meenambakkam,12.982,80.171,2024-12-03,142.3,heavy,78,IMD
+IMD-CHN-03,Anna University,13.013,80.241,2024-12-03,165.0,very_heavy,80,IMD
+IMD-CHN-04,Taramani,12.987,80.245,2024-12-03,98.4,heavy,75,IMD
+IMD-CHN-05,Ennore,13.214,80.315,2024-12-03,210.2,extremely_heavy,85,IMD
+IMD-CHN-06,Tambaram,12.924,80.122,2024-12-03,76.8,moderate,72,IMD
+IMD-CHN-07,Ambattur,13.114,80.148,2024-12-03,124.6,heavy,77,IMD
+IMD-CHN-08,Sholinganallur,12.901,80.228,2024-12-03,88.9,moderate,74,IMD
