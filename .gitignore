@@ -17,6 +17,9 @@ public/natural_water.geojson
 public/waterway*.geojson
 public/rainfall_stations.geojson
 
+# Generated
+data/processed/
+
 # OS
 .DS_Store
 Thumbs.db
