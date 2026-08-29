@@ -1,0 +1,22 @@
+services:
+  postgis:
+    image: postgis/postgis:16-3.4
+    container_name: floin-postgis
+    environment:
+      POSTGRES_DB: floin
+      POSTGRES_USER: floin
+      POSTGRES_PASSWORD: floin
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./data/vectors:/data/vectors:ro
+      - ./data/processed/vectors:/data/processed/vectors:ro
+      - ./data/rasters:/data/rasters:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U floin -d floin"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  pgdata:
