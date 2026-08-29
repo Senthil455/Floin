@@ -1,5 +1,7 @@
 import './style.css'
 import * as THREE from 'three'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 
 const $ = s => document.querySelector(s)
 const clamp = (v,a,b)=>Math.max(a,Math.min(b,v))
@@ -284,3 +286,40 @@ new ResizeObserver(()=>{
     camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false)
   }
 }).observe(document.body)
+
+async function initModule1Map(){
+  const el=$('#m1-map')
+  if(!el) return
+  const map=L.map(el).setView([13.08,80.27],12)
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM',maxZoom:18}).addTo(map)
+  const layers={}
+  const colors={buildings:'#8b5cf6',highway:'#facc15',water:'#06b6d4'}
+  async function load(name, file, style){
+    try{
+      const j=await fetch('/'+file).then(r=>r.json())
+      const l=L.geoJSON(j,{style:style, onEachFeature:(f,ly)=>ly.bindPopup(`<b>${f.properties?.name||f.properties?.highway||f.properties?.waterway||'feature'}</b><br><small class=mono>${f.geometry.type}</small>`)}).addTo(map)
+      layers[name]=l
+      return j.features.length
+    }catch(e){ return 0}
+  }
+  const c1=await load('buildings','buildings.geojson',{color:colors.buildings,weight:1,fillOpacity:0.35})
+  const c2=await load('highway','highway.geojson',{color:colors.highway,weight:2,fillOpacity:0.2})
+  const c3=await load('water','natural_water.geojson',{color:colors.water,weight:1,fillOpacity:0.4})
+  try{ const w=await fetch('/waterway.geojson').then(r=>r.json()); L.geoJSON(w,{style:{color:colors.water,weight:2}}).addTo(map)}catch(e){}
+  const total=c1+c2+c3
+  $('#layer-count').textContent=total.toLocaleString()+' features'
+  setTimeout(()=>map.invalidateSize(),200)
+  document.querySelectorAll('[data-layer]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('[data-layer]').forEach(b=>b.className='btn btn-ghost')
+      btn.className='btn btn-primary'
+      const k=btn.dataset.layer
+      Object.entries(layers).forEach(([name,l])=>{
+        if(k==='all' || k===name) map.addLayer(l); else map.removeLayer(l)
+      })
+      const counts={buildings:c1,highway:c2,water:c3,all:total}
+      $('#layer-count').textContent=(counts[k]||total).toLocaleString()+' features'
+    })
+  })
+}
+initModule1Map()

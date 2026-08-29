@@ -12,12 +12,12 @@
 <div class="nav-inner">
 <a class="brand" href="#"><span class="brand-mark">◈</span> FLOIN</a>
 <div class="nav-links">
+<a href="#module1" style="color:var(--accent2);font-weight:700">● Module 1</a>
 <a href="#simulation">Simulation</a>
 <a href="#architecture">Architecture</a>
-<a href="#algorithms">Algorithms</a>
-<a href="#pipeline">Data Pipeline</a>
+<a href="#pipeline">Pipeline</a>
 </div>
-<a class="btn btn-primary nav-cta" href="#simulation">Launch Demo →</a>
+<a class="btn btn-primary nav-cta" href="#module1">Module 1 →</a>
 </div>
 </nav>
 
@@ -49,6 +49,65 @@
 <div><small>RUNOFF (Q)</small><b id="hero-runoff">0 mm</b></div>
 <div><small>STATUS</small><b class="ok">● IDLE</b></div>
 </div>
+</div>
+</div>
+</section>
+
+<section id="module1" class="section" style="background:linear-gradient(180deg,#0b1e33 0%, #0a1018 100%);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+<div class="container">
+<div class="section-head">
+<div class="pill" style="margin-bottom:10px"><span class="dot"></span> MODULE 1 — COLLECT • CURRENT FOCUS</div>
+<h2>Module 1: Collect — Raw Data Acquisition</h2>
+<p>SRTM DEM + IMD Rainfall + OpenStreetMap (buildings, roads, waterways) — validated, clipped to Chennai, ready for QGIS preprocessing.</p>
+</div>
+
+<div class="algo-grid" style="grid-template-columns:repeat(4,1fr)">
+<div class="algo-card" style="border-left:3px solid var(--accent)"><h4>⛰ SRTM DEM</h4><code>rasters_COP30/DEM.tif</code><p><b>5.94 MB</b> • GeoTIFF • EPSG:4326<br>Elevation grid — terrain base. Validated ✓</p><span class="mono" style="color:#34d399">● READY</span></div>
+<div class="algo-card" style="border-left:3px solid var(--amber)"><h4>🌧 IMD Rainfall</h4><code>Input P (mm)</code><p>Time-series rainfall depth. Fed to SCS-CN.<br>CN 30–98 per soil/land-use</p><span class="mono" style="color:var(--amber)">● SIMULATED INPUT</span></div>
+<div class="algo-card" style="border-left:3px solid #a78bfa"><h4>🏢 OSM Buildings</h4><code>buildings.geojson</code><p><b>1,811</b> features • 2.8 MB<br>MultiPolygon • CRS84</p><span class="mono" style="color:#34d399">● READY</span></div>
+<div class="algo-card" style="border-left:3px solid #facc15"><h4>🛣 OSM Network</h4><code>highway + waterway</code><p>Highway 28 + waterway 3 + natural_water 555<br>Roads / rivers / canals</p><span class="mono" style="color:#34d399">● READY</span></div>
+</div>
+
+<div class="pipe-cards" style="margin-top:16px">
+<div class="pipe-card">
+<h4>📦 Raw File Inventory (audited)</h4>
+<table>
+<tr><th>File</th><th>Size</th><th>Type</th><th>Features / Tiles</th><th>CRS</th></tr>
+<tr><td>DEM.tif</td><td>5.94 MB</td><td>Raster</td><td>DEM grid</td><td>EPSG:4326</td></tr>
+<tr><td>Flow_Direction.tif</td><td>753 KB</td><td>Raster</td><td>D8 dirs</td><td>EPSG:4326</td></tr>
+<tr><td>Flow_Accumulation.tif</td><td>3.45 MB</td><td>Raster</td><td>Accumulation</td><td>EPSG:4326</td></tr>
+<tr><td>Watershed.tif</td><td>1.22 MB</td><td>Raster</td><td>Basins</td><td>EPSG:4326</td></tr>
+<tr><td>buildings.geojson</td><td>2.83 MB</td><td>Vector</td><td>1,811 polys</td><td>CRS84</td></tr>
+<tr><td>highway.geojson</td><td>26 KB</td><td>Vector</td><td>28</td><td>CRS84</td></tr>
+<tr><td>natural_water.geojson</td><td>611 KB</td><td>Vector</td><td>555</td><td>CRS84</td></tr>
+<tr><td>southern-zone OSM.PBF</td><td>556 MB</td><td>PBF</td><td>Full Chennai extract</td><td>WGS84</td></tr>
+</table>
+<small style="color:var(--muted)">All vectors use <b>urn:ogc:def:crs:OGC:1.3:CRS84</b> (lon/lat). Rasters include .tfw world files. Chennai bounds: 80.15–80.35°E, 12.95–13.15°N verified.</small>
+</div>
+<div class="pipe-card">
+<h4>🗺 Layer Explorer — Live Preview</h4>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+<button class="btn btn-primary" data-layer="buildings" style="padding:6px 12px;font-size:.75rem">🏢 Buildings</button>
+<button class="btn btn-ghost" data-layer="highway" style="padding:6px 12px;font-size:.75rem">🛣 Roads</button>
+<button class="btn btn-ghost" data-layer="water" style="padding:6px 12px;font-size:.75rem">🌊 Water</button>
+<button class="btn btn-ghost" data-layer="all" style="padding:6px 12px;font-size:.75rem">◈ All</button>
+<span id="layer-count" class="mono" style="margin-left:auto;align-self:center">1,811 features</span>
+</div>
+<div id="m1-map" style="height:280px;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#08121f"></div>
+<small style="color:var(--muted)">Leaflet + OSM tiles • GeoJSON rendered client-side • Bounds auto-fit to Chennai. This is the <b>QGIS visual QA</b> equivalent in the browser.</small>
+<div style="margin-top:10px;display:flex;gap:8px">
+<a href="buildings.geojson" download class="btn btn-outline" style="flex:1;padding:7px;font-size:.75rem">⤓ buildings.geojson</a>
+<a href="highway.geojson" download class="btn btn-outline" style="flex:1;padding:7px;font-size:.75rem">⤓ highway.geojson</a>
+</div>
+</div>
+</div>
+
+<div class="why-card" style="margin-top:16px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center">
+<div>
+<h4>✅ Module 1 Validation — Pre-QGIS Checks</h4>
+<p style="font-size:.82rem;margin-top:4px">✔ CRS consistent (4326/CRS84) • ✔ All layers overlap Chennai 80.15–80.35E/12.95–13.15N • ✔ No null geometries • ✔ DEM + .tfw present • ✔ OSM PBF available for re-extraction. <b>Next: Module 2 will reproject, clip & clean in QGIS, then hand to PostGIS.</b></p>
+</div>
+<a href="#pipeline" class="btn btn-ghost">What happens next →</a>
 </div>
 </div>
 </section>
