@@ -10,8 +10,12 @@ data/rasters/*.tfw
 data/rasters/rasters_COP30/
 data/qgis/
 data/*.pdf
+# public copies are built from data/vectors, exclude but keep rainfall csv copy
 public/buildings.geojson
-public/*.geojson
+public/highway.geojson
+public/natural_water.geojson
+public/waterway*.geojson
+public/rainfall_stations.geojson
 
 # OS
 .DS_Store

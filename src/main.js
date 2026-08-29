@@ -306,7 +306,12 @@ async function initModule1Map(){
   const c2=await load('highway','highway.geojson',{color:colors.highway,weight:2,fillOpacity:0.2})
   const c3=await load('water','natural_water.geojson',{color:colors.water,weight:1,fillOpacity:0.4})
   try{ const w=await fetch('/waterway.geojson').then(r=>r.json()); L.geoJSON(w,{style:{color:colors.water,weight:2}}).addTo(map)}catch(e){}
-  const total=c1+c2+c3
+  const c4=await load('rainfall','rainfall_stations.geojson',{color:'#f59e0b',weight:2,fillOpacity:0.9})
+  try{
+    const rj=await fetch('/rainfall_stations.geojson').then(r=>r.json())
+    L.geoJSON(rj,{pointToLayer:(f,latlng)=>L.circleMarker(latlng,{radius:6+ (f.properties.rainfall_mm/40),fillColor:'#ef4444',color:'#fff',weight:1,fillOpacity:0.85}).bindPopup(`<b>${f.properties.station}</b><br>${f.properties.rainfall_mm} mm • CN ${f.properties.cn_zone}<br><small>${f.properties.intensity}</small>`) }).addTo(map)
+  }catch(e){}
+  const total=c1+c2+c3+c4
   $('#layer-count').textContent=total.toLocaleString()+' features'
   setTimeout(()=>map.invalidateSize(),200)
   document.querySelectorAll('[data-layer]').forEach(btn=>{
@@ -317,7 +322,7 @@ async function initModule1Map(){
       Object.entries(layers).forEach(([name,l])=>{
         if(k==='all' || k===name) map.addLayer(l); else map.removeLayer(l)
       })
-      const counts={buildings:c1,highway:c2,water:c3,all:total}
+      const counts={buildings:c1,highway:c2,water:c3,rainfall:c4,all:total}
       $('#layer-count').textContent=(counts[k]||total).toLocaleString()+' features'
     })
   })
