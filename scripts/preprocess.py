@@ -4,9 +4,9 @@ VEC = ROOT/"data/vectors"
 RAST = ROOT/"data/rasters"
 OUT_VEC = ROOT/"data/processed/vectors"
 OUT_RAST = ROOT/"data/processed/rasters"
-CHENNAI_BOUNDS = (80.15, 12.95, 80.35, 13.15)
+CHENNAI_BOUNDS = (80.10, 12.88, 80.35, 13.25)
 
-def log(m): print(f"[preprocess] {m}")
+def log(m): print(f"[preprocess] {m}".encode('ascii','ignore').decode())
 
 def check_crs(f):
     j=json.load(open(f,encoding='utf-8'))
@@ -47,7 +47,7 @@ def main():
         log(f"{f.name}: CRS={crs}")
         dst=OUT_VEC/f.name
         kept,dropped=clean_geojson(f,dst)
-        log(f"  → {dst.relative_to(ROOT)}: {kept} kept, {dropped} dropped/out-of-bounds")
+        log(f"  -> {dst.relative_to(ROOT)}: {kept} kept, {dropped} dropped/out-of-bounds")
     for f in VEC.glob("*.csv"):
         rows=list(csv.DictReader(open(f,encoding='utf-8')))
         kept=[r for r in rows if CHENNAI_BOUNDS[0]<=float(r['lon'])<=CHENNAI_BOUNDS[2]]
@@ -62,7 +62,7 @@ def main():
     manifest=ROOT/"data/processed/MANIFEST.json"
     import datetime
     manifest.write_text(json.dumps({"module":2,"generated":datetime.datetime.now().isoformat(),"bounds":CHENNAI_BOUNDS,"crs":"EPSG:4326/CRS84","note":"Cleaned vectors + terrain rasters ready for PostGIS"},indent=2),encoding='utf-8')
-    log(f"Manifest → {manifest.relative_to(ROOT)}")
+    log(f"Manifest -> {manifest.relative_to(ROOT)}")
     log("Done. Next: Module 3 PostGIS (ogr2ogr / raster2pgsql)")
 
 if __name__=="__main__":

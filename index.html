@@ -12,12 +12,12 @@
 <div class="nav-inner">
 <a class="brand" href="#"><span class="brand-mark">◈</span> FLOIN</a>
 <div class="nav-links">
-<a href="#module1" style="color:var(--accent2);font-weight:700">● Module 1</a>
+<a href="#module1">Module 1 ✓</a>
+<a href="#module2" style="color:var(--accent2);font-weight:700">● Module 2</a>
 <a href="#simulation">Simulation</a>
-<a href="#architecture">Architecture</a>
 <a href="#pipeline">Pipeline</a>
 </div>
-<a class="btn btn-primary nav-cta" href="#module1">Module 1 →</a>
+<a class="btn btn-primary nav-cta" href="#module2">Module 2 →</a>
 </div>
 </nav>
 
@@ -107,10 +107,61 @@
 
 <div class="why-card" style="margin-top:16px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center">
 <div>
-<h4>✅ Module 1 Validation — Pre-QGIS Checks</h4>
-<p style="font-size:.82rem;margin-top:4px">✔ CRS consistent (4326/CRS84) • ✔ All layers overlap Chennai 80.15–80.35E/12.95–13.15N • ✔ No null geometries • ✔ DEM + .tfw present • ✔ OSM PBF available for re-extraction. <b>Next: Module 2 will reproject, clip & clean in QGIS, then hand to PostGIS.</b></p>
+<h4>✅ Module 1 Validation — Complete</h4>
+<p style="font-size:.82rem;margin-top:4px">✔ CRS 4326/CRS84 • ✔ Chennai bounds 80.10–80.35 / 12.88–13.25 • ✔ No null geometries • ✔ All 9 vector files + 4 rasters audited. <b>→ Now in Module 2.</b></p>
 </div>
-<a href="#pipeline" class="btn btn-ghost">What happens next →</a>
+<a href="#module2" class="btn btn-ghost">Go to Module 2 →</a>
+</div>
+</div>
+</section>
+
+<section id="module2" class="section" style="background:#0f1e2e;border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+<div class="container">
+<div class="section-head">
+<div class="pill" style="margin-bottom:10px"><span class="dot"></span> MODULE 2 — PREPROCESS • CURRENT FOCUS</div>
+<h2>Module 2: Preprocess — QGIS Cleaning & Terrain</h2>
+<p>Coordinate alignment • Data cleaning • Terrain analysis • Flow direction (D8) • Flow accumulation • Flood-risk — via <code>scripts/preprocess.py</code> (QGIS-equivalent).</p>
+</div>
+
+<div class="algo-grid" style="grid-template-columns:repeat(3,1fr)">
+<div class="algo-card" style="border-left:3px solid #22d3ee"><h4>① CRS Align</h4><code>EPSG:4326 / CRS84</code><p>All 9 vectors verified CRS84. Reproject if needed.</p><span class="mono" style="color:#34d399">● PASS — 9/9</span></div>
+<div class="algo-card" style="border-left:3px solid #a78bfa"><h4>② Clean & Clip</h4><code>Chennai 80.10–80.35 / 12.88–13.25</code><p>Null geometries dropped, out-of-bounds clipped. <code>data/processed/vectors/</code></p><span class="mono" style="color:#34d399">● 1811→1811 • 8→8 stations</span></div>
+<div class="algo-card" style="border-left:3px solid var(--amber)"><h4>③ Terrain</h4><code>Flow_Dir / Acc / Watershed / Streams</code><p>D8 direction + accumulation precomputed rasters. Ready for PostGIS.</p><span class="mono" style="color:#34d399">● 4 RASTERS READY</span></div>
+</div>
+
+<div class="pipe-cards" style="margin-top:16px">
+<div class="pipe-card">
+<h4>🧹 Cleaning Results — <code>python scripts/preprocess.py</code></h4>
+<pre style="font-size:.68rem;line-height:1.5">buildings: 1811 kept, 0 dropped
+highway: 28 kept, 0 dropped
+natural_water: 555 kept, 0 dropped
+rainfall_stations: 8 kept, 0 dropped
+waterway: 3, canals:2, river:6, stream:6
+imd_rainfall.csv: 8/8 stations in bounds
+→ data/processed/vectors/ (cleaned)
+→ data/processed/MANIFEST.json</pre>
+<p>Run locally: <code>python scripts/preprocess.py</code></p>
+</div>
+<div class="pipe-card">
+<h4>⛰ Terrain Analysis — Raster Outputs</h4>
+<table>
+<tr><th>Raster</th><th>Size</th><th>Role</th></tr>
+<tr><td>Flow_Direction.tif</td><td>735 KB</td><td>D8: steepest slope → dir code (1/2/4/8...)</td></tr>
+<tr><td>Flow_Accumulation.tif</td><td>3.37 MB</td><td>Grid accumulation → drainage convergence</td></tr>
+<tr><td>Watershed.tif</td><td>1.20 MB</td><td>Basin delineation</td></tr>
+<tr><td>Streams.tif</td><td>954 KB</td><td>Stream network extraction</td></tr>
+<tr><td>DEM.tif (rasters_COP30)</td><td>5.94 MB</td><td>Base elevation</td></tr>
+</table>
+<small>Outputs are QGIS terrain toolbox equivalents — ready for <code>raster2pgsql</code> in Module 3.</small>
+</div>
+</div>
+
+<div class="why-card" style="margin-top:16px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center">
+<div>
+<h4>✅ Module 2 Validation</h4>
+<p style="font-size:.82rem;margin-top:4px">✔ 9 vectors cleaned • ✔ 4 rasters verified • ✔ Bounds 80.10/12.88–80.35/13.25 • ✔ Manifest generated. <b>Next: Module 3 loads these into PostGIS via <code>ogr2ogr</code> / <code>raster2pgsql</code>.</b></p>
+</div>
+<a href="#pipeline" class="btn btn-ghost">Module 3 — PostGIS →</a>
 </div>
 </div>
 </section>
