@@ -1,22 +1,17 @@
-# Raw / large binaries — not committed (keep locally)
-*.pbf
-*.zip
-*.tar.gz
-*.tif
-*.tfw
-*.qgz
-*.pdf
+# Deps / build
+node_modules/
+dist/
+.vite/
 
-# Node / build
-floin-web/node_modules/
-floin-web/dist/
-floin-web/.vite/
-
-# Duplicate public copies (source is root *.geojson)
-floin-web/public/buildings.geojson
-floin-web/public/highway.geojson
-floin-web/public/natural_water.geojson
-floin-web/public/waterway*.geojson
+# Large raw — keep locally, not in repo
+data/raw/
+data/rasters/*.tif
+data/rasters/*.tfw
+data/rasters/rasters_COP30/
+data/qgis/
+data/*.pdf
+public/buildings.geojson
+public/*.geojson
 
 # OS
 .DS_Store
