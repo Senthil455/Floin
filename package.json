@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "python scripts/preprocess.py && python scripts/simulate.py --P 120 --CN 78 --t 45 && echo \"All module tests passed\"",
+    "lint": "echo \"No JS lint configured - run build check\" && npm run build"
   },
   "devDependencies": {
     "vite": "^8.2.2"

@@ -16,6 +16,7 @@ public/highway.geojson
 public/natural_water.geojson
 public/waterway*.geojson
 public/rainfall_stations.geojson
+public/simulation-result.json
 
 # Generated
 data/processed/
