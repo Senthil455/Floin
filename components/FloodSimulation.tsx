@@ -40,9 +40,10 @@ function createWindowTexture() {
   return t;
 }
 
-export default function FloodSimulation() {
+export default function FloodSimulation({ selectedArea }: { selectedArea?: any }) {
   const heroRef = useRef<HTMLDivElement>(null);
   const simRef = useRef<HTMLCanvasElement>(null);
+  const simCtxRef = useRef<any>(null);
   const [P, setP] = useState(120);
   const [CN, setCN] = useState(78);
   const [t, setT] = useState(45);
@@ -92,6 +93,7 @@ export default function FloodSimulation() {
     if (!simRef.current) return;
     const canvas = simRef.current;
     const ctx = createProScene(canvas, { isHero: false, showContours, d });
+    simCtxRef.current = ctx;
     loadVectors(ctx.buildingsGroup, ctx.roadsGroup, { accurate: true });
 
     const statusEl = document.getElementById("sim-status");
@@ -108,16 +110,25 @@ export default function FloodSimulation() {
         pos.setZ(i, Math.sin(pos.getX(i) * 1.1 + phase * 3) * 0.035 + Math.cos(pos.getY(i) * 0.95 + phase * 2.2) * 0.025);
       }
       pos.needsUpdate = true;
+      const areaFactor = selectedArea && selectedArea.id !== "all" ? 0.55 : 1.0;
+      ctx.water.scale.set(areaFactor, areaFactor, 1);
+      if (selectedArea && selectedArea.center) {
+        const [cx, cz] = lngLatToXZ(selectedArea.center[0], selectedArea.center[1], 14);
+        ctx.water.position.x = cx * 0.15;
+        ctx.water.position.z = cz * 0.15;
+      }
       ctx.water.position.y = -0.88 + d * 0.92;
       ctx.water.material.uniforms.time.value = phase;
       ctx.water.material.uniforms.depth.value = d;
       updateBuildingImpact(ctx.buildingsGroup, d);
+      if (selectedArea) filterBuildingsByArea(ctx.buildingsGroup, selectedArea);
+      ctx.buildingsGroup.visible = showBuildings;
       ctx.controls.update();
       ctx.renderer.render(ctx.scene, ctx.camera);
     };
     animate();
     return () => cancelAnimationFrame(raf);
-  }, [d, showContours, showBuildings, t, playing]);
+  }, [d, showContours, showBuildings, t, playing, selectedArea]);
 
   useEffect(() => {
     const el = document.getElementById("m4-result");
@@ -368,9 +379,37 @@ function updateBuildingImpact(group: THREE.Group, depth: number) {
     const mat = m.material;
     if (flooded) {
       const t = clamp((depth - threshold) / 1.2, 0, 1);
-      mat.color.lerp(new THREE.Color(0xef4444), t * 0.35);
+      if (!mat.userData.origColor) mat.userData.origColor = mat.color.clone();
+      mat.color.copy(mat.userData.origColor).lerp(new THREE.Color(0xef4444), t * 0.35);
       mat.emissive = new THREE.Color(0x7f1d1d).multiplyScalar(t * 0.25);
+    } else if (mat.userData.origColor) {
+      mat.color.copy(mat.userData.origColor);
+      mat.emissive = new THREE.Color(0x000000);
     }
+  });
+}
+
+function filterBuildingsByArea(group: THREE.Group, area: any) {
+  if (!area || area.id === "all") {
+    group.children.forEach((m: any) => {
+      if (m.material) { m.material.transparent = false; m.material.opacity = 1; m.visible = true; }
+    });
+    return;
+  }
+  const b = area.bounds;
+  const [ax1, az1] = lngLatToXZ(b.xmin, b.ymin, 14);
+  const [ax2, az2] = lngLatToXZ(b.xmax, b.ymax, 14);
+  const minX = Math.min(ax1, ax2), maxX = Math.max(ax1, ax2), minZ = Math.min(az1, az2), maxZ = Math.max(ax1, az2);
+  group.children.forEach((m: any) => {
+    let cx = m.userData?.centerX, cz = m.userData?.centerZ;
+    if (cx === undefined) { cx = m.position.x; cz = m.position.z; }
+    const inside = cx >= minX && cx <= maxX && cz >= minZ && cz <= maxZ;
+    if (m.material) {
+      m.material.transparent = true;
+      m.material.opacity = inside ? 1 : 0.14;
+      m.visible = true;
+    }
+    if (!inside && m.material) m.material.emissive = new THREE.Color(0x000000);
   });
 }
 

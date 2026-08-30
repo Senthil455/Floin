@@ -24,6 +24,13 @@ export default function Page() {
   const [layers, setLayers] = useState({ terrain: true, water: true, depth: true, buildings: true, roads: true, flowDir: false, flowAcc: false });
   const [timeSpeed, setTimeSpeed] = useState(1);
   const [selected, setSelected] = useState<any>({ type: "terrain", elevation: "6.2m", slope: "1.4%", depth: "0.42m", velocity: "0.4 m/s", status: "Flooded" });
+  const AREAS = [
+    { id: "all", name: "All Chennai", bounds: { xmin: 80.10, xmax: 80.35, ymin: 12.88, ymax: 13.25 }, center: [80.225, 13.065] as [number,number] },
+    { id: "central", name: "Central", bounds: { xmin: 80.24, xmax: 80.28, ymin: 13.05, ymax: 13.09 }, center: [80.26, 13.07] as [number,number] },
+    { id: "adyar", name: "Adyar Basin", bounds: { xmin: 80.18, xmax: 80.28, ymin: 12.98, ymax: 13.03 }, center: [80.23, 13.01] as [number,number] },
+    { id: "ennore", name: "Ennore North", bounds: { xmin: 80.28, xmax: 80.33, ymin: 13.18, ymax: 13.24 }, center: [80.305, 13.21] as [number,number] },
+  ];
+  const [selectedArea, setSelectedArea] = useState(AREAS[0]);
   const [scenarios, setScenarios] = useState([{ id: "s1", name: "Monsoon Peak", P: 210, CN: 85, depth: "0.75m", area: "16.1%" }, { id: "s2", name: "Base Case", P: 120, CN: 78, depth: "0.42m", area: "8.4%" }]);
   const [activeScenario, setActiveScenario] = useState("s1");
   const [search, setSearch] = useState("");
@@ -257,7 +264,12 @@ export default function Page() {
                   </div>
                   <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-4">
                     <h4 className="font-bold">Quick Preview</h4>
-                    <div className="mt-2 h-[220px] rounded-xl overflow-hidden border border-[#1e3a5a]"><ChennaiMap /></div>
+                    <div className="flex gap-1.5 mb-2 flex-wrap">
+                      {AREAS.map((a) => (
+                        <button key={a.id} onClick={() => { setSelectedArea(a); pushToast(`Focus: ${a.name}`, "View 3D"); setActive("visualize"); }} className={`px-2.5 py-1 rounded-full text-xs border ${selectedArea.id === a.id ? "bg-cyan-500 text-black border-transparent" : "bg-[#0a1018] border-[#1e3a5a] text-[#8aa0b8]"}`}>{a.name}</button>
+                      ))}
+                    </div>
+                    <div className="mt-2 h-[220px] rounded-xl overflow-hidden border border-[#1e3a5a]"><ChennaiMap selectedArea={selectedArea} onSelectArea={(a:any)=>{ const found=AREAS.find(x=>x.id===a.id); if(found) setSelectedArea(found); }} onSelectFeature={(f:any)=>{ setSelected(f); pushToast(`Selected ${f.name||f.type}`); }} /></div>
                   </div>
                 </div>
               </div>
@@ -396,6 +408,12 @@ export default function Page() {
                 </div>
               </div>
 
+              <div className="flex gap-1.5 flex-wrap">
+                {AREAS.map((a) => (
+                  <button key={a.id} onClick={() => setSelectedArea(a)} className={`px-3 py-1.5 rounded-full text-xs border ${selectedArea.id === a.id ? "bg-cyan-500 text-black border-transparent" : "bg-[#0f1e2e] border-[#1e3a5a] text-[#8aa0b8]"}`}>{a.name}</button>
+                ))}
+                <span className="ml-auto text-xs text-[#8aa0b8] self-center">3D shows: <b className="text-white">{selectedArea.name}</b> • {selectedArea.bounds.xmin.toFixed(2)}-{selectedArea.bounds.xmax.toFixed(2)}</span>
+              </div>
               <div className="grid lg:grid-cols-4 gap-4">
                 <div className="lg:col-span-1 bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-3 space-y-3">
                   <h4 className="font-bold">Layers</h4>
@@ -414,11 +432,11 @@ export default function Page() {
 
                 <div className="lg:col-span-3 space-y-4">
                   <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-2">
-                    <FloodSimulation />
+                    <FloodSimulation selectedArea={selectedArea} />
                   </div>
                   <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-3">
-                    <div className="text-xs text-[#8aa0b8] mb-2">Map Controls • Drag orbit • Scroll zoom • Shift+pan • Reset camera</div>
-                    <div className="h-[360px] rounded-xl overflow-hidden border border-[#1e3a5a]"><ChennaiMap /></div>
+                    <div className="text-xs text-[#8aa0b8] mb-2">2D Map synced to 3D selection • {selectedArea.name} highlighted</div>
+                    <div className="h-[360px] rounded-xl overflow-hidden border border-[#1e3a5a]"><ChennaiMap selectedArea={selectedArea} onSelectArea={(a:any)=>setSelectedArea(AREAS.find(x=>x.id===a.id)||AREAS[0])} onSelectFeature={(f:any)=>setSelected(f)} /></div>
                   </div>
                 </div>
               </div>
