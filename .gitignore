@@ -26,3 +26,9 @@ data/processed/
 # OS
 .DS_Store
 Thumbs.db
+
+# 2015 raw + Esri clone (keep GeoJSON, ignore raw)
+Chennai Floods 2015 Data.zip
+data/chennai2015/
+data/arcgis_api/
+
