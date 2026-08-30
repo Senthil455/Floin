@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState, useMemo } from "react";
 import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import RainParticleOverlay from "./RainParticleOverlay";
 
 const CHENNAI_BOUNDS = { xmin: 80.10, xmax: 80.35, ymin: 12.88, ymax: 13.25 };
@@ -108,6 +109,7 @@ export default function FloodSimulation({
   const [showRoads, setShowRoads] = useState(true);
   const [showHotspots, setShowHotspots] = useState(true);
   const [showWaterways, setShowWaterways] = useState(true);
+  const [showTrees, setShowTrees] = useState(true);
 
   const [debug, setDebug] = useState<any>(null);
   const [loading, setLoading] = useState(false);
