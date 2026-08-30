@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>FLOIN — 3D Flood Simulation Platform</title>
+<meta name="description" content="FLOIN: Chennai 3D flood simulation - SRTM DEM + IMD rainfall + OSM via QGIS/PostGIS/Python/Three.js. SCS-CN, D8, time-step flood depth." />
+<meta name="theme-color" content="#0a1018" />
+<title>FLOIN - 3D Flood Simulation Platform</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -56,9 +58,9 @@
 <section id="module1" class="section" style="background:linear-gradient(180deg,#0b1e33 0%, #0a1018 100%);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
 <div class="container">
 <div class="section-head">
-<div class="pill" style="margin-bottom:10px"><span class="dot"></span> MODULE 1 — COLLECT • CURRENT FOCUS</div>
+<div class="pill" style="margin-bottom:10px"><span class="dot"></span> MODULE 1 — COLLECT • DONE</div>
 <h2>Module 1: Collect — Raw Data Acquisition</h2>
-<p>SRTM DEM + IMD Rainfall + OpenStreetMap (buildings, roads, waterways) — validated, clipped to Chennai, ready for QGIS preprocessing.</p>
+<p>SRTM DEM + IMD Rainfall + OpenStreetMap (buildings, roads, waterways) — validated 9 vectors + 5 rasters, Chennai 80.10-80.35/12.88-13.25.</p>
 </div>
 
 <div class="algo-grid" style="grid-template-columns:repeat(4,1fr)">
@@ -84,7 +86,7 @@
 <tr><td>rainfall_stations.geojson</td><td>2 KB</td><td>Vector</td><td>8 stations (Points)</td><td>CRS84</td></tr>
 <tr><td>imd_rainfall_2024.csv</td><td>1 KB</td><td>CSV</td><td>8 rows, 8 stations</td><td>—</td></tr>
 </table>
-<small style="color:var(--muted)">All vectors use <b>urn:ogc:def:crs:OGC:1.3:CRS84</b> (lon/lat). Rasters include .tfw world files. Chennai bounds: 80.15–80.35°E, 12.95–13.15°N verified.</small>
+<small style="color:var(--muted)">All vectors CRS84 (4326). Bounds 80.10-80.35E, 12.88-13.25N verified. Rasters include .tfw.</small>
 </div>
 <div class="pipe-card">
 <h4>🗺 Layer Explorer — Live Preview</h4>
@@ -119,7 +121,7 @@
 <!-- updated: M1->M2 now M2 ✓ -->
 <div class="container">
 <div class="section-head">
-<div class="pill" style="margin-bottom:10px"><span class="dot"></span> MODULE 2 — PREPROCESS • CURRENT FOCUS</div>
+<div class="pill" style="margin-bottom:10px"><span class="dot"></span> MODULE 2 — PREPROCESS • DONE</div>
 <h2>Module 2: Preprocess — QGIS Cleaning & Terrain</h2>
 <p>Coordinate alignment • Data cleaning • Terrain analysis • Flow direction (D8) • Flow accumulation • Flood-risk — via <code>scripts/preprocess.py</code> (QGIS-equivalent).</p>
 </div>
@@ -170,7 +172,7 @@ imd_rainfall.csv: 8/8 stations in bounds
 <section id="module3" class="section" style="background:linear-gradient(180deg,#0a1626 0%, #0f1e2e 100%);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
 <div class="container">
 <div class="section-head">
-<div class="pill" style="margin-bottom:10px"><span class="dot"></span> MODULE 3 — STORE & ORGANIZE • CURRENT FOCUS</div>
+<div class="pill" style="margin-bottom:10px"><span class="dot"></span> MODULE 3 — STORE • DONE</div>
 <h2>Module 3: Store & Organize — PostgreSQL + PostGIS</h2>
 <p>Persistent spatial database: <code>geometry</code> columns for vectors, <code>raster</code> tiles for DEM/Flow. Run <code>docker compose up -d</code> then loader.</p>
 </div>

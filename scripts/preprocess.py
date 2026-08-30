@@ -6,10 +6,15 @@ OUT_VEC = ROOT/"data/processed/vectors"
 OUT_RAST = ROOT/"data/processed/rasters"
 CHENNAI_BOUNDS = (80.10, 12.88, 80.35, 13.25)
 
-def log(m): print(f"[preprocess] {m}".encode('ascii','ignore').decode())
+def log(m):
+    try: print(f"[preprocess] {m}")
+    except UnicodeEncodeError: print(f"[preprocess] {m}".encode('ascii','ignore').decode())
 
 def check_crs(f):
-    j=json.load(open(f,encoding='utf-8'))
+    try:
+        j=json.load(open(f,encoding='utf-8'))
+    except Exception as e:
+        return f"error:{e}"
     crs=j.get('crs',{}).get('properties',{}).get('name','')
     return crs or 'urn:ogc:def:crs:OGC:1.3:CRS84'
 
@@ -34,9 +39,16 @@ def clean_geojson(src, dst):
 
 def terrain_summary():
     files=list(RAST.glob("*.tif"))
+    files+=list((RAST/"rasters_COP30").glob("*.tif"))
     log(f"Found {len(files)} rasters for terrain analysis")
-    for f in files:
-        log(f" - {f.name} {round(f.stat().st_size/1024,1)} KB (ready for D8/accumulation)")
+    for f in sorted(files):
+        log(f" - {f.relative_to(ROOT)} {round(f.stat().st_size/1024,1)} KB")
+    missing=[p for p in ["Flow_Direction.tif","Flow_Accumulation.tif","Watershed.tif","Streams.tif"] if not (RAST/p).exists()]
+    if missing: log(f"WARN missing rasters: {missing}")
+    if not (RAST/"rasters_COP30/DEM.tif").exists() and not (ROOT/"data/rasters/rasters_COP30/DEM.tif").exists():
+        log("WARN DEM.tif not found, using procedural DEM for simulation")
+    else:
+        log("DEM.tif present")
 
 def main():
     log("Module 2 — Preprocess: CRS align / clean / clip / terrain")
