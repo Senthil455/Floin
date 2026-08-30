@@ -95,8 +95,9 @@ def main():
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(stats, indent=2), encoding='utf-8')
     print(f"-> {out.relative_to(ROOT)}")
-    # optional: save numpy arrays
-    # np.save(out.with_suffix('.depth.npy'), depth)
+    pub = ROOT/"public/simulation-result.json"
+    pub.write_text(json.dumps(stats, indent=2), encoding='utf-8')
+    print(f"-> {pub.relative_to(ROOT)} (for frontend)")
 
 if __name__=="__main__":
     main()
