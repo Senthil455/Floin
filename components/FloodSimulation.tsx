@@ -246,17 +246,22 @@ function generateTerrainForAOI(terrain: THREE.Mesh, aoi: any) {
   const seedX = aoi.center[0] * 3.7, seedY = aoi.center[1] * 3.7;
   const isCentral = aoi.id === "central";
   const isNorth = aoi.id === "ennore";
+  const [aoiCx, aoiCz] = lngLatToXZ(aoi.center[0], aoi.center[1], 14);
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i), y = pos.getY(i);
-    const d = Math.hypot(x, y);
+    const dx = x - aoiCx, dy = y - aoiCz;
+    const dToAOI = Math.hypot(dx, dy);
+    const dToCenter = Math.hypot(x, y);
     let z = Math.sin((x + seedX) * 0.58) * 0.62 + Math.cos((y + seedY) * 0.68) * 0.52;
     z += Math.sin((x + seedX) * 1.35 + (y + seedY) * 0.92) * 0.26;
     z += Math.cos((x + seedX) * 2.1 - (y + seedY) * 1.3) * 0.12;
     z += Math.sin((x + seedX) * 0.22 + (y + seedY) * 0.18) * 0.35;
-    if (isCentral) z -= 0.35;
+    z += Math.exp(-(dToAOI * dToAOI) / 3.5) * 1.85;
+    z += Math.sin(dx * 1.8 + dy * 1.2 + seedX) * 0.18 * Math.exp(-dToAOI / 4);
+    if (isCentral) z -= 0.15;
     if (isNorth) z += 0.25;
-    z -= clamp((d - 4.2) / 6, 0, 1) * 1.35;
-    z += (Math.sin(x * 12 + y * 9 + seedX) * 0.02);
+    z -= clamp((dToCenter - 5) / 6, 0, 1) * 0.9;
+    z += (Math.sin(x * 12 + y * 9 + seedX) * 0.015);
     pos.setZ(i, z);
     zVals.push(z);
     minZ = Math.min(minZ, z); maxZ = Math.max(maxZ, z);
@@ -291,8 +296,46 @@ function applyCachedResult(ctx: any, cached: any, aoi: any) {
   const [ax2, az2] = lngLatToXZ(b.xmax, b.ymax, 14);
   const w = Math.abs(ax2 - ax1), h = Math.abs(az2 - az1);
   const cx = (ax1 + ax2) / 2, cz = (az1 + az2) / 2;
-  ctx.water.scale.set(Math.max(0.35, w / 14), Math.max(0.35, h / 14), 1);
-  ctx.water.position.set(cx * 0.08, -0.88, cz * 0.08);
+  const scaleX = Math.max(0.18, w / 14 * 0.95), scaleY = Math.max(0.18, h / 14 * 0.95);
+  ctx.water.scale.set(scaleX, scaleY, 1);
+  ctx.water.position.set(cx * 0.22, -0.88, cz * 0.22);
+  (ctx.water.material as any).uniforms.opacity.value = 0.58;
+  if (ctx.aoiMarker) {
+    ctx.scene.remove(ctx.aoiMarker);
+    ctx.aoiMarker.geometry.dispose();
+  }
+  const markerGeo = new THREE.SphereGeometry(0.14, 16, 16);
+  const markerMat = new THREE.MeshStandardMaterial({ color: 0xef4444, emissive: 0x7f1d1d, emissiveIntensity: 0.6 });
+  const marker = new THREE.Mesh(markerGeo, markerMat);
+  const terrainH = getTerrainHeightAt(ctx.terrain, cx, cz);
+  marker.position.set(cx, terrainH + 0.35, cz);
+  marker.castShadow = true;
+  ctx.scene.add(marker);
+  ctx.aoiMarker = marker;
+  const boxGeo = new THREE.BoxGeometry(w, 0.02, h);
+  const boxMat = new THREE.MeshBasicMaterial({ color: 0x06b6d4, transparent: true, opacity: 0.18, wireframe: false });
+  if (ctx.aoiBox) { ctx.scene.remove(ctx.aoiBox); ctx.aoiBox.geometry.dispose(); }
+  const box = new THREE.Mesh(boxGeo, boxMat);
+  box.position.set(cx, -0.88, cz);
+  const edges = new THREE.EdgesGeometry(boxGeo);
+  const lineMat = new THREE.LineBasicMaterial({ color: 0x06b6d4, transparent: true, opacity: 0.85 });
+  const wire = new THREE.LineSegments(edges, lineMat);
+  wire.position.copy(box.position);
+  if (ctx.aoiWire) ctx.scene.remove(ctx.aoiWire);
+  ctx.scene.add(box); ctx.scene.add(wire);
+  ctx.aoiBox = box; ctx.aoiWire = wire;
+}
+
+function getTerrainHeightAt(terrain: THREE.Mesh, x: number, z: number) {
+  const geo: any = terrain.geometry;
+  const pos: any = geo.attributes.position;
+  let best = -Infinity, bestDist = Infinity;
+  for (let i = 0; i < pos.count; i++) {
+    const dx = pos.getX(i) - x, dz = pos.getY(i) - z;
+    const d = dx * dx + dz * dz;
+    if (d < bestDist) { bestDist = d; best = pos.getZ(i); }
+  }
+  return best === -Infinity ? -0.5 : best - 1.2;
 }
 
 function disposeScene(ctx: any) {
