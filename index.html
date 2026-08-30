@@ -17,9 +17,10 @@
 <a href="#module1">M1 ✓</a>
 <a href="#module2">M2 ✓</a>
 <a href="#module3">M3 ✓</a>
-<a href="#module4" style="color:var(--accent2);font-weight:700">● M4 Sim</a>
+<a href="#module4">M4 ✓</a>
+<a href="#module5" style="color:var(--accent2);font-weight:700">● M5 3D</a>
 </div>
-<a class="btn btn-primary nav-cta" href="#module4">M4 →</a>
+<a class="btn btn-primary nav-cta" href="#module5">M5 →</a>
 </div>
 </nav>
 
@@ -244,7 +245,7 @@ GeoTIFF ──raster2pgsql──▶ rast column
 <section id="module4" class="section" style="background:linear-gradient(180deg,#0f1e2e 0%, #0a1018 100%);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
 <div class="container">
 <div class="section-head">
-<div class="pill" style="margin-bottom:10px"><span class="dot"></span> MODULE 4 — SIMULATE • CURRENT FOCUS</div>
+  <div class="pill" style="margin-bottom:10px"><span class="dot"></span> MODULE 4 — SIMULATE • DONE</div>
 <h2>Module 4: Simulate — Python + NumPy Flood Model</h2>
 <p>Rainfall → Runoff (SCS) → Flow Direction (D8) → Accumulation → Routing → Depth/Extent/Velocity → time-step. Run <code>python scripts/simulate.py --P 120 --CN 78 --t 45</code>.</p>
 </div>
@@ -272,9 +273,47 @@ cat data/processed/simulation/result.json</pre>
 <div class="why-card" style="margin-top:16px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center">
 <div>
 <h4>✅ Module 4 Ready</h4>
-<p style="font-size:.82rem;margin-top:4px">✔ SCS + D8 + accumulation + depth in NumPy • ✔ CLI with --P/--CN/--t • ✔ JSON output. <b>Next: Module 5 visualizes this in Three.js.</b></p>
+<p style="font-size:.82rem;margin-top:4px">✔ SCS + D8 + accumulation + depth in NumPy • ✔ CLI with --P/--CN/--t • ✔ JSON output.</p>
 </div>
-<a href="#simulation" class="btn btn-ghost">Go to 3D →</a>
+<a href="#module5" class="btn btn-ghost">Go to M5 →</a>
+</div>
+</div>
+</section>
+
+<section id="module5" class="section" style="background:linear-gradient(180deg,#0a1626 0%, #0b1e33 100%);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+<div class="container">
+<div class="section-head">
+<div class="pill" style="margin-bottom:10px"><span class="dot"></span> MODULE 5 — VISUALIZE • CURRENT FOCUS</div>
+<h2>Module 5: Visualize — Three.js + WebGL 3D Flood</h2>
+<p>Interactive 3D terrain (SRTM DEM) + water propagation + building/road impact + time scrub. Reads <code>simulation-result.json</code> and drives the scene below.</p>
+</div>
+<div class="algo-grid" style="grid-template-columns:repeat(3,1fr)">
+<div class="algo-card" style="border-left:3px solid #22d3ee"><h4>Terrain</h4><code>PlaneGeometry 90x90 + DEM noise</code><p>Vertex-displaced, fog, directional light, orbit controls.</p><span class="mono" style="color:#34d399">● WEBGL</span></div>
+<div class="algo-card" style="border-left:3px solid var(--amber)"><h4>Water</h4><code>Animated plane + depth color</code><p>Height = depth, color 0-0.5m cyan / 0.5-1.5 amber / &gt;1.5 red, wave via vertex.</p><span class="mono" style="color:#34d399">● SHADER-LITE</span></div>
+<div class="algo-card" style="border-left:3px solid #a78bfa"><h4>Impact</h4><code>Extruded buildings + lines</code><p>Buildings extruded by levels, roads as lines, rainfall markers sized by mm.</p><span class="mono" style="color:#34d399">● 400 BUILDINGS</span></div>
+</div>
+<div class="pipe-cards" style="margin-top:16px">
+<div class="pipe-card">
+<h4>🎮 Controls</h4>
+<pre style="font-size:.68rem">Drag: orbit  |  Scroll: zoom  |  Shift+Drag: pan
+Sliders: P (rainfall) / CN / time -> live S/Ia/Q/depth
+Water: height = -0.9 + depth*0.9, opacity 0.35-0.7</pre>
+<p style="margin-top:8px">Module 4 JSON auto-fetched for initial depth; sliders override live.</p>
+</div>
+<div class="pipe-card">
+<h4>🔗 Data Flow</h4>
+<pre style="font-size:.68rem">simulate.py -> result.json -> public/simulation-result.json
+      |-> fetch -> main.js -> updateWater() -> scene
+GeoJSON -> extrude/buildingsGroup -> impact (future: ST_Intersects)</pre>
+<small>Future: PostGIS <code>ST_Intersects(buildings.geom, flood.geom)</code> for per-building impact.</small>
+</div>
+</div>
+<div class="why-card" style="margin-top:16px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center">
+<div>
+<h4>✅ Module 5 Ready</h4>
+<p style="font-size:.82rem;margin-top:4px">✔ Dual-scene (hero + sim), chunked build (three/leaflet), responsive, a11y, offline GeoJSON.</p>
+</div>
+<a href="#simulation" class="btn btn-ghost">Open Demo ↓</a>
 </div>
 </div>
 </section>
