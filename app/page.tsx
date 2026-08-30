@@ -1,3 +1,4 @@
+"use client";
 import dynamic from "next/dynamic";
 const ChennaiMap = dynamic(() => import("@/components/ChennaiMap"), { ssr: false, loading: () => <div style={{ height: 380, display: "grid", placeItems: "center", background: "#08121f", borderRadius: 12 }}>Loading map...</div> });
 const FloodSimulation = dynamic(() => import("@/components/FloodSimulation"), { ssr: false, loading: () => <div style={{ height: 520, display: "grid", placeItems: "center", background: "#08121f", borderRadius: 12 }}>Loading 3D...</div> });

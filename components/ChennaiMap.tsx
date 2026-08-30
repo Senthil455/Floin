@@ -7,39 +7,37 @@ export default function ChennaiMap() {
   const countRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    if (!ref.current) return;
-    if ((ref.current as any)._leaflet_map) return;
-
-    const map = L.map(ref.current, { zoomControl: true }).setView([13.08, 80.27], 11);
-    (ref.current as any)._leaflet_map = map;
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "OpenStreetMap",
-      maxZoom: 18,
-    }).addTo(map);
-
-    const layers: Record<string, L.Layer> = {};
-    const colors = { buildings: "#8b5cf6", highway: "#facc15", water: "#06b6d4", rainfall: "#ef4444" };
-
-    async function load(name: string, file: string, style: any) {
-      try {
-        const r = await fetch("/" + file);
-        if (!r.ok) throw new Error(file);
-        const j = await r.json();
-        const l = L.geoJSON(j, {
-          style,
-          onEachFeature: (f: any, ly: any) =>
-            ly.bindPopup(
-              `<b>${f.properties?.name || f.properties?.highway || f.properties?.waterway || f.properties?.station || "feature"}</b><br><small>${f.geometry.type}</small>`
-            ),
-        }).addTo(map);
-        layers[name] = l;
-        return j.features.length;
-      } catch {
-        return 0;
-      }
-    }
-
     (async () => {
+      const L = (await import("leaflet")).default;
+      if (!ref.current) return;
+      if ((ref.current as any)._leaflet_map) return;
+      const map = L.map(ref.current, { zoomControl: true }).setView([13.08, 80.27], 11);
+      (ref.current as any)._leaflet_map = map;
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "OpenStreetMap",
+        maxZoom: 18,
+      }).addTo(map);
+
+      const layers: Record<string, any> = {};
+      const colors = { buildings: "#8b5cf6", highway: "#facc15", water: "#06b6d4", rainfall: "#ef4444" };
+
+      async function load(name: string, file: string, style: any) {
+        try {
+          const r = await fetch("/" + file);
+          if (!r.ok) throw new Error(file);
+          const j = await r.json();
+          const l = L.geoJSON(j, {
+            style,
+            onEachFeature: (f: any, ly: any) =>
+              ly.bindPopup(`<b>${f.properties?.name || f.properties?.highway || f.properties?.waterway || f.properties?.station || "feature"}</b><br><small>${f.geometry.type}</small>`),
+          }).addTo(map);
+          layers[name] = l;
+          return j.features.length;
+        } catch {
+          return 0;
+        }
+      }
+
       const c1 = await load("buildings", "buildings.geojson", { color: colors.buildings, weight: 1, fillOpacity: 0.35 });
       const c2 = await load("highway", "highway.geojson", { color: colors.highway, weight: 2, fillOpacity: 0.2 });
       const c3 = await load("water", "natural_water.geojson", { color: colors.water, weight: 1, fillOpacity: 0.4 });
@@ -78,8 +76,8 @@ export default function ChennaiMap() {
           const k = (btn as HTMLElement).dataset.layer!;
           Object.entries(layers).forEach(([name, l]) => {
             if (k === "all" || k === name) {
-              if (!(map as any).hasLayer(l)) map.addLayer(l as any);
-            } else if ((map as any).hasLayer(l)) map.removeLayer(l as any);
+              if (!map.hasLayer(l)) map.addLayer(l);
+            } else if (map.hasLayer(l)) map.removeLayer(l);
           });
           const counts: any = { buildings: c1, highway: c2, water: c3, rainfall: c4, all: total };
           if (countRef.current) countRef.current.textContent = (counts[k] ?? total).toLocaleString() + " features";
