@@ -496,6 +496,7 @@ function buildProcedural(group: THREE.Group) {
     const mat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.9 });
     const mesh = new THREE.Mesh(g, mat as any);
     mesh.position.set(x, -0.9 + h / 2, z);
+    mesh.userData.centerX = x; mesh.userData.centerZ = z;
     mesh.castShadow = true; mesh.receiveShadow = true;
     group.add(mesh);
   }
