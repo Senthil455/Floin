@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="FLOIN: Chennai 3D flood simulation - SRTM DEM + IMD rainfall + OSM via QGIS/PostGIS/Python/Three.js. SCS-CN, D8, time-step flood depth." />
+<meta name="description" content="FLOIN - See Chennai floods before they happen. Interactive 3D flood simulation for better planning and safety." />
 <meta name="theme-color" content="#0a1018" />
-<title>FLOIN - 3D Flood Simulation Platform</title>
+<title>FLOIN - Chennai Flood Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -14,13 +14,11 @@
 <div class="nav-inner">
 <a class="brand" href="#"><span class="brand-mark">◈</span> FLOIN</a>
 <div class="nav-links">
-<a href="#module1">M1 ✓</a>
-<a href="#module2">M2 ✓</a>
-<a href="#module3">M3 ✓</a>
-<a href="#module4">M4 ✓</a>
-<a href="#module5" style="color:var(--accent2);font-weight:700">● M5 3D</a>
+<a href="#map">Chennai Map</a>
+<a href="#simulation">3D Simulation</a>
+<a href="#how">How it works</a>
 </div>
-<a class="btn btn-primary nav-cta" href="#module5">M5 →</a>
+<a class="btn btn-primary nav-cta" href="#simulation">Try Simulation</a>
 </div>
 </nav>
 
@@ -28,292 +26,62 @@
 <div class="hero-bg"></div>
 <div class="hero-grid">
 <div class="hero-copy">
-<div class="pill"><span class="dot"></span> TEAM FLOIN • CHENNAI FLOOD MODEL • 2026</div>
+<div class="pill"><span class="dot"></span> CHENNAI • FLOOD INTELLIGENCE • 2026</div>
 <h1>Floods are hard to predict.<br><span class="accent">Seeing them in 3D</span> makes them understandable.</h1>
-<p class="lead">FLOIN turns static 2D maps into an interactive 3D flood simulation — rainfall → runoff → flow → depth — so you can see water depth, affected roads &amp; buildings before the flood arrives.</p>
+<p class="lead">Explore how rainfall turns into flooding across Chennai - which neighborhoods, roads and buildings are affected, and how deep the water gets.</p>
 <div class="hero-actions">
-<a href="#simulation" class="btn btn-primary btn-lg">▶ Run 3D Simulation</a>
-<a href="#architecture" class="btn btn-ghost btn-lg">How it works</a>
+<a href="#simulation" class="btn btn-primary btn-lg">Explore 3D Flood</a>
+<a href="#map" class="btn btn-ghost btn-lg">View Chennai Map</a>
 </div>
 <div class="hero-stats">
-<div><b>4</b><span>Layers<br>SRTM • OSM • IMD • DEM</span></div>
-<div><b>8</b><span>Algorithms<br>SCS-CN • D8 • Routing</span></div>
-<div><b>3D</b><span>WebGL<br>Three.js + PostGIS</span></div>
+<div><b>1,811</b><span>Buildings<br>mapped</span></div>
+<div><b>8</b><span>Rainfall<br>stations</span></div>
+<div><b>3D</b><span>Interactive<br>terrain</span></div>
 </div>
 </div>
 <div class="hero-card">
 <div class="hero-card-head">
-<span class="live"><span class="live-dot"></span> LIVE SIMULATION</span>
-<span class="mono">13.0827°N, 80.2707°E • Chennai</span>
+<span class="live"><span class="live-dot"></span> LIVE PREVIEW</span>
+<span class="mono">13.08N, 80.27E • Chennai</span>
 </div>
 <div id="hero-preview"></div>
 <div class="hero-card-foot">
 <div><small>WATER DEPTH</small><b id="hero-depth">0.00 m</b></div>
-<div><small>RUNOFF (Q)</small><b id="hero-runoff">0 mm</b></div>
+<div><small>RAINFALL IMPACT</small><b id="hero-runoff">0 mm</b></div>
 <div><small>STATUS</small><b class="ok">● IDLE</b></div>
 </div>
 </div>
 </div>
 </section>
 
-<section id="module1" class="section" style="background:linear-gradient(180deg,#0b1e33 0%, #0a1018 100%);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+<section id="map" class="section" style="background:linear-gradient(180deg,#0b1e33 0%, #0a1018 100%);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
 <div class="container">
 <div class="section-head">
-<div class="pill" style="margin-bottom:10px"><span class="dot"></span> MODULE 1 — COLLECT • DONE</div>
-<h2>Module 1: Collect — Raw Data Acquisition</h2>
-<p>SRTM DEM + IMD Rainfall + OpenStreetMap (buildings, roads, waterways) — validated 9 vectors + 5 rasters, Chennai 80.10-80.35/12.88-13.25.</p>
+<h2>Explore Chennai</h2>
+<p>Buildings, roads, waterways and rainfall across the city. Switch layers to focus on what matters to you.</p>
 </div>
-
-<div class="algo-grid" style="grid-template-columns:repeat(4,1fr)">
-<div class="algo-card" style="border-left:3px solid var(--accent)"><h4>⛰ SRTM DEM</h4><code>rasters_COP30/DEM.tif</code><p><b>5.94 MB</b> • GeoTIFF • EPSG:4326<br>Elevation grid — terrain base. Validated ✓</p><span class="mono" style="color:#34d399">● READY</span></div>
-<div class="algo-card" style="border-left:3px solid var(--amber)"><h4>🌧 IMD Rainfall</h4><code>imd_rainfall_*.csv/.geojson</code><p><b>8</b> stations • 76–210 mm<br>2024-12-03 Chennai event • CN 72–85</p><span class="mono" style="color:#34d399">● READY</span></div>
-<div class="algo-card" style="border-left:3px solid #a78bfa"><h4>🏢 OSM Buildings</h4><code>buildings.geojson</code><p><b>1,811</b> features • 2.8 MB<br>MultiPolygon • CRS84</p><span class="mono" style="color:#34d399">● READY</span></div>
-<div class="algo-card" style="border-left:3px solid #facc15"><h4>🛣 OSM Network</h4><code>highway + waterway</code><p>Highway 28 + waterway 3 + natural_water 555<br>Roads / rivers / canals</p><span class="mono" style="color:#34d399">● READY</span></div>
-</div>
-
-<div class="pipe-cards" style="margin-top:16px">
-<div class="pipe-card">
-<h4>📦 Raw File Inventory (audited)</h4>
-<table>
-<tr><th>File</th><th>Size</th><th>Type</th><th>Features / Tiles</th><th>CRS</th></tr>
-<tr><td>DEM.tif</td><td>5.94 MB</td><td>Raster</td><td>DEM grid</td><td>EPSG:4326</td></tr>
-<tr><td>Flow_Direction.tif</td><td>753 KB</td><td>Raster</td><td>D8 dirs</td><td>EPSG:4326</td></tr>
-<tr><td>Flow_Accumulation.tif</td><td>3.45 MB</td><td>Raster</td><td>Accumulation</td><td>EPSG:4326</td></tr>
-<tr><td>Watershed.tif</td><td>1.22 MB</td><td>Raster</td><td>Basins</td><td>EPSG:4326</td></tr>
-<tr><td>buildings.geojson</td><td>2.83 MB</td><td>Vector</td><td>1,811 polys</td><td>CRS84</td></tr>
-<tr><td>highway.geojson</td><td>26 KB</td><td>Vector</td><td>28</td><td>CRS84</td></tr>
-<tr><td>natural_water.geojson</td><td>611 KB</td><td>Vector</td><td>555</td><td>CRS84</td></tr>
-<tr><td>southern-zone OSM.PBF</td><td>556 MB</td><td>PBF</td><td>Full Chennai extract</td><td>WGS84</td></tr>
-<tr><td>rainfall_stations.geojson</td><td>2 KB</td><td>Vector</td><td>8 stations (Points)</td><td>CRS84</td></tr>
-<tr><td>imd_rainfall_2024.csv</td><td>1 KB</td><td>CSV</td><td>8 rows, 8 stations</td><td>—</td></tr>
-</table>
-<small style="color:var(--muted)">All vectors CRS84 (4326). Bounds 80.10-80.35E, 12.88-13.25N verified. Rasters include .tfw.</small>
-</div>
-<div class="pipe-card">
-<h4>🗺 Layer Explorer — Live Preview</h4>
+<div class="pipe-cards">
+<div class="pipe-card" style="flex:1.4">
 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
-<button class="btn btn-primary" data-layer="buildings" style="padding:6px 12px;font-size:.75rem">🏢 Buildings</button>
-<button class="btn btn-ghost" data-layer="highway" style="padding:6px 12px;font-size:.75rem">🛣 Roads</button>
- <button class="btn btn-ghost" data-layer="water" style="padding:6px 12px;font-size:.75rem">🌊 Water</button>
-<button class="btn btn-ghost" data-layer="rainfall" style="padding:6px 12px;font-size:.75rem">🌧 Rainfall</button>
-<button class="btn btn-ghost" data-layer="all" style="padding:6px 12px;font-size:.75rem">◈ All</button>
+<button class="btn btn-primary" data-layer="buildings" style="padding:7px 12px;font-size:.78rem" aria-pressed="true">Buildings</button>
+<button class="btn btn-ghost" data-layer="highway" style="padding:7px 12px;font-size:.78rem" aria-pressed="false">Roads</button>
+<button class="btn btn-ghost" data-layer="water" style="padding:7px 12px;font-size:.78rem" aria-pressed="false">Water</button>
+<button class="btn btn-ghost" data-layer="rainfall" style="padding:7px 12px;font-size:.78rem" aria-pressed="false">Rainfall</button>
+<button class="btn btn-ghost" data-layer="all" style="padding:7px 12px;font-size:.78rem" aria-pressed="false">All</button>
 <span id="layer-count" class="mono" style="margin-left:auto;align-self:center">1,811 features</span>
 </div>
-<div id="m1-map" style="height:280px;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#08121f"></div>
-<small style="color:var(--muted)">Leaflet + OSM tiles • GeoJSON rendered client-side • Bounds auto-fit to Chennai. This is the <b>QGIS visual QA</b> equivalent in the browser.</small>
-<div style="margin-top:10px;display:flex;gap:8px">
-<a href="rainfall_stations.geojson" download class="btn btn-outline" style="flex:1;padding:7px;font-size:.75rem">⤓ rainfall.geojson</a>
-<a href="imd_rainfall_chennai_2024.csv" download class="btn btn-outline" style="flex:1;padding:7px;font-size:.75rem">⤓ rainfall.csv</a>
+<div id="m1-map" style="height:380px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#08121f"></div>
 </div>
-</div>
-</div>
-
-<div class="why-card" style="margin-top:16px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center">
-<div>
-<h4>✅ Module 1 Validation — Complete</h4>
-<p style="font-size:.82rem;margin-top:4px">✔ CRS 4326/CRS84 • ✔ Chennai bounds 80.10–80.35 / 12.88–13.25 • ✔ No null geometries • ✔ All 9 vector files + 4 rasters audited. <b>→ Now in Module 2.</b></p>
-</div>
-<a href="#module2" class="btn btn-ghost">Go to Module 2 →</a>
-</div>
-</div>
-</section>
-
-<section id="module2" class="section" style="background:#0f1e2e;border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
-<!-- updated: M1->M2 now M2 ✓ -->
-<div class="container">
-<div class="section-head">
-<div class="pill" style="margin-bottom:10px"><span class="dot"></span> MODULE 2 — PREPROCESS • DONE</div>
-<h2>Module 2: Preprocess — QGIS Cleaning & Terrain</h2>
-<p>Coordinate alignment • Data cleaning • Terrain analysis • Flow direction (D8) • Flow accumulation • Flood-risk — via <code>scripts/preprocess.py</code> (QGIS-equivalent).</p>
-</div>
-
-<div class="algo-grid" style="grid-template-columns:repeat(3,1fr)">
-<div class="algo-card" style="border-left:3px solid #22d3ee"><h4>① CRS Align</h4><code>EPSG:4326 / CRS84</code><p>All 9 vectors verified CRS84. Reproject if needed.</p><span class="mono" style="color:#34d399">● PASS — 9/9</span></div>
-<div class="algo-card" style="border-left:3px solid #a78bfa"><h4>② Clean & Clip</h4><code>Chennai 80.10–80.35 / 12.88–13.25</code><p>Null geometries dropped, out-of-bounds clipped. <code>data/processed/vectors/</code></p><span class="mono" style="color:#34d399">● 1811→1811 • 8→8 stations</span></div>
-<div class="algo-card" style="border-left:3px solid var(--amber)"><h4>③ Terrain</h4><code>Flow_Dir / Acc / Watershed / Streams</code><p>D8 direction + accumulation precomputed rasters. Ready for PostGIS.</p><span class="mono" style="color:#34d399">● 4 RASTERS READY</span></div>
-</div>
-
-<div class="pipe-cards" style="margin-top:16px">
-<div class="pipe-card">
-<h4>🧹 Cleaning Results — <code>python scripts/preprocess.py</code></h4>
-<pre style="font-size:.68rem;line-height:1.5">buildings: 1811 kept, 0 dropped
-highway: 28 kept, 0 dropped
-natural_water: 555 kept, 0 dropped
-rainfall_stations: 8 kept, 0 dropped
-waterway: 3, canals:2, river:6, stream:6
-imd_rainfall.csv: 8/8 stations in bounds
-→ data/processed/vectors/ (cleaned)
-→ data/processed/MANIFEST.json</pre>
-<p>Run locally: <code>python scripts/preprocess.py</code></p>
-</div>
-<div class="pipe-card">
-<h4>⛰ Terrain Analysis — Raster Outputs</h4>
-<table>
-<tr><th>Raster</th><th>Size</th><th>Role</th></tr>
-<tr><td>Flow_Direction.tif</td><td>735 KB</td><td>D8: steepest slope → dir code (1/2/4/8...)</td></tr>
-<tr><td>Flow_Accumulation.tif</td><td>3.37 MB</td><td>Grid accumulation → drainage convergence</td></tr>
-<tr><td>Watershed.tif</td><td>1.20 MB</td><td>Basin delineation</td></tr>
-<tr><td>Streams.tif</td><td>954 KB</td><td>Stream network extraction</td></tr>
-<tr><td>DEM.tif (rasters_COP30)</td><td>5.94 MB</td><td>Base elevation</td></tr>
-</table>
-<small>Outputs are QGIS terrain toolbox equivalents — ready for <code>raster2pgsql</code> in Module 3.</small>
-</div>
-</div>
-
-<div class="why-card" style="margin-top:16px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center">
-<div>
-<h4>✅ Module 2 Validation — Complete</h4>
-<p style="font-size:.82rem;margin-top:4px">✔ 9 vectors cleaned • ✔ 4 rasters verified • ✔ Manifest generated. <b>→ Now Module 3.</b></p>
-</div>
-<a href="#module3" class="btn btn-ghost">Go to M3 →</a>
-</div>
-</div>
-</section>
-
-<section id="module3" class="section" style="background:linear-gradient(180deg,#0a1626 0%, #0f1e2e 100%);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
-<div class="container">
-<div class="section-head">
-<div class="pill" style="margin-bottom:10px"><span class="dot"></span> MODULE 3 — STORE • DONE</div>
-<h2>Module 3: Store & Organize — PostgreSQL + PostGIS</h2>
-<p>Persistent spatial database: <code>geometry</code> columns for vectors, <code>raster</code> tiles for DEM/Flow. Run <code>docker compose up -d</code> then loader.</p>
-</div>
-<div class="algo-grid" style="grid-template-columns:repeat(2,1fr)">
-<div class="algo-card" style="border-left:3px solid #22d3ee"><h4>Vector → PostGIS</h4><code>ogr2ogr → geometry</code><p>5 tables: buildings, highway, natural_water, waterway, rainfall_stations<br><code>geom geometry(MultiPolygon/Point,4326)</code></p><span class="mono" style="color:#34d399">● 5 TABLES</span></div>
-<div class="algo-card" style="border-left:3px solid var(--amber)"><h4>Raster → PostGIS</h4><code>raster2pgsql → raster</code><p>5 tables: dem, flow_dir/acc, watershed, streams<br><code>rast raster • -I index -C constraints -M vacuum</code></p><span class="mono" style="color:#34d399">● 5 TABLES TILED 256x256</span></div>
-</div>
-<div class="pipe-cards" style="margin-top:16px">
-<div class="pipe-card">
-<h4>⚙️ Run (Docker)</h4>
-<pre style="font-size:.7rem">docker compose up -d        # postgis:16-3.4 at :5432
-# floin / floin / floin
-python scripts/load_postgis.py --dry-run
-python scripts/load_postgis.py
-# or: .\scripts\load_postgis.ps1 -DryRun
-# verify:
-psql "host=localhost dbname=floin user=floin" -c "\d buildings"
-psql -c "SELECT count(*) FROM buildings; SELECT ST_AsText(geom) FROM buildings LIMIT 1;"</pre>
-<a href="docker-compose.yml" download class="btn btn-outline" style="margin-top:8px;width:100%;padding:7px;font-size:.75rem">⤓ docker-compose.yml</a>
-</div>
-<div class="pipe-card">
-<h4>🔄 Translation</h4>
-<pre style="font-size:.68rem">GeoJSON ──ogr2ogr──▶ geom column
-  properties → columns
-  coordinates → PostGIS geometry
-
-GeoTIFF ──raster2pgsql──▶ rast column
-  pixels → tiled raster rows
-  + spatial index (-I)</pre>
-<table><tr><th>Before</th><th>After</th></tr><tr><td>buildings.geojson</td><td>buildings(id, geom)</td></tr><tr><td>DEM.tif</td><td>dem(rid, rast)</td></tr></table>
-<small>PostGIS then enables <code>ST_Intersects, ST_DWithin, ST_Value</code> for Module 4 simulation queries.</small>
-</div>
-</div>
-<div class="why-card" style="margin-top:16px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center">
-<div>
-<h4>✅ Module 3 Ready</h4>
-<p style="font-size:.82rem;margin-top:4px">✔ docker-compose.yml • ✔ scripts/load_postgis.py/.ps1 • ✔ 10 tables (5 vector + 5 raster). <b>Next: Module 4 Python simulation reads from PostGIS.</b></p>
-</div>
-<span class="mono" style="color:var(--muted)">docker compose up -d → loader → verify</span>
-</div>
-</div>
-</section>
-
-<section id="problem" class="section">
-<div class="container">
-<div class="split">
-<div class="card problem-card">
-<h3>The Problem</h3>
-<p>Existing systems show <b>static 2D maps</b>. People cannot see how water will flow, how deep it becomes, or which buildings/roads will be affected.</p>
-<ul class="check bad">
-<li>Flat choropleths hide terrain</li>
-<li>No time-based water propagation</li>
-<li>No building / road impact</li>
+<div class="pipe-card" style="flex:.9;display:flex;flex-direction:column;gap:12px;justify-content:center">
+<h4>What you can see</h4>
+<ul style="font-size:.85rem;color:var(--muted);display:grid;gap:8px;padding-left:16px">
+<li><b style="color:var(--text)">Buildings</b> - 1,811 structures across Chennai</li>
+<li><b style="color:var(--text)">Roads</b> - major network and streets</li>
+<li><b style="color:var(--text)">Water</b> - rivers, canals and lakes</li>
+<li><b style="color:var(--text)">Rainfall</b> - 8 stations, sized by intensity</li>
 </ul>
+<p style="font-size:.82rem;color:var(--muted);margin-top:8px">Tap any feature for details. The map is centered on central Chennai - zoom and pan to explore.</p>
 </div>
-<div class="card solution-card">
-<h3>The Solution — FLOIN</h3>
-<p>Rainfall + geography → numerical simulation → <b>interactive 3D</b> terrain with water propagation, depth shading &amp; infrastructure overlay.</p>
-<ul class="check good">
-<li>SCS Curve Number runoff</li>
-<li>D8 flow direction &amp; accumulation</li>
-<li>Three.js time-step flood extent</li>
-</ul>
-</div>
-</div>
-</div>
-</section>
-
-<section id="module4" class="section" style="background:linear-gradient(180deg,#0f1e2e 0%, #0a1018 100%);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
-<div class="container">
-<div class="section-head">
-  <div class="pill" style="margin-bottom:10px"><span class="dot"></span> MODULE 4 — SIMULATE • DONE</div>
-<h2>Module 4: Simulate — Python + NumPy Flood Model</h2>
-<p>Rainfall → Runoff (SCS) → Flow Direction (D8) → Accumulation → Routing → Depth/Extent/Velocity → time-step. Run <code>python scripts/simulate.py --P 120 --CN 78 --t 45</code>.</p>
-</div>
-<div class="algo-grid" style="grid-template-columns:repeat(3,1fr)">
-<div class="algo-card" style="border-left:3px solid #22d3ee"><h4>SCS Runoff</h4><code>Q = (P-0.2S)²/(P+0.8S)</code><p>P=120, CN=78 → S=71.64, Q≈63mm. Base water volume.</p><span class="mono" style="color:#34d399">● NUMPY</span></div>
-<div class="algo-card" style="border-left:3px solid var(--amber)"><h4>D8 + Accumulation</h4><code>8-neighbor steepest</code><p>Flow dir per cell → accumulation grid.</p><span class="mono" style="color:#34d399">● D8</span></div>
-<div class="algo-card" style="border-left:3px solid #ef4444"><h4>Depth / Extent</h4><code>water balance + threshold</code><p>Depth 0–3.5m, extent if &gt;0.15m, velocity 0.2+0.5*depth.</p><span class="mono" style="color:#34d399">● OUTPUT JSON</span></div>
-</div>
-<div class="pipe-cards" style="margin-top:16px">
-<div class="pipe-card">
-<h4>▶ Run Simulation</h4>
-<pre style="font-size:.7rem">python scripts/simulate.py --P 120 --CN 78 --t 45
-python scripts/simulate.py --P 210 --CN 85 --t 90 --grid 100
-# → data/processed/simulation/result.json
-cat data/processed/simulation/result.json</pre>
-<pre id="m4-result" style="font-size:.68rem;margin-top:8px;background:#08121f;padding:8px;border-radius:8px;overflow:auto">P=120 CN=78 t=45 → depth_max=0.71 mean=0.60 flooded=100% velocity=0.50</pre>
-<a href="scripts/simulate.py" download class="btn btn-outline" style="margin-top:8px;width:100%;padding:7px;font-size:.75rem">⤓ simulate.py</a>
-</div>
-<div class="pipe-card">
-<h4>📊 Algorithm Chain</h4>
-<table><tr><th>Step</th><th>Method</th><th>Output</th></tr><tr><td>Runoff</td><td>SCS CN</td><td>Q mm</td></tr><tr><td>Direction</td><td>D8</td><td>code 1–128</td></tr><tr><td>Accum.</td><td>grid</td><td>upstream count</td></tr><tr><td>Routing</td><td>terrain</td><td>flow path</td></tr><tr><td>Depth</td><td>balance</td><td>m</td></tr><tr><td>Extent</td><td>threshold 0.15m</td><td>mask</td></tr></table>
-<small>Feeds <code>#simulation</code> 3D view below — water height = depth.</small>
-</div>
-</div>
-<div class="why-card" style="margin-top:16px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center">
-<div>
-<h4>✅ Module 4 Ready</h4>
-<p style="font-size:.82rem;margin-top:4px">✔ SCS + D8 + accumulation + depth in NumPy • ✔ CLI with --P/--CN/--t • ✔ JSON output.</p>
-</div>
-<a href="#module5" class="btn btn-ghost">Go to M5 →</a>
-</div>
-</div>
-</section>
-
-<section id="module5" class="section" style="background:linear-gradient(180deg,#0a1626 0%, #0b1e33 100%);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
-<div class="container">
-<div class="section-head">
-<div class="pill" style="margin-bottom:10px"><span class="dot"></span> MODULE 5 — VISUALIZE • CURRENT FOCUS</div>
-<h2>Module 5: Visualize — Three.js + WebGL 3D Flood</h2>
-<p>Interactive 3D terrain (SRTM DEM) + water propagation + building/road impact + time scrub. Reads <code>simulation-result.json</code> and drives the scene below.</p>
-</div>
-<div class="algo-grid" style="grid-template-columns:repeat(3,1fr)">
-<div class="algo-card" style="border-left:3px solid #22d3ee"><h4>Terrain</h4><code>PlaneGeometry 90x90 + DEM noise</code><p>Vertex-displaced, fog, directional light, orbit controls.</p><span class="mono" style="color:#34d399">● WEBGL</span></div>
-<div class="algo-card" style="border-left:3px solid var(--amber)"><h4>Water</h4><code>Animated plane + depth color</code><p>Height = depth, color 0-0.5m cyan / 0.5-1.5 amber / &gt;1.5 red, wave via vertex.</p><span class="mono" style="color:#34d399">● SHADER-LITE</span></div>
-<div class="algo-card" style="border-left:3px solid #a78bfa"><h4>Impact</h4><code>Extruded buildings + lines</code><p>Buildings extruded by levels, roads as lines, rainfall markers sized by mm.</p><span class="mono" style="color:#34d399">● 400 BUILDINGS</span></div>
-</div>
-<div class="pipe-cards" style="margin-top:16px">
-<div class="pipe-card">
-<h4>🎮 Controls</h4>
-<pre style="font-size:.68rem">Drag: orbit  |  Scroll: zoom  |  Shift+Drag: pan
-Sliders: P (rainfall) / CN / time -> live S/Ia/Q/depth
-Water: height = -0.9 + depth*0.9, opacity 0.35-0.7</pre>
-<p style="margin-top:8px">Module 4 JSON auto-fetched for initial depth; sliders override live.</p>
-</div>
-<div class="pipe-card">
-<h4>🔗 Data Flow</h4>
-<pre style="font-size:.68rem">simulate.py -> result.json -> public/simulation-result.json
-      |-> fetch -> main.js -> updateWater() -> scene
-GeoJSON -> extrude/buildingsGroup -> impact (future: ST_Intersects)</pre>
-<small>Future: PostGIS <code>ST_Intersects(buildings.geom, flood.geom)</code> for per-building impact.</small>
-</div>
-</div>
-<div class="why-card" style="margin-top:16px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center">
-<div>
-<h4>✅ Module 5 Ready</h4>
-<p style="font-size:.82rem;margin-top:4px">✔ Dual-scene (hero + sim), chunked build (three/leaflet), responsive, a11y, offline GeoJSON.</p>
-</div>
-<a href="#simulation" class="btn btn-ghost">Open Demo ↓</a>
 </div>
 </div>
 </section>
@@ -322,201 +90,121 @@ GeoJSON -> extrude/buildingsGroup -> impact (future: ST_Intersects)</pre>
 <div class="container">
 <div class="section-head">
 <h2>Interactive 3D Flood Simulation</h2>
-<p>Procedural Chennai terrain displaced from SRTM DEM structure • Buildings extruded from <code>buildings.geojson</code> • Water plane driven by SCS-CN + time routing. Drag to orbit, scroll to zoom.</p>
+<p>Adjust rainfall and watch water rise across the terrain. Drag to orbit, scroll to zoom, see which areas flood first.</p>
 </div>
 <div class="sim-layout">
 <div class="sim-canvas-wrap">
-<div id="sim-status" class="sim-status">Loading terrain &amp; vectors…</div>
-<canvas id="sim"></canvas>
+<div id="sim-status" class="sim-status">Loading 3D terrain...</div>
+<canvas id="sim" aria-label="3D flood terrain"></canvas>
 <div class="sim-legend">
-<span><i class="swatch" style="background:#0ea5e9"></i> 0–0.5m shallow</span>
-<span><i class="swatch" style="background:#f59e0b"></i> 0.5–1.5m moderate</span>
-<span><i class="swatch" style="background:#ef4444"></i> &gt;1.5m deep</span>
+<span><i class="swatch" style="background:#0ea5e9"></i> Shallow</span>
+<span><i class="swatch" style="background:#f59e0b"></i> Moderate</span>
+<span><i class="swatch" style="background:#ef4444"></i> Deep</span>
 </div>
-<div class="sim-hint">◈ Drag • Scroll • Shift+Drag to pan</div>
+<div class="sim-hint">Drag to orbit • Scroll to zoom</div>
 </div>
 <div class="sim-controls">
 <div class="ctrl-group">
-<label>Rainfall P <span id="vP">120</span> mm</label>
-<input id="sP" type="range" min="0" max="300" value="120" />
+<label for="sP">Rainfall <span id="vP">120</span> mm</label>
+<input id="sP" type="range" min="0" max="300" value="120" aria-label="Rainfall" />
 </div>
 <div class="ctrl-group">
-<label>Curve Number <span id="vCN">78</span></label>
-<input id="sCN" type="range" min="30" max="98" value="78" />
+<label for="sCN">Urban Density <span id="vCN">78</span></label>
+<input id="sCN" type="range" min="30" max="98" value="78" aria-label="Urban density" />
 </div>
 <div class="ctrl-group">
-<label>Time step <span id="vT">45</span>%</label>
-<input id="sT" type="range" min="0" max="100" value="45" />
+<label for="sT">Time <span id="vT">45</span>%</label>
+<input id="sT" type="range" min="0" max="100" value="45" aria-label="Time" />
 </div>
 <div class="ctrl-row">
-<button id="btnPlay" class="btn btn-primary flex1">⏸ Pause</button>
+<button id="btnPlay" class="btn btn-primary flex1" aria-pressed="true">Pause</button>
 <button id="btnReset" class="btn btn-ghost flex1">Reset</button>
 </div>
 <div class="metrics">
-<div class="metric"><small>S = (25400/CN)-254</small><b id="mS">71.64 mm</b></div>
-<div class="metric"><small>Ia = 0.2S</small><b id="mIa">14.33 mm</b></div>
-<div class="metric"><small>Runoff Q</small><b id="mQ" class="accent-text">56.2 mm</b></div>
-<div class="metric"><small>Flood Depth</small><b id="mD">1.12 m</b></div>
-<div class="metric"><small>Affected Buildings</small><b id="mB">~1,240</b></div>
-<div class="metric"><small>Flow Velocity</small><b id="mV">0.8 m/s</b></div>
+<div class="metric"><small>Water Depth</small><b id="mD">1.12 m</b></div>
+<div class="metric"><small>Affected Area</small><b id="mB">~1,240 buildings</b></div>
+<div class="metric"><small>Flow Speed</small><b id="mV">0.8 m/s</b></div>
+<div class="metric"><small>Runoff</small><b id="mQ" class="accent-text">56.2 mm</b></div>
 </div>
-<div class="formula">
-<code>Q = (P − 0.2S)² / (P + 0.8S)</code> if P &gt; 0.2S else 0
+<div style="display:none">
+<span id="mS"></span><span id="mIa"></span>
 </div>
 <div class="cta-row">
-<button id="btnExport" class="btn btn-outline wfull">⤓ Export GeoJSON snapshot</button>
+<button id="btnExport" class="btn btn-outline wfull">Export Snapshot</button>
 </div>
 </div>
 </div>
 </div>
 </section>
 
-<section id="architecture" class="section">
+<section id="how" class="section">
 <div class="container">
 <div class="section-head">
-<h2>Birdside View — Overall Architecture</h2>
-<p>From raw data to dynamic 3D flood: QGIS → PostGIS → Python/NumPy → Three.js/WebGL</p>
+<h2>How it works</h2>
+<p>Three simple steps from real data to clear flood insights.</p>
 </div>
 <div class="arch">
 <div class="arch-step">
-<div class="arch-icon">①</div>
-<h4>Collect</h4>
-<small>SRTM DEM • IMD rainfall • OSM roads/buildings/rivers</small>
-<code>GeoTIFF + GeoJSON</code>
+<div class="arch-icon">1</div>
+<h4>Real City Data</h4>
+<small>Elevation, rainfall and streets from trusted sources</small>
 </div>
 <div class="arch-arrow">→</div>
 <div class="arch-step">
-<div class="arch-icon">②</div>
-<h4>Preprocess</h4>
-<small>CRS align • clean • terrain analysis • D8 • accumulation</small>
-<code>QGIS</code>
-</div>
-<div class="arch-arrow">→</div>
-<div class="arch-step highlight">
-<div class="arch-icon">③</div>
-<h4>Store &amp; Organize</h4>
-<small>Persistent spatial DB</small>
-<code>PostgreSQL + PostGIS</code>
+<div class="arch-icon">2</div>
+<h4>Flood Simulation</h4>
+<small>How rain becomes runoff and flows across terrain</small>
 </div>
 <div class="arch-arrow">→</div>
 <div class="arch-step">
-<div class="arch-icon">④</div>
-<h4>Simulate</h4>
-<small>Rainfall→Runoff→Flow→Depth</small>
-<code>Python + NumPy</code>
-</div>
-<div class="arch-arrow">→</div>
-<div class="arch-step">
-<div class="arch-icon">⑤</div>
-<h4>Visualize</h4>
-<small>3D terrain • water • impact</small>
-<code>Three.js + WebGL</code>
-</div>
-</div>
-<div class="pipeline-detail">
-<div class="pipe-col">
-<h4>QGIS — Prepare</h4>
-<ul><li>Load DEM / roads / buildings / rivers</li><li>Reproject CRS • Clip to Chennai</li><li>Clean & export GeoJSON / GeoTIFF</li></ul>
-</div>
-<div class="pipe-col">
-<h4>PostGIS — Store</h4>
-<ul><li><code>ogr2ogr</code> → vector → <code>geometry</code> column</li><li><code>raster2pgsql</code> → DEM → tiled <code>raster</code></li><li>Spatial index (-I) + constraints (-C)</li></ul>
-</div>
-<div class="pipe-col">
-<h4>Python — Calculate</h4>
-<ul><li>SCS-CN runoff per cell</li><li>D8 flow direction / accumulation</li><li>Time-step routing & depth threshold</li></ul>
+<div class="arch-icon">3</div>
+<h4>Clear Insights</h4>
+<small>See depth, affected areas and safest routes in 3D</small>
 </div>
 </div>
 </div>
 </section>
 
-<section id="algorithms" class="section dark">
+<section id="problem" class="section" style="background:var(--bg2);border-top:1px solid var(--line)">
 <div class="container">
-<div class="section-head">
-<h2>Algorithms Used</h2>
+<div class="split">
+<div class="card problem-card">
+<h3>Why 2D maps fall short</h3>
+<p>Flat maps hide how water actually moves across land - they can't show depth, flow direction or which buildings are hit.</p>
+<ul class="check bad">
+<li>Terrain is invisible</li>
+<li>Water spread is not shown over time</li>
+<li>Impact on homes and roads is unclear</li>
+</ul>
 </div>
-<div class="algo-grid">
-<div class="algo-card"><h4>Rainfall → Runoff</h4><code>SCS Curve Number</code><p>Estimates surface runoff from P and CN (soil/land use).</p></div>
-<div class="algo-card"><h4>Flow Direction</h4><code>D8 Algorithm</code><p>Steepest slope to 1 of 8 neighbors → direction code.</p></div>
-<div class="algo-card"><h4>Flow Accumulation</h4><code>Grid accumulation</code><p>Identifies drainage convergence &amp; watershed cells.</p></div>
-<div class="algo-card"><h4>Flow Routing</h4><code>Terrain-based routing</code><p>Moves water between cells per direction.</p></div>
-<div class="algo-card"><h4>Flood Depth</h4><code>Water balance</code><p>Depth = accumulated volume − terrain capacity.</p></div>
-<div class="algo-card"><h4>Flood Extent</h4><code>Depth threshold</code><p>Marks cells where depth &gt; threshold as flooded.</p></div>
-</div>
-<div class="scs-box">
-<div>
-<h3>SCS Curve Number</h3>
-<pre>S = (25400 / CN) − 254
-if P ≤ 0.2S:  Q = 0
-else:        Q = (P − 0.2S)² / (P + 0.8S)</pre>
-<p>Try the sliders above — S, Ia and Q update live and drive the water level.</p>
-</div>
-<div class="d8-diagram">
-<div class="d8-grid">
-<span>↖ 32</span><span>↑ 64</span><span>↗ 128</span>
-<span>← 16</span><span class="center">●</span><span>→ 1</span>
-<span>↙ 8</span><span>↓ 4</span><span>↘ 2</span>
-</div>
-<small>D8 direction codes — steepest descent wins</small>
+<div class="card solution-card">
+<h3>What FLOIN shows</h3>
+<p>A living 3D view where you can see water rise, spread and affect the city - before it happens.</p>
+<ul class="check good">
+<li>True 3D terrain you can explore</li>
+<li>Water that spreads over time</li>
+<li>Buildings and roads highlighted by impact</li>
+</ul>
 </div>
 </div>
 </div>
 </section>
 
-<section id="pipeline" class="section">
+<section class="section dark" style="padding:32px 20px">
 <div class="container">
-<div class="section-head">
-<h2>How GeoJSON &amp; TIFF Become PostGIS</h2>
-<p>Vector and raster speak different languages — <code>ogr2ogr</code> and <code>raster2pgsql</code> are the translators.</p>
-</div>
-<div class="pipe-cards">
-<div class="pipe-card">
-<h4>GeoJSON (Vector)</h4>
-<pre>{
- "properties": { "name": "Anna Salai" },
- "geometry": {
-  "type": "LineString",
-  "coordinates": [[80.27,13.08], ...]
- }
-}</pre>
-<p>→ <code>ogr2ogr -f PostgreSQL PG:"dbname=floin" roads.geojson -nln roads</code></p>
-<table><tr><th>id</th><th>name</th><th>geom</th></tr><tr><td>1</td><td>Anna Salai</td><td>LINESTRING(...)</td></tr></table>
-</div>
-<div class="pipe-card">
-<h4>GeoTIFF (Raster)</h4>
-<pre>100 102 105  ← elevation (m)
- 98 101 103  + CRS, pixel size, extent
-Raster tiled → SQL → psql</pre>
-<p>→ <code>raster2pgsql -s 4326 -I -C -M dem.tif public.dem | psql -d floin</code></p>
-<table><tr><th>rid</th><th>rast</th></tr><tr><td>1</td><td>Raster tile</td></tr><tr><td>2</td><td>Raster tile</td></tr></table>
-<small>-I index • -C constraints • -M vacuum analyze • Tiled for performance</small>
-</div>
-</div>
-<div class="why-card">
-<h4>Why QGIS + Why not alternatives?</h4>
-<p><b>QGIS</b> gives one free, open workbench for CRS, clipping, cleaning &amp; visual QA before PostGIS. You <em>could</em> do it in Python (GDAL/Rasterio/GeoPandas), GRASS, SAGA, ArcGIS or Earth Engine — but you'd write more code or pay for licenses. QGIS lets you <em>see</em> that roads/buildings/DEM actually align before simulation.</p>
-</div>
-</div>
-</section>
-
-<section id="sdg" class="section dark">
-<div class="container">
-<div class="section-head">
-<h2>SDG Deliverables &amp; Outcomes</h2>
-</div>
-<div class="sdg-grid">
-<div class="sdg"><span>6</span><h4>Clean Water &amp; Sanitation</h4><p>Better drainage &amp; runoff understanding</p></div>
-<div class="sdg"><span>9</span><h4>Industry, Innovation &amp; Infrastructure</h4><p>Geospatial infrastructure platform</p></div>
-<div class="sdg"><span>11</span><h4>Sustainable Cities</h4><p>Resilient, prepared urban planning</p></div>
-<div class="sdg"><span>13</span><h4>Climate Action</h4><p>Scenario-based climate adaptation</p></div>
+<div class="sdg-grid" style="grid-template-columns:repeat(4,1fr)">
+<div class="sdg"><span>6</span><h4>Clean Water</h4><p>Smarter drainage</p></div>
+<div class="sdg"><span>9</span><h4>Innovation</h4><p>Geospatial platform</p></div>
+<div class="sdg"><span>11</span><h4>Sustainable Cities</h4><p>Resilient planning</p></div>
+<div class="sdg"><span>13</span><h4>Climate Action</h4><p>Adaptation ready</p></div>
 </div>
 </div>
 </section>
 
 <footer>
 <div class="container foot">
-<span>◈ TEAM FLOIN — Flood Simulation for Chennai</span>
-<span class="mono">SRTM DEM • IMD • OpenStreetMap • QGIS → PostGIS → Python → Three.js</span>
+<span>◈ FLOIN - Flood Intelligence for Chennai</span>
+<span class="mono">Built for clarity, planning and safety • 2026</span>
 </div>
 </footer>
 
