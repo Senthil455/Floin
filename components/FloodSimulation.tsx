@@ -52,6 +52,7 @@ export default function FloodSimulation({ selectedArea }: { selectedArea?: any }
   const simRef = useRef<HTMLCanvasElement>(null);
   const simCtxRef = useRef<any>(null);
   const requestIdRef = useRef(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
   const [P, setP] = useState(120);
   const [CN, setCN] = useState(78);
   const [t, setT] = useState(45);
@@ -59,6 +60,8 @@ export default function FloodSimulation({ selectedArea }: { selectedArea?: any }
   const [showBuildings, setShowBuildings] = useState(true);
   const [showContours, setShowContours] = useState(true);
   const [debug, setDebug] = useState<any>(null);
+  const [datasetsUsed, setDatasetsUsed] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const { S, Ia, Q } = useMemo(() => scs(P, CN), [P, CN]);
   const d = useMemo(() => depthFrom(Q, t), [Q, t]);
@@ -99,32 +102,133 @@ export default function FloodSimulation({ selectedArea }: { selectedArea?: any }
     const aoi = selectedArea || { bounds: CHENNAI_BOUNDS, center: [80.225, 13.065], id: "all" };
     const reqId = ++requestCounter;
     requestIdRef.current = reqId;
-    const cacheKey = `${aoi.id}-${aoi.bounds.xmin.toFixed(3)}-${P}-${CN}-${t}`;
+    
+    // Cancel previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
+    // Generate cache key with all parameters that affect results
+    const cacheKey = `${aoi.id}-${aoi.bounds.xmin.toFixed(3)}-${aoi.bounds.xmax.toFixed(3)}-${aoi.bounds.ymin.toFixed(3)}-${aoi.bounds.ymax.toFixed(3)}-${P}-${CN}-${t}`;
+
+    // Dispose old scene
+    if (simCtxRef.current) {
+      disposeScene(simCtxRef.current);
+    }
 
     const ctx = createProScene(canvas, { isHero: false, showContours, d, aoi });
     simCtxRef.current = ctx;
 
     const statusEl = document.getElementById("sim-status");
-    if (statusEl) statusEl.textContent = `Request #${reqId}: Loading ${aoi.id} • ${aoi.bounds.xmin.toFixed(3)},${aoi.bounds.ymin.toFixed(3)}`;
-    setTimeout(() => { const el = document.getElementById("sim-status"); if (el) el.style.display = "none"; }, 2200);
+    if (statusEl) statusEl.textContent = `Loading location... (Req #${reqId})`;
+
+    setLoading(true);
 
     (async () => {
-      if (cache.has(cacheKey)) {
-        const c = cache.get(cacheKey);
+      try {
+        // Check cache first
+        if (cache.has(cacheKey)) {
+          if (requestIdRef.current !== reqId) return; // Race condition: newer request exists
+          const c = cache.get(cacheKey);
+          applyCachedResult(ctx, c, aoi);
+          setDebug({ 
+            requestId: reqId, 
+            aoi, 
+            terrain: c.terrain, 
+            counts: c.counts, 
+            cached: true,
+            location: `${aoi.center[1].toFixed(4)}°N, ${aoi.center[0].toFixed(4)}°E`
+          });
+          setDatasetsUsed(c.datasetsUsed || []);
+          setLoading(false);
+          if (statusEl) statusEl.textContent = `Ready • Req #${reqId}`;
+          return;
+        }
+
+        // Query datasets for this location (Section 11: Location-Specific Data Query)
+        const queryResponse = await fetch('/api/location/query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ aoi, requestId: reqId }),
+          signal: abortControllerRef.current?.signal,
+        }).then(r => r.json());
+
         if (requestIdRef.current !== reqId) return;
-        applyCachedResult(ctx, c, aoi);
-        setDebug({ requestId: reqId, aoi, terrain: c.terrain, counts: c.counts, cached: true });
-        return;
+
+        // Fetch actual feature data for this location (Section 11: Data Extraction)
+        const datasetsToFetch = ['buildings', 'highway', 'waterway', 'rainfall_stations'];
+        const featuresResponse = await fetch('/api/location/features', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            aoi, 
+            datasets: datasetsToFetch,
+            requestId: reqId 
+          }),
+          signal: abortControllerRef.current?.signal,
+        }).then(r => r.json());
+
+        if (requestIdRef.current !== reqId) return;
+
+        // Generate terrain for this specific AOI (Section 15: Real 3D Terrain)
+        const terrainStats = generateTerrainForAOI(ctx.terrain, aoi);
+        
+        // Load location-specific buildings and roads (Section 11: Feature-Specific Loading)
+        const buildingFeatures = featuresResponse.features.buildings?.features || [];
+        const roadFeatures = featuresResponse.features.highway?.features || [];
+        
+        if (buildingFeatures.length > 0 || roadFeatures.length > 0) {
+          buildBuildings(ctx.buildingsGroup, buildingFeatures, true);
+          buildRoads(ctx.roadsGroup, roadFeatures);
+        }
+
+        const counts = {
+          buildings: buildingFeatures.length,
+          roads: roadFeatures.length,
+          rivers: featuresResponse.features.waterway?.count || 0,
+          hotspots: 0,
+          floodedStreets: 0,
+        };
+
+        if (requestIdRef.current !== reqId) return;
+
+        // Run localized simulation with the new terrain
+        const simResult = runLocalizedSimulation(terrainStats, counts, P, CN, t, aoi);
+        
+        // Cache the result (Section 38: Cache Correctness - include all parameters)
+        cache.set(cacheKey, { 
+          terrain: terrainStats, 
+          counts, 
+          simResult,
+          datasetsUsed: queryResponse.datasets.filter((d: any) => d.covers)
+        });
+
+        applyCachedResult(ctx, { terrain: terrainStats, counts, simResult }, aoi);
+        
+        setDebug({ 
+          requestId: reqId, 
+          aoi, 
+          terrain: terrainStats, 
+          counts, 
+          simResult,
+          cached: false,
+          location: `${aoi.center[1].toFixed(4)}°N, ${aoi.center[0].toFixed(4)}°E`,
+          datasetCoverage: queryResponse.summary
+        });
+        
+        setDatasetsUsed(queryResponse.datasets.filter((d: any) => d.covers));
+        setLoading(false);
+        if (statusEl) statusEl.textContent = `Ready • Req #${reqId}`;
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.log(`Request #${reqId} cancelled (newer request exists)`);
+          return;
+        }
+        console.error('Simulation error:', error);
+        setLoading(false);
+        if (statusEl) statusEl.textContent = `Error • Req #${reqId}`;
       }
-
-      const terrainStats = generateTerrainForAOI(ctx.terrain, aoi);
-      const counts = await loadVectorsForAOI(ctx.buildingsGroup, ctx.roadsGroup, aoi, true, reqId);
-      if (requestIdRef.current !== reqId) return;
-
-      const simResult = runLocalizedSimulation(terrainStats, counts, P, CN, t, aoi);
-      cache.set(cacheKey, { terrain: terrainStats, counts, simResult });
-      applyCachedResult(ctx, { terrain: terrainStats, counts, simResult }, aoi);
-      setDebug({ requestId: reqId, aoi, terrain: terrainStats, counts, simResult, cached: false });
     })();
 
     let raf = 0; let phase = 0;
@@ -143,9 +247,11 @@ export default function FloodSimulation({ selectedArea }: { selectedArea?: any }
     animate();
     return () => {
       cancelAnimationFrame(raf);
-      disposeScene(ctx);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     };
-  }, [selectedArea?.id, selectedArea?.bounds.xmin, selectedArea?.bounds.ymin, P, CN, t, playing, showContours, showBuildings, d]);
+  }, [selectedArea?.id, selectedArea?.bounds.xmin, selectedArea?.bounds.xmax, selectedArea?.bounds.ymin, selectedArea?.bounds.ymax, P, CN, t, playing, showContours, showBuildings, d]);
 
   useEffect(() => {
     if (!simCtxRef.current || !selectedArea) return;
