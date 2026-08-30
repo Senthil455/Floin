@@ -131,6 +131,18 @@ export default function FloodSimulation({ selectedArea }: { selectedArea?: any }
   }, [d, showContours, showBuildings, t, playing, selectedArea]);
 
   useEffect(() => {
+    if (!simCtxRef.current || !selectedArea) return;
+    const ctx = simCtxRef.current;
+    const [cx, cz] = lngLatToXZ(selectedArea.center[0], selectedArea.center[1], 14);
+    const dist = selectedArea.id === "all" ? 14 : 6.5;
+    if (ctx.controls && ctx.controls.target) {
+      ctx.controls.target.set(cx, -0.2, cz);
+      ctx.camera.position.set(cx + dist * 0.6, 5.8, cz + dist * 0.6);
+      ctx.controls.update();
+    }
+  }, [selectedArea]);
+
+  useEffect(() => {
     const el = document.getElementById("m4-result");
     if (el) el.textContent = `P=${P} CN=${CN} t=${t}% -> Q=${Q.toFixed(1)}mm depth_max=${d.toFixed(2)}m`;
   }, [P, CN, t, Q, d]);
@@ -453,6 +465,10 @@ function buildBuildings(group: THREE.Group, features: any[], accurate: boolean) 
       mesh.position.y = -1.05;
       mesh.castShadow = accurate; mesh.receiveShadow = accurate;
       if (accurate) m.emissive = new THREE.Color(0x000000);
+      let sumX = 0, sumZ = 0;
+      outer.forEach(([lng, lat]: any) => { const [x, z] = lngLatToXZ(lng, lat); sumX += x; sumZ += z; });
+      mesh.userData.centerX = sumX / outer.length;
+      mesh.userData.centerZ = sumZ / outer.length;
       group.add(mesh);
     });
   });
