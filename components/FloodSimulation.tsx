@@ -62,16 +62,25 @@ export default function FloodSimulation({ selectedArea }: { selectedArea?: any }
   const [debug, setDebug] = useState<any>(null);
   const [datasetsUsed, setDatasetsUsed] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [timeSeries, setTimeSeries] = useState<any[]>([]);
+  const [currentHour, setCurrentHour] = useState(0);
 
   const { S, Ia, Q } = useMemo(() => scs(P, CN), [P, CN]);
-  const d = useMemo(() => depthFrom(Q, t), [Q, t]);
+  
+  // Get depth from time-series if available, otherwise calculate from time percentage
+  const currentTimeValue = timeSeries.length > 0 && currentHour >= 0 && currentHour <= 6 
+    ? timeSeries[currentHour]?.depth || 0
+    : depthFrom(Q, t);
+  
+  const d = currentTimeValue;
 
   const stats = useMemo(() => ({
     depth: d.toFixed(2),
     runoff: Q.toFixed(1),
     buildings: Math.round(80 + d * 900 + Q * 3).toLocaleString(),
     velocity: (0.2 + d * 0.5).toFixed(1),
-  }), [d, Q]);
+    hour: currentHour,
+  }), [d, Q, currentHour]);
 
   useEffect(() => {
     if (!heroRef.current) return;
