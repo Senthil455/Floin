@@ -105,6 +105,20 @@ export default function FloodSimulation({ selectedArea }: { selectedArea?: any }
     return () => cancelAnimationFrame(raf);
   }, []);
 
+  // Auto-advance through time-series when playing
+  useEffect(() => {
+    if (!playing || timeSeries.length === 0) return;
+    
+    const interval = setInterval(() => {
+      setCurrentHour(prev => {
+        const next = prev >= 6 ? 0 : prev + 1;
+        return next;
+      });
+    }, 2000); // Advance every 2 seconds
+    
+    return () => clearInterval(interval);
+  }, [playing, timeSeries]);
+
   useEffect(() => {
     if (!simRef.current) return;
     const canvas = simRef.current;
@@ -141,6 +155,12 @@ export default function FloodSimulation({ selectedArea }: { selectedArea?: any }
           if (requestIdRef.current !== reqId) return; // Race condition: newer request exists
           const c = cache.get(cacheKey);
           applyCachedResult(ctx, c, aoi);
+          
+          // Restore time-series data from cache
+          const cachedTimeSeries = c.timeSeries || [];
+          setTimeSeries(cachedTimeSeries);
+          setCurrentHour(0);
+          
           setDebug({ 
             requestId: reqId, 
             aoi, 
@@ -202,18 +222,41 @@ export default function FloodSimulation({ selectedArea }: { selectedArea?: any }
 
         if (requestIdRef.current !== reqId) return;
 
-        // Run localized simulation with the new terrain
-        const simResult = runLocalizedSimulation(terrainStats, counts, P, CN, t, aoi);
+        // Call the simulation API to get time-series data (Section 16-18: Flood Simulation + Time Progression)
+        const simResponse = await fetch('/api/simulate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            aoi, 
+            parameters: {
+              rainfall: P,
+              cn: CN,
+              duration: t
+            },
+            requestId: reqId 
+          }),
+          signal: abortControllerRef.current?.signal,
+        }).then(r => r.json());
+
+        if (requestIdRef.current !== reqId) return;
+        
+        const simResult = simResponse;
+        const timeSeriesData = simResponse.timeSeries || [];
         
         // Cache the result (Section 38: Cache Correctness - include all parameters)
         cache.set(cacheKey, { 
           terrain: terrainStats, 
           counts, 
           simResult,
+          timeSeries: timeSeriesData,
           datasetsUsed: queryResponse.datasets.filter((d: any) => d.covers)
         });
 
         applyCachedResult(ctx, { terrain: terrainStats, counts, simResult }, aoi);
+        
+        // Set time-series data and reset to hour 0
+        setTimeSeries(timeSeriesData);
+        setCurrentHour(0);
         
         setDebug({ 
           requestId: reqId, 
@@ -260,7 +303,7 @@ export default function FloodSimulation({ selectedArea }: { selectedArea?: any }
         abortControllerRef.current.abort();
       }
     };
-  }, [selectedArea?.id, selectedArea?.bounds.xmin, selectedArea?.bounds.xmax, selectedArea?.bounds.ymin, selectedArea?.bounds.ymax, P, CN, t, playing, showContours, showBuildings, d]);
+  }, [selectedArea?.id, selectedArea?.bounds.xmin, selectedArea?.bounds.xmax, selectedArea?.bounds.ymin, selectedArea?.bounds.ymax, P, CN, t, playing, showContours, showBuildings, d, currentHour]);
 
   useEffect(() => {
     if (!simCtxRef.current || !selectedArea) return;
@@ -332,8 +375,42 @@ export default function FloodSimulation({ selectedArea }: { selectedArea?: any }
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <button className="btn btn-primary flex1" onClick={() => setPlaying(!playing)} aria-pressed={playing} style={{ flex: 1, padding: "9px", borderRadius: 999, background: "linear-gradient(135deg,#06b6d4,#0ea5e9)", color: "#001018", fontWeight: 700, border: "none" }}>{playing ? "Pause" : "Play"}</button>
-            <button className="btn btn-ghost flex1" onClick={() => { setP(120); setCN(78); setT(45); }} style={{ flex: 1, padding: "9px", borderRadius: 999, background: "rgba(255,255,255,0.06)", border: "1px solid #1e3a5a" }}>Reset</button>
+            <button className="btn btn-ghost flex1" onClick={() => { setP(120); setCN(78); setT(45); setCurrentHour(0); }} style={{ flex: 1, padding: "9px", borderRadius: 999, background: "rgba(255,255,255,0.06)", border: "1px solid #1e3a5a" }}>Reset</button>
           </div>
+
+          {timeSeries.length > 0 && (
+            <div style={{ background: "#0b1d2f", border: "1px solid #1e3a5a", borderRadius: 10, padding: 12 }}>
+              <div style={{ fontSize: ".62rem", color: "#8aa0b8", marginBottom: 8, fontWeight: 600 }}>Flood Progression Timeline</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
+                {[0, 1, 2, 3, 4, 5, 6].map(hour => (
+                  <button
+                    key={hour}
+                    onClick={() => { setCurrentHour(hour); setPlaying(false); }}
+                    style={{
+                      padding: "6px 4px",
+                      borderRadius: 6,
+                      border: currentHour === hour ? "1px solid #06b6d4" : "1px solid #1e3a5a",
+                      background: currentHour === hour ? "rgba(6, 182, 212, 0.2)" : "rgba(0,0,0,0.3)",
+                      color: currentHour === hour ? "#22d3ee" : "#8aa0b8",
+                      fontSize: ".62rem",
+                      fontWeight: currentHour === hour ? 700 : 500,
+                      cursor: "pointer",
+                      fontFamily: "JetBrains Mono",
+                      transition: "all 0.2s"
+                    }}
+                  >
+                    {hour}h
+                  </button>
+                ))}
+              </div>
+              {timeSeries[currentHour] && (
+                <div style={{ marginTop: 8, fontSize: ".62rem", color: "#06b6d4", fontFamily: "JetBrains Mono" }}>
+                  Hour {currentHour}: {timeSeries[currentHour].depth?.toFixed(2)}m depth • {timeSeries[currentHour].velocity?.toFixed(2)}m/s velocity
+                </div>
+              )}
+            </div>
+          )}
+
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             <div style={{ background: "#0b1d2f", border: "1px solid #1e3a5a", borderRadius: 10, padding: "8px 10px" }}><small style={{ color: "#8aa0b8", fontSize: ".62rem", display: "block" }}>Water Depth</small><b style={{ fontFamily: "JetBrains Mono", fontSize: ".85rem" }}>{stats.depth} m</b></div>
             <div style={{ background: "#0b1d2f", border: "1px solid #1e3a5a", borderRadius: 10, padding: "8px 10px" }}><small style={{ color: "#8aa0b8", fontSize: ".62rem", display: "block" }}>Affected</small><b style={{ fontFamily: "JetBrains Mono", fontSize: ".85rem" }}>{stats.buildings}</b></div>
