@@ -1,0 +1,16 @@
+@import "../src/style.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0a1018;
+  --bg2: #0f1e2e;
+  --card: #12233a;
+  --line: #1e3a5a;
+  --accent: #06b6d4;
+  --accent2: #22d3ee;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: var(--bg); color: #e6eef8; }

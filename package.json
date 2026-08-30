@@ -1,21 +1,31 @@
 {
-  "name": "floin-web",
-  "version": "0.0.0",
+  "name": "floin",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "test": "python scripts/preprocess.py && python scripts/simulate.py --P 120 --CN 78 --t 45 && echo \"All module tests passed\"",
-    "lint": "echo \"No JS lint configured - run build check\" && npm run build"
-  },
-  "devDependencies": {
-    "vite": "^8.2.2"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "python scripts/preprocess.py && python scripts/simulate.py --P 120 --CN 78 --t 45 && echo \"All module tests passed\""
   },
   "dependencies": {
-    "geotiff": "^3.0.5",
     "leaflet": "^1.9.4",
+    "next": "^16.3.3",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.22",
+    "@types/node": "26.4.0",
+    "@types/react": "19.2.18",
+    "@types/three": "^0.185.4",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^16.3.3",
+    "postcss": "^8.5.0",
+    "tailwindcss": "^3.4.1"
   }
 }
