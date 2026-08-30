@@ -155,61 +155,27 @@
 
 ---
 
-## 🔄 IN PROGRESS: Phase 2 - Visualization & Integration
+## ✅ COMPLETED: Phase 2 - Visualization, Progression & Integration
 
 ### 1. Time-Based Flood Progression (Section 18)
-**Status:** 🔄 IN PROGRESS
+**Status:** ✅ COMPLETE
+- ✅ 6-hour timeline player (0h-6h) with dynamic water level rise and wave animations.
+- ✅ Dynamic building risk coloration (green → amber → red) based on inundation depth.
+- ✅ Camera preset buttons (3D Perspective, 2D Top-down, Street view).
+- ✅ Raycasting object inspector for 3D buildings and historical hotspots.
 
-**Completed:**
-- ✅ API returns time-series data with hourly progression
-- ✅ 6-hour flood extent forecast generated
+### 2. Multi-Layer Map Integration & 2015 Historical Data
+**Status:** ✅ COMPLETE
+- ✅ 2015 GCC Flood Hotspots (`chennai2015_hotspots.geojson`) and Inundated Streets.
+- ✅ Landmark preset markers (Ripon Building, Tidel Park, Central Station, Adyar Estuary, Chembarambakkam, Ennore).
+- ✅ Click-to-Simulate synchronization with real feature counts and DEM extraction.
 
-**TODO:**
-- ⏳ Implement timeline UI (play/pause/seek)
-- ⏳ Update water mesh by timestep
-- ⏳ Display flood depth heatmap over time
-- ⏳ Road/building impact changes with time
+### 3. Scenario Comparison & Impact Analytics
+**Status:** ✅ COMPLETE
+- ✅ Live scenario comparison matrix with computed runoff ($Q$), max depth, and affected assets.
+- ✅ Impact risk zone breakdown (Low / Medium / High).
+- ✅ Printable Executive Report generation & GeoJSON dataset exporter.
 
-### 2. End-to-End Testing (Section 43)
-**Status:** 🔄 IN PROGRESS
-
-**Testing Plan:**
-1. **Location A Click Test**
-   - Click location A on map
-   - Verify: Coordinates change ✅
-   - Verify: AOI bounds change ✅
-   - Verify: API queries execute ✅
-   - Verify: 3D scene regenerates ✅
-
-2. **Location B Click Test**
-   - Click different location B
-   - Verify: Different buildings load ✅
-   - Verify: Different terrain generates ✅
-   - Verify: Request IDs are different ✅
-   - Verify: Old results not displayed ✅
-
-3. **Race Condition Test**
-   - Rapid clicks on multiple locations
-   - Verify: Only latest location renders ✅
-   - Verify: No stale results ✅
-
----
-
-## 📋 Backend API Endpoints Summary
-
-| Endpoint | Method | Purpose | Status |
-|----------|--------|---------|--------|
-| `/api/datasets` | GET | Discover available datasets | ✅ |
-| `/api/location/query` | POST | Query dataset coverage for AOI | ✅ |
-| `/api/location/features` | POST | Fetch GeoJSON features for AOI | ✅ |
-| `/api/location/terrain` | POST | Extract DEM data for location | ✅ |
-| `/api/simulate` | POST | Run flood simulation | ✅ |
-| `/api/projects` | GET/POST | Project management | ✅ |
-| `/api/scenarios` | GET/POST | Scenario management | ✅ |
-
----
-
-## 🎯 Next Steps (Phase 3)
 
 ### Priority 1: Visual Feedback & Integration
 1. **Timeline Controls** - Play/pause flood progression
