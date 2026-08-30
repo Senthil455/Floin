@@ -204,8 +204,8 @@ export default function ChennaiMap({
             name: lm.name,
             bounds: { xmin: lm.lng - delta, xmax: lm.lng + delta, ymin: lm.lat - delta, ymax: lm.lat + delta },
             center: [lm.lng, lm.lat],
-            lat,
-            lng,
+            lat: lm.lat,
+            lng: lm.lng,
           });
         });
         marker.addTo(landmarkGroup);
