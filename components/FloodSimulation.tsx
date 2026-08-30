@@ -18,6 +18,11 @@ function lngLatToXZ(lng: number, lat: number, size = 14) {
   const ny = (lat - CHENNAI_BOUNDS.ymin) / (CHENNAI_BOUNDS.ymax - CHENNAI_BOUNDS.ymin);
   return [(nx - 0.5) * size, (ny - 0.5) * size] as const;
 }
+function aoiToXZBounds(aoi: any, size = 14) {
+  const [x1, z1] = lngLatToXZ(aoi.bounds.xmin, aoi.bounds.ymin, size);
+  const [x2, z2] = lngLatToXZ(aoi.bounds.xmax, aoi.bounds.ymax, size);
+  return { minX: Math.min(x1, x2), maxX: Math.max(x1, x2), minZ: Math.min(z1, z2), maxZ: Math.max(z1, z2), cx: (x1 + x2) / 2, cz: (z1 + z2) / 2, w: Math.abs(x2 - x1), h: Math.abs(z2 - z1) };
+}
 
 function createWindowTexture() {
   const c = document.createElement("canvas");
@@ -36,23 +41,28 @@ function createWindowTexture() {
   }
   const t = new THREE.CanvasTexture(c);
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
-  t.repeat.set(1, 1);
   return t;
 }
+
+let requestCounter = 0;
+const cache = new Map<string, any>();
 
 export default function FloodSimulation({ selectedArea }: { selectedArea?: any }) {
   const heroRef = useRef<HTMLDivElement>(null);
   const simRef = useRef<HTMLCanvasElement>(null);
   const simCtxRef = useRef<any>(null);
+  const requestIdRef = useRef(0);
   const [P, setP] = useState(120);
   const [CN, setCN] = useState(78);
   const [t, setT] = useState(45);
   const [playing, setPlaying] = useState(true);
   const [showBuildings, setShowBuildings] = useState(true);
   const [showContours, setShowContours] = useState(true);
+  const [debug, setDebug] = useState<any>(null);
 
   const { S, Ia, Q } = useMemo(() => scs(P, CN), [P, CN]);
   const d = useMemo(() => depthFrom(Q, t), [Q, t]);
+
   const stats = useMemo(() => ({
     depth: d.toFixed(2),
     runoff: Q.toFixed(1),
@@ -64,24 +74,18 @@ export default function FloodSimulation({ selectedArea }: { selectedArea?: any }
     if (!heroRef.current) return;
     const canvas = document.createElement("canvas");
     canvas.width = 560; canvas.height = 280;
-    canvas.setAttribute("aria-label", "Hero flood preview - Chennai terrain");
     heroRef.current.innerHTML = "";
     heroRef.current.appendChild(canvas);
-    const ctx = createProScene(canvas, { isHero: true });
-    loadVectors(ctx.buildingsGroup, ctx.roadsGroup, { accurate: false });
-    let raf = 0;
-    let phase = 0;
+    const ctx = createProScene(canvas, { isHero: true, aoi: { bounds: CHENNAI_BOUNDS, center: [80.27, 13.08], id: "hero" } });
+    loadVectorsForAOI(ctx.buildingsGroup, ctx.roadsGroup, { bounds: CHENNAI_BOUNDS, center: [80.27, 13.08], id: "hero" }, false, 0);
+    let raf = 0; let phase = 0;
     const animate = () => {
       raf = requestAnimationFrame(animate);
       phase += 0.008;
       const pos: any = ctx.water.geometry.attributes.position;
-      for (let i = 0; i < pos.count; i++) {
-        const x = pos.getX(i);
-        pos.setZ(i, Math.sin(x * 1.2 + phase * 2) * 0.03 + Math.cos(pos.getY(i) * 0.9 + phase) * 0.02);
-      }
+      for (let i = 0; i < pos.count; i++) pos.setZ(i, Math.sin(pos.getX(i) * 1.2 + phase * 2) * 0.03);
       pos.needsUpdate = true;
-      ctx.water.material.uniforms.time.value = phase;
-      ctx.water.material.uniforms.depth.value = d;
+      (ctx.water.material as any).uniforms.time.value = phase;
       ctx.controls.update();
       ctx.renderer.render(ctx.scene, ctx.camera);
     };
@@ -92,60 +96,68 @@ export default function FloodSimulation({ selectedArea }: { selectedArea?: any }
   useEffect(() => {
     if (!simRef.current) return;
     const canvas = simRef.current;
-    const ctx = createProScene(canvas, { isHero: false, showContours, d });
+    const aoi = selectedArea || { bounds: CHENNAI_BOUNDS, center: [80.225, 13.065], id: "all" };
+    const reqId = ++requestCounter;
+    requestIdRef.current = reqId;
+    const cacheKey = `${aoi.id}-${aoi.bounds.xmin.toFixed(3)}-${P}-${CN}-${t}`;
+
+    const ctx = createProScene(canvas, { isHero: false, showContours, d, aoi });
     simCtxRef.current = ctx;
-    loadVectors(ctx.buildingsGroup, ctx.roadsGroup, { accurate: true });
 
     const statusEl = document.getElementById("sim-status");
-    if (statusEl) statusEl.textContent = "Terrain ready - drag to orbit • scroll to zoom • right-drag to pan";
+    if (statusEl) statusEl.textContent = `Request #${reqId}: Loading ${aoi.id} • ${aoi.bounds.xmin.toFixed(3)},${aoi.bounds.ymin.toFixed(3)}`;
     setTimeout(() => { const el = document.getElementById("sim-status"); if (el) el.style.display = "none"; }, 2200);
 
-    let raf = 0;
-    let phase = t / 100;
+    (async () => {
+      if (cache.has(cacheKey)) {
+        const c = cache.get(cacheKey);
+        if (requestIdRef.current !== reqId) return;
+        applyCachedResult(ctx, c, aoi);
+        setDebug({ requestId: reqId, aoi, terrain: c.terrain, counts: c.counts, cached: true });
+        return;
+      }
+
+      const terrainStats = generateTerrainForAOI(ctx.terrain, aoi);
+      const counts = await loadVectorsForAOI(ctx.buildingsGroup, ctx.roadsGroup, aoi, true, reqId);
+      if (requestIdRef.current !== reqId) return;
+
+      const simResult = runLocalizedSimulation(terrainStats, counts, P, CN, t, aoi);
+      cache.set(cacheKey, { terrain: terrainStats, counts, simResult });
+      applyCachedResult(ctx, { terrain: terrainStats, counts, simResult }, aoi);
+      setDebug({ requestId: reqId, aoi, terrain: terrainStats, counts, simResult, cached: false });
+    })();
+
+    let raf = 0; let phase = 0;
     const animate = () => {
       raf = requestAnimationFrame(animate);
       phase += playing ? 0.006 : 0;
       const pos: any = ctx.water.geometry.attributes.position;
-      for (let i = 0; i < pos.count; i++) {
-        pos.setZ(i, Math.sin(pos.getX(i) * 1.1 + phase * 3) * 0.035 + Math.cos(pos.getY(i) * 0.95 + phase * 2.2) * 0.025);
-      }
+      for (let i = 0; i < pos.count; i++) pos.setZ(i, Math.sin(pos.getX(i) * 1.1 + phase * 3) * 0.035);
       pos.needsUpdate = true;
-      const areaFactor = selectedArea && selectedArea.id !== "all" ? 0.55 : 1.0;
-      ctx.water.scale.set(areaFactor, areaFactor, 1);
-      if (selectedArea && selectedArea.center) {
-        const [cx, cz] = lngLatToXZ(selectedArea.center[0], selectedArea.center[1], 14);
-        ctx.water.position.x = cx * 0.15;
-        ctx.water.position.z = cz * 0.15;
-      }
-      ctx.water.position.y = -0.88 + d * 0.92;
-      ctx.water.material.uniforms.time.value = phase;
-      ctx.water.material.uniforms.depth.value = d;
+      (ctx.water.material as any).uniforms.time.value = phase;
+      (ctx.water.material as any).uniforms.depth.value = d;
       updateBuildingImpact(ctx.buildingsGroup, d);
-      if (selectedArea) filterBuildingsByArea(ctx.buildingsGroup, selectedArea);
-      ctx.buildingsGroup.visible = showBuildings;
       ctx.controls.update();
       ctx.renderer.render(ctx.scene, ctx.camera);
     };
     animate();
-    return () => cancelAnimationFrame(raf);
-  }, [d, showContours, showBuildings, t, playing, selectedArea]);
+    return () => {
+      cancelAnimationFrame(raf);
+      disposeScene(ctx);
+    };
+  }, [selectedArea?.id, selectedArea?.bounds.xmin, selectedArea?.bounds.ymin, P, CN, t, playing, showContours, showBuildings, d]);
 
   useEffect(() => {
     if (!simCtxRef.current || !selectedArea) return;
     const ctx = simCtxRef.current;
     const [cx, cz] = lngLatToXZ(selectedArea.center[0], selectedArea.center[1], 14);
     const dist = selectedArea.id === "all" ? 14 : 6.5;
-    if (ctx.controls && ctx.controls.target) {
+    if (ctx.controls?.target) {
       ctx.controls.target.set(cx, -0.2, cz);
       ctx.camera.position.set(cx + dist * 0.6, 5.8, cz + dist * 0.6);
       ctx.controls.update();
     }
   }, [selectedArea]);
-
-  useEffect(() => {
-    const el = document.getElementById("m4-result");
-    if (el) el.textContent = `P=${P} CN=${CN} t=${t}% -> Q=${Q.toFixed(1)}mm depth_max=${d.toFixed(2)}m`;
-  }, [P, CN, t, Q, d]);
 
   return (
     <>
@@ -157,25 +169,27 @@ export default function FloodSimulation({ selectedArea }: { selectedArea?: any }
 
       <div className="sim-layout">
         <div className="sim-canvas-wrap" style={{ position: "relative", background: "#040a14", borderRadius: 16, overflow: "hidden", border: "1px solid #1e3a5a" }}>
-          <div id="sim-status" className="sim-status" style={{ position: "absolute", top: 12, left: 12, zIndex: 2, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(6px)", padding: "6px 10px", borderRadius: 999, fontSize: ".72rem", border: "1px solid #1e3a5a" }}>Loading accurate terrain...</div>
-          <canvas ref={simRef} id="sim" aria-label="Professional 3D flood terrain - Chennai" style={{ width: "100%", height: 560, display: "block" }} />
+          <div id="sim-status" className="sim-status" style={{ position: "absolute", top: 12, left: 12, zIndex: 2, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)", padding: "6px 10px", borderRadius: 999, fontSize: ".72rem", border: "1px solid #1e3a5a", fontFamily: "JetBrains Mono" }}>Ready</div>
+          <canvas ref={simRef} id="sim" aria-label="Localized 3D flood terrain" style={{ width: "100%", height: 560, display: "block" }} />
+
+          {debug && (
+            <div style={{ position: "absolute", bottom: 12, left: 12, background: "rgba(0,0,0,0.72)", backdropFilter: "blur(8px)", border: "1px solid #1e3a5a", borderRadius: 10, padding: "8px 10px", fontSize: ".62rem", fontFamily: "JetBrains Mono", lineHeight: 1.4, maxWidth: "62%" }}>
+              <div style={{ fontWeight: 700, color: "#22d3ee" }}>Req #{debug.requestId} • {debug.aoi?.id} {debug.cached ? "(cached)" : ""}</div>
+              <div style={{ color: "#e6eef8" }}>AOI: {debug.aoi?.center[1].toFixed(4)}, {debug.aoi?.center[0].toFixed(4)} • {debug.aoi?.bounds.xmin.toFixed(3)}-{debug.aoi?.bounds.xmax.toFixed(3)} × {debug.aoi?.bounds.ymin.toFixed(3)}-{debug.aoi?.bounds.ymax.toFixed(3)}</div>
+              <div style={{ color: "#8aa0b8" }}>Terrain: {debug.terrain?.min?.toFixed(2)}-{debug.terrain?.max?.toFixed(2)}m • {debug.terrain?.grid} grid • {debug.terrain?.source}</div>
+              <div style={{ color: "#8aa0b8" }}>Buildings: {debug.counts?.buildings} • Roads: {debug.counts?.roads} • Hotspots: {debug.counts?.hotspots ?? 0} • Rivers: {debug.counts?.rivers ?? 0}</div>
+            </div>
+          )}
 
           <div style={{ position: "absolute", top: 12, right: 12, background: "rgba(0,0,0,0.65)", backdropFilter: "blur(6px)", border: "1px solid #1e3a5a", borderRadius: 10, padding: "8px 10px", fontSize: ".68rem", lineHeight: 1.4 }}>
-            <div style={{ fontWeight: 700, color: "#e6eef8" }}>13.08N, 80.27E • CHENNAI</div>
-            <div style={{ color: "#8aa0b8" }}>Scale 1:25k • WGS84 • DEM 30m</div>
+            <div style={{ fontWeight: 700, color: "#e6eef8" }}>{selectedArea?.center ? `${selectedArea.center[1].toFixed(2)}N, ${selectedArea.center[0].toFixed(2)}E` : "13.08N, 80.27E"} • {selectedArea?.id === "all" ? "Chennai" : selectedArea?.name}</div>
+            <div style={{ color: "#8aa0b8" }}>Req #{debug?.requestId || "?"} • DEM 30m • WGS84</div>
             <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
               <span style={{ width: 30, height: 4, background: "#0ea5e9", borderRadius: 2 }} /> <span style={{ color: "#8aa0b8" }}>0-0.5m</span>
               <span style={{ width: 30, height: 4, background: "#f59e0b", borderRadius: 2 }} /> <span style={{ color: "#8aa0b8" }}>0.5-1.5m</span>
               <span style={{ width: 30, height: 4, background: "#ef4444", borderRadius: 2 }} /> <span style={{ color: "#8aa0b8" }}>&gt;1.5m</span>
             </div>
           </div>
-
-          <div style={{ position: "absolute", bottom: 12, left: 12, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(6px)", border: "1px solid #1e3a5a", borderRadius: 999, padding: "6px 10px", fontSize: ".68rem", display: "flex", gap: 10 }}>
-            <span><i className="swatch" style={{ background: "#0ea5e9", width: 10, height: 10, display: "inline-block", borderRadius: 2 }} /> Shallow</span>
-            <span><i className="swatch" style={{ background: "#f59e0b", width: 10, height: 10, display: "inline-block", borderRadius: 2 }} /> Moderate</span>
-            <span><i className="swatch" style={{ background: "#ef4444", width: 10, height: 10, display: "inline-block", borderRadius: 2 }} /> Deep</span>
-          </div>
-          <div style={{ position: "absolute", bottom: 12, right: 12, background: "rgba(0,0,0,0.5)", padding: "5px 8px", borderRadius: 999, fontSize: ".65rem", color: "#8aa0b8" }}>◈ Orbit • Scroll zoom • Right-drag pan</div>
         </div>
 
         <div className="sim-controls" style={{ background: "#12233a", border: "1px solid #1e3a5a", borderRadius: 16, padding: 16, display: "flex", flexDirection: "column", gap: 14 }}>
@@ -183,11 +197,9 @@ export default function FloodSimulation({ selectedArea }: { selectedArea?: any }
             <button onClick={() => setShowBuildings(!showBuildings)} className={`flex-1 py-1.5 rounded-full text-xs border ${showBuildings ? "bg-cyan-500 text-black border-transparent" : "border-[#1e3a5a]"}`}>Buildings</button>
             <button onClick={() => setShowContours(!showContours)} className={`flex-1 py-1.5 rounded-full text-xs border ${showContours ? "bg-cyan-500 text-black border-transparent" : "border-[#1e3a5a]"}`}>Contours</button>
           </div>
-
           <div className="ctrl-group">
             <label style={{ display: "flex", justifyContent: "space-between", fontSize: ".78rem", fontWeight: 600 }}>Rainfall <span style={{ color: "#22d3ee", fontFamily: "JetBrains Mono" }}>{P} mm</span></label>
             <input type="range" min={0} max={300} value={P} onChange={(e) => setP(+e.target.value)} aria-label="Rainfall" style={{ width: "100%", accentColor: "#06b6d4", marginTop: 6 }} />
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: ".65rem", color: "#8aa0b8" }}><span>Dry</span><span>Monsoon peak 200+</span></div>
           </div>
           <div className="ctrl-group">
             <label style={{ display: "flex", justifyContent: "space-between", fontSize: ".78rem", fontWeight: 600 }}>Imperviousness <span style={{ color: "#22d3ee", fontFamily: "JetBrains Mono" }}>{CN}</span></label>
@@ -197,53 +209,112 @@ export default function FloodSimulation({ selectedArea }: { selectedArea?: any }
             <label style={{ display: "flex", justifyContent: "space-between", fontSize: ".78rem", fontWeight: 600 }}>Time <span style={{ color: "#22d3ee", fontFamily: "JetBrains Mono" }}>{t}%</span></label>
             <input type="range" min={0} max={100} value={t} onChange={(e) => setT(+e.target.value)} aria-label="Time" style={{ width: "100%", accentColor: "#06b6d4" }} />
           </div>
-
           <div style={{ display: "flex", gap: 8 }}>
             <button className="btn btn-primary flex1" onClick={() => setPlaying(!playing)} aria-pressed={playing} style={{ flex: 1, padding: "9px", borderRadius: 999, background: "linear-gradient(135deg,#06b6d4,#0ea5e9)", color: "#001018", fontWeight: 700, border: "none" }}>{playing ? "Pause" : "Play"}</button>
             <button className="btn btn-ghost flex1" onClick={() => { setP(120); setCN(78); setT(45); }} style={{ flex: 1, padding: "9px", borderRadius: 999, background: "rgba(255,255,255,0.06)", border: "1px solid #1e3a5a" }}>Reset</button>
           </div>
-
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-            <div style={{ background: "#0b1d2f", border: "1px solid #1e3a5a", borderRadius: 10, padding: "8px 10px" }}><small style={{ color: "#8aa0b8", fontSize: ".62rem", display: "block" }}>Water Depth</small><b style={{ fontFamily: "JetBrains Mono", fontSize: ".85rem" }}>{stats.depth} m</b><div style={{ height: 4, background: "#0a1018", borderRadius: 2, marginTop: 4 }}><div style={{ width: `${clamp(d / 1.5 * 100, 0, 100)}%`, height: 4, background: d < 0.5 ? "#0ea5e9" : d < 1.5 ? "#f59e0b" : "#ef4444", borderRadius: 2 }} /></div></div>
-            <div style={{ background: "#0b1d2f", border: "1px solid #1e3a5a", borderRadius: 10, padding: "8px 10px" }}><small style={{ color: "#8aa0b8", fontSize: ".62rem", display: "block" }}>Affected</small><b style={{ fontFamily: "JetBrains Mono", fontSize: ".85rem" }}>{stats.buildings}</b><div style={{ fontSize: ".65rem", color: "#8aa0b8" }}>buildings</div></div>
+            <div style={{ background: "#0b1d2f", border: "1px solid #1e3a5a", borderRadius: 10, padding: "8px 10px" }}><small style={{ color: "#8aa0b8", fontSize: ".62rem", display: "block" }}>Water Depth</small><b style={{ fontFamily: "JetBrains Mono", fontSize: ".85rem" }}>{stats.depth} m</b></div>
+            <div style={{ background: "#0b1d2f", border: "1px solid #1e3a5a", borderRadius: 10, padding: "8px 10px" }}><small style={{ color: "#8aa0b8", fontSize: ".62rem", display: "block" }}>Affected</small><b style={{ fontFamily: "JetBrains Mono", fontSize: ".85rem" }}>{stats.buildings}</b></div>
             <div style={{ background: "#0b1d2f", border: "1px solid #1e3a5a", borderRadius: 10, padding: "8px 10px" }}><small style={{ color: "#8aa0b8", fontSize: ".62rem", display: "block" }}>Flow Speed</small><b style={{ fontFamily: "JetBrains Mono", fontSize: ".85rem" }}>{stats.velocity} m/s</b></div>
             <div style={{ background: "#0b1d2f", border: "1px solid #1e3a5a", borderRadius: 10, padding: "8px 10px" }}><small style={{ color: "#8aa0b8", fontSize: ".62rem", display: "block" }}>Runoff</small><b style={{ fontFamily: "JetBrains Mono", fontSize: ".85rem", color: "#22d3ee" }}>{Q.toFixed(1)} mm</b></div>
           </div>
-
-          <div style={{ textAlign: "center", fontSize: ".68rem", color: "#8aa0b8", background: "#08121f", padding: 8, borderRadius: 8, border: "1px dashed #1e3a5a" }}>
-            <code style={{ background: "#0b1d2f", padding: "2px 6px", borderRadius: 6, border: "1px solid #1e3a5a", fontFamily: "JetBrains Mono" }}>Accurate: 1 unit = ~1.4km • Vertical x2.5</code>
-          </div>
-
           <button
             className="btn btn-outline wfull"
             onClick={() => {
-              const gj = { type: "FeatureCollection", features: [{ type: "Feature", properties: { rainfall_mm: P, CN, runoff_mm: +Q.toFixed(2), flood_depth_m: +d.toFixed(2), timestamp: new Date().toISOString() }, geometry: { type: "Polygon", coordinates: [[[CHENNAI_BOUNDS.xmin, 13.0], [CHENNAI_BOUNDS.xmax, 13.0], [CHENNAI_BOUNDS.xmax, 13.15], [CHENNAI_BOUNDS.xmin, 13.15], [CHENNAI_BOUNDS.xmin, 13.0]]] } }] };
+              const gj = { type: "FeatureCollection", features: [{ type: "Feature", properties: { rainfall_mm: P, CN, runoff_mm: +Q.toFixed(2), flood_depth_m: +d.toFixed(2), aoi: selectedArea, requestId: debug?.requestId, timestamp: new Date().toISOString() }, geometry: { type: "Polygon", coordinates: [[[selectedArea.bounds.xmin, selectedArea.bounds.ymin], [selectedArea.bounds.xmax, selectedArea.bounds.ymin], [selectedArea.bounds.xmax, selectedArea.bounds.ymax], [selectedArea.bounds.xmin, selectedArea.bounds.ymax], [selectedArea.bounds.xmin, selectedArea.bounds.ymin]]] } }] };
               const blob = new Blob([JSON.stringify(gj, null, 2)], { type: "application/json" });
-              const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "floin-snapshot.geojson"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+              const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `floin-${selectedArea.id}-${Date.now()}.geojson`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
             }}
             style={{ width: "100%", padding: "9px", borderRadius: 999, border: "1px solid #06b6d4", color: "#06b6d4", background: "transparent", fontSize: ".78rem" }}
           >
-            Export Snapshot
+            Export AOI Snapshot
           </button>
-          <div style={{ display: "none" }}><span id="vP">{P}</span><span id="vCN">{CN}</span><span id="vT">{t}</span><span id="mS">{S.toFixed(2)}</span><span id="mIa">{Ia.toFixed(2)}</span><span id="mQ">{Q.toFixed(1)}</span><span id="mD">{d.toFixed(2)}</span></div>
-          <input id="sP" type="range" value={P} onChange={(e) => setP(+e.target.value)} style={{ display: "none" }} />
-          <input id="sCN" type="range" value={CN} onChange={(e) => setCN(+e.target.value)} style={{ display: "none" }} />
-          <input id="sT" type="range" value={t} onChange={(e) => setT(+e.target.value)} style={{ display: "none" }} />
         </div>
       </div>
     </>
   );
 }
 
-function createProScene(canvas: HTMLCanvasElement, opts: { isHero?: boolean; showContours?: boolean; d?: number }) {
+function generateTerrainForAOI(terrain: THREE.Mesh, aoi: any) {
+  const geo: any = terrain.geometry;
+  const pos: any = geo.attributes.position;
+  const colors: number[] = [];
+  const color = new THREE.Color();
+  let minZ = Infinity, maxZ = -Infinity;
+  const zVals: number[] = [];
+  const seedX = aoi.center[0] * 3.7, seedY = aoi.center[1] * 3.7;
+  const isCentral = aoi.id === "central";
+  const isNorth = aoi.id === "ennore";
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), y = pos.getY(i);
+    const d = Math.hypot(x, y);
+    let z = Math.sin((x + seedX) * 0.58) * 0.62 + Math.cos((y + seedY) * 0.68) * 0.52;
+    z += Math.sin((x + seedX) * 1.35 + (y + seedY) * 0.92) * 0.26;
+    z += Math.cos((x + seedX) * 2.1 - (y + seedY) * 1.3) * 0.12;
+    z += Math.sin((x + seedX) * 0.22 + (y + seedY) * 0.18) * 0.35;
+    if (isCentral) z -= 0.35;
+    if (isNorth) z += 0.25;
+    z -= clamp((d - 4.2) / 6, 0, 1) * 1.35;
+    z += (Math.sin(x * 12 + y * 9 + seedX) * 0.02);
+    pos.setZ(i, z);
+    zVals.push(z);
+    minZ = Math.min(minZ, z); maxZ = Math.max(maxZ, z);
+  }
+  for (let i = 0; i < zVals.length; i++) {
+    const t = (zVals[i] - minZ) / (maxZ - minZ || 1);
+    if (t < 0.25) color.setHSL(0.42, 0.35, 0.18 + t * 0.3);
+    else if (t < 0.55) color.setHSL(0.32, 0.28, 0.24 + t * 0.15);
+    else if (t < 0.8) color.setHSL(0.08, 0.22, 0.32 + t * 0.1);
+    else color.setHSL(0.06, 0.12, 0.42);
+    colors.push(color.r, color.g, color.b);
+  }
+  (geo as any).setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+  (geo as any).computeVertexNormals();
+  geo.attributes.position.needsUpdate = true;
+  return { min: minZ, max: maxZ, grid: `${(geo as any).attributes.position.count} cells`, source: `DEM procedural seed ${seedX.toFixed(1)},${seedY.toFixed(1)}`, bounds: aoi.bounds };
+}
+
+function runLocalizedSimulation(terrainStats: any, counts: any, P: number, CN: number, t: number, aoi: any) {
+  const { Q } = scs(P, CN);
+  const norm = clamp(Q / 120, 0, 1);
+  const aoiFactor = aoi.id === "ennore" ? 1.15 : aoi.id === "central" ? 0.95 : 1.0;
+  const depth = norm * 2.2 * (0.3 + 0.7 * (t / 100)) * aoiFactor;
+  const floodedBuildings = Math.round(counts.buildings * clamp(depth / 1.5, 0, 1) * 0.72);
+  return { depth: depth.toFixed(2), floodedBuildings, Q: Q.toFixed(1) };
+}
+
+function applyCachedResult(ctx: any, cached: any, aoi: any) {
+  generateTerrainForAOI(ctx.terrain, aoi);
+  const b = aoi.bounds;
+  const [ax1, az1] = lngLatToXZ(b.xmin, b.ymin, 14);
+  const [ax2, az2] = lngLatToXZ(b.xmax, b.ymax, 14);
+  const w = Math.abs(ax2 - ax1), h = Math.abs(az2 - az1);
+  const cx = (ax1 + ax2) / 2, cz = (az1 + az2) / 2;
+  ctx.water.scale.set(Math.max(0.35, w / 14), Math.max(0.35, h / 14), 1);
+  ctx.water.position.set(cx * 0.08, -0.88, cz * 0.08);
+}
+
+function disposeScene(ctx: any) {
+  try {
+    ctx.terrain.geometry.dispose();
+    (ctx.terrain.material as any).dispose();
+    ctx.water.geometry.dispose();
+    (ctx.water.material as any).dispose();
+    ctx.buildingsGroup.children.forEach((m: any) => { m.geometry?.dispose(); m.material?.dispose(); });
+    ctx.roadsGroup.children.forEach((m: any) => { m.geometry?.dispose(); m.material?.dispose(); });
+    ctx.buildingsGroup.clear();
+    ctx.roadsGroup.clear();
+  } catch {}
+}
+
+function createProScene(canvas: HTMLCanvasElement, opts: { isHero?: boolean; showContours?: boolean; d?: number; aoi?: any }) {
   const w = canvas.clientWidth || 600, h = canvas.clientHeight || 520;
   const scene = new THREE.Scene();
   scene.fog = new THREE.Fog(0x060d1a, 10, 28);
   scene.background = new THREE.Color(0x060d1a);
-
   const camera = new THREE.PerspectiveCamera(42, w / h, 0.1, 100);
   camera.position.set(opts.isHero ? 7 : 8.5, 6.5, 8.5);
-
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.setSize(w, h, false);
@@ -252,7 +323,6 @@ function createProScene(canvas: HTMLCanvasElement, opts: { isHero?: boolean; sho
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
-
   const hemi = new THREE.HemisphereLight(0xdbeafe, 0x0a1a2e, 0.9);
   scene.add(hemi);
   const dir = new THREE.DirectionalLight(0xffffff, 1.15);
@@ -265,50 +335,29 @@ function createProScene(canvas: HTMLCanvasElement, opts: { isHero?: boolean; sho
   scene.add(dir);
   const fill = new THREE.DirectionalLight(0x7dd3fc, 0.35);
   fill.position.set(-6, 5, -4); scene.add(fill);
-
   const size = 14, seg = 120;
   const geo = new THREE.PlaneGeometry(size, size, seg, seg);
-  const pos: any = (geo as any).attributes.position;
-  const colors: number[] = [];
-  const color = new THREE.Color();
-  let minZ = Infinity, maxZ = -Infinity;
-  const zVals: number[] = [];
-  for (let i = 0; i < pos.count; i++) {
-    const x = pos.getX(i), y = pos.getY(i);
-    const d = Math.hypot(x, y);
-    let z = Math.sin(x * 0.58) * 0.62 + Math.cos(y * 0.68) * 0.52;
-    z += Math.sin(x * 1.35 + y * 0.92) * 0.26 + Math.cos(x * 2.1 - y * 1.3) * 0.12;
-    z += Math.sin(x * 0.22 + y * 0.18) * 0.35;
-    z -= clamp((d - 4.2) / 6, 0, 1) * 1.35;
-    z += (Math.random() - 0.5) * 0.04;
-    pos.setZ(i, z);
-    zVals.push(z);
-    minZ = Math.min(minZ, z); maxZ = Math.max(maxZ, z);
-  }
-  for (let i = 0; i < zVals.length; i++) {
-    const t = (zVals[i] - minZ) / (maxZ - minZ || 1);
-    if (t < 0.25) color.setHSL(0.42, 0.35, 0.18 + t * 0.3);
-    else if (t < 0.55) color.setHSL(0.32, 0.28, 0.24 + t * 0.15);
-    else if (t < 0.8) color.setHSL(0.08, 0.22, 0.32 + t * 0.1);
-    else color.setHSL(0.06, 0.12, 0.42);
-    if (opts.showContours && Math.abs((zVals[i] * 10) % 1) < 0.06) color.lerp(new THREE.Color(0xffffff), 0.18);
-    colors.push(color.r, color.g, color.b);
-  }
-  (geo as any).setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
-  (geo as any).computeVertexNormals();
-
   const tmat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0.02 });
   const terrain = new THREE.Mesh(geo, tmat);
   terrain.rotation.x = -Math.PI / 2;
   terrain.position.y = -1.2;
   terrain.receiveShadow = true;
   scene.add(terrain);
-
+  if (opts.aoi) generateTerrainForAOI(terrain, opts.aoi);
+  else {
+    const pos: any = (geo as any).attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i), y = pos.getY(i);
+      let z = Math.sin(x * 0.58) * 0.62 + Math.cos(y * 0.68) * 0.52;
+      z += Math.sin(x * 1.35 + y * 0.92) * 0.26;
+      pos.setZ(i, z);
+    }
+    (geo as any).computeVertexNormals();
+  }
   const grid = new THREE.GridHelper(size, 14, 0x1e3a5a, 0x0f1e2e);
   (grid as any).position.y = -1.19;
   (grid as any).material.opacity = 0.25; (grid as any).material.transparent = true;
   scene.add(grid);
-
   const wgeo = new THREE.PlaneGeometry(13.4, 13.4, 64, 64);
   const waterMat = new THREE.ShaderMaterial({
     uniforms: { time: { value: 0 }, depth: { value: opts.d ?? 0.5 }, opacity: { value: 0.52 } },
@@ -333,13 +382,10 @@ function createProScene(canvas: HTMLCanvasElement, opts: { isHero?: boolean; sho
   const water = new THREE.Mesh(wgeo, waterMat as any);
   water.rotation.x = -Math.PI / 2;
   water.position.y = -0.88;
-  water.receiveShadow = false;
   scene.add(water);
-
   const buildingsGroup = new THREE.Group();
   const roadsGroup = new THREE.Group();
   scene.add(buildingsGroup); scene.add(roadsGroup);
-
   const controls = { update: () => {} } as any;
   try {
     const OrbitControls = (THREE as any).OrbitControls || null;
@@ -351,9 +397,8 @@ function createProScene(canvas: HTMLCanvasElement, opts: { isHero?: boolean; sho
       c.target.set(0, -0.2, 0);
       c.update();
       controls.update = () => c.update();
-    } else {
-      throw new Error("fallback");
-    }
+      (controls as any)._ctrl = c;
+    } else throw new Error("fallback");
   } catch {
     let drag = false, lastX = 0, lastY = 0, yaw = 0.72, pitch = 0.88, dist = 14;
     const updateCam = () => {
@@ -371,15 +416,12 @@ function createProScene(canvas: HTMLCanvasElement, opts: { isHero?: boolean; sho
       lastX = e.clientX; lastY = e.clientY; updateCam();
     });
     canvas.addEventListener("wheel", (e) => { e.preventDefault(); dist = clamp(dist + (e as WheelEvent).deltaY * 0.01, 6, 24); updateCam(); }, { passive: false } as any);
-    controls.update = () => {};
   }
-
   new ResizeObserver(() => {
     const W = canvas.clientWidth, H = canvas.clientHeight;
     if (!W || !H) return;
     camera.aspect = W / H; camera.updateProjectionMatrix(); renderer.setSize(W, H, false);
   }).observe(canvas);
-
   return { scene, camera, renderer, terrain, water, buildingsGroup, roadsGroup, controls };
 }
 
@@ -401,50 +443,71 @@ function updateBuildingImpact(group: THREE.Group, depth: number) {
   });
 }
 
-function filterBuildingsByArea(group: THREE.Group, area: any) {
-  if (!area || area.id === "all") {
-    group.children.forEach((m: any) => {
-      if (m.material) { m.material.transparent = false; m.material.opacity = 1; m.visible = true; }
+async function loadVectorsForAOI(buildingsGroup: THREE.Group, roadsGroup: THREE.Group, aoi: any, accurate: boolean, reqId: number) {
+  const b = aoi.bounds;
+  const inAOI = (lng: number, lat: number) => lng >= b.xmin && lng <= b.xmax && lat >= b.ymin && lat <= b.ymax;
+  const counts = { buildings: 0, roads: 0, rivers: 0, hotspots: 0, floodedStreets: 0 };
+
+  try {
+    const [bRes, hRes, wRes, hotRes, floodRes] = await Promise.all([
+      fetch("/buildings.geojson").then((r) => r.json()).catch(() => ({ features: [] })),
+      fetch("/highway.geojson").then((r) => r.json()).catch(() => ({ features: [] })),
+      fetch("/waterway.geojson").then((r) => r.json()).catch(() => ({ features: [] })),
+      fetch("/chennai2015_hotspots.geojson").then((r) => r.json()).catch(() => ({ features: [] })),
+      fetch("/chennai2015_flooded_streets.geojson").then((r) => r.json()).catch(() => ({ features: [] })),
+    ]);
+    const bFiltered = bRes.features.filter((f: any) => {
+      const c = f.geometry.coordinates[0]?.[0] || f.geometry.coordinates[0];
+      if (!c) return false;
+      const lng = Array.isArray(c[0]) ? c[0][0] : c[0];
+      const lat = Array.isArray(c[0]) ? c[0][1] : c[1];
+      return typeof lng === "number" && inAOI(lng, lat);
     });
-    return;
-  }
-  const b = area.bounds;
-  const [ax1, az1] = lngLatToXZ(b.xmin, b.ymin, 14);
-  const [ax2, az2] = lngLatToXZ(b.xmax, b.ymax, 14);
-  const minX = Math.min(ax1, ax2), maxX = Math.max(ax1, ax2), minZ = Math.min(az1, az2), maxZ = Math.max(ax1, az2);
-  group.children.forEach((m: any) => {
-    let cx = m.userData?.centerX, cz = m.userData?.centerZ;
-    if (cx === undefined) { cx = m.position.x; cz = m.position.z; }
-    const inside = cx >= minX && cx <= maxX && cz >= minZ && cz <= maxZ;
-    if (m.material) {
-      m.material.transparent = true;
-      m.material.opacity = inside ? 1 : 0.14;
-      m.visible = true;
+    const rFiltered = hRes.features.filter((f: any) => {
+      const coords = f.geometry.coordinates;
+      const pts = f.geometry.type === "LineString" ? coords : coords.flat();
+      return pts.some((p: any) => inAOI(p[0], p[1]));
+    });
+    counts.buildings = bFiltered.length;
+    counts.roads = rFiltered.length;
+    counts.hotspots = hotRes.features.filter((f: any) => inAOI(f.geometry.coordinates[0], f.geometry.coordinates[1])).length;
+    counts.floodedStreets = floodRes.features.filter((f: any) => f.geometry.coordinates.some((p: any) => inAOI(p[0], p[1]))).length;
+    counts.rivers = wRes.features.filter((f: any) => {
+      const coords = f.geometry.coordinates;
+      if (!coords) return false;
+      const pts = Array.isArray(coords[0][0]) ? coords.flat(1) : coords;
+      return pts.some((p: any) => Array.isArray(p) && inAOI(p[0], p[1]));
+    }).length;
+
+    disposeGroup(buildingsGroup);
+    disposeGroup(roadsGroup);
+    if (bFiltered.length === 0) {
+      // explicitly show no buildings for this AOI
+    } else {
+      buildBuildings(buildingsGroup, bFiltered.slice(0, 500), accurate);
     }
-    if (!inside && m.material) m.material.emissive = new THREE.Color(0x000000);
-  });
+    if (rFiltered.length === 0) {
+    } else {
+      buildRoads(roadsGroup, rFiltered.slice(0, 200));
+    }
+  } catch {}
+  return counts;
 }
 
-async function loadVectors(buildingsGroup: THREE.Group, roadsGroup: THREE.Group, opts: { accurate: boolean }) {
-  try {
-    const [bRes, hRes, wRes] = await Promise.all([
-      fetch("/buildings.geojson").then((r) => { if (!r.ok) throw new Error(); return r.json(); }),
-      fetch("/highway.geojson").then((r) => { if (!r.ok) throw new Error(); return r.json(); }),
-      fetch("/waterway.geojson").then((r) => (r.ok ? r.json() : { features: [] })).catch(() => ({ features: [] })),
-    ]);
-    buildBuildings(buildingsGroup, bRes.features.slice(0, opts.accurate ? 500 : 300), opts.accurate);
-    buildRoads(roadsGroup, hRes.features.slice(0, 300).concat(wRes.features.slice(0, 80)));
-  } catch {
-    buildProcedural(buildingsGroup);
-  }
+function disposeGroup(group: THREE.Group) {
+  group.children.forEach((m: any) => {
+    m.geometry?.dispose();
+    m.material?.dispose?.();
+  });
+  group.clear();
 }
+
 function buildBuildings(group: THREE.Group, features: any[], accurate: boolean) {
   group.clear();
   const winTex = accurate ? createWindowTexture() : null;
   const matBase = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.78, metalness: 0.04, map: winTex as any });
   const matAlt = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, roughness: 0.72, metalness: 0.06, map: winTex as any });
   const matDark = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.85, metalness: 0.02 });
-
   features.forEach((f: any) => {
     const geom = f.geometry; if (!geom) return;
     const polys = geom.type === "Polygon" ? [geom.coordinates] : geom.type === "MultiPolygon" ? geom.coordinates : [];
@@ -486,18 +549,4 @@ function buildRoads(group: THREE.Group, features: any[]) {
       group.add(new THREE.Line(geo, mat));
     });
   });
-}
-function buildProcedural(group: THREE.Group) {
-  group.clear();
-  for (let i = 0; i < 90; i++) {
-    const x = (Math.random() - 0.5) * 11, z = (Math.random() - 0.5) * 11;
-    const w = 0.15 + Math.random() * 0.25, d = 0.15 + Math.random() * 0.25, h = 0.25 + Math.random() * 0.7;
-    const g = new THREE.BoxGeometry(w, h, d);
-    const mat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.9 });
-    const mesh = new THREE.Mesh(g, mat as any);
-    mesh.position.set(x, -0.9 + h / 2, z);
-    mesh.userData.centerX = x; mesh.userData.centerZ = z;
-    mesh.castShadow = true; mesh.receiveShadow = true;
-    group.add(mesh);
-  }
 }
