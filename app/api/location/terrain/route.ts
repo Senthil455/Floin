@@ -93,7 +93,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         maxElevation: terrainData.maxElevation.toFixed(2),
         range: (terrainData.maxElevation - terrainData.minElevation).toFixed(2),
         meanElevation: (
-          terrainData.elevations.reduce((a, b) => a + b, 0) / terrainData.elevations.length
+          terrainData.elevations.reduce((a: number, b: number) => a + b, 0) / terrainData.elevations.length
         ).toFixed(2),
         resolution: `${terrainData.resolution}m`,
         gridPoints: `${terrainData.gridWidth}x${terrainData.gridHeight}`,

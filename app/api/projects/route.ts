@@ -51,6 +51,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       location,
       status: 'active',
       datasets: [],
+      scenarios: [],
+      savedLocations: [],
     });
 
     return NextResponse.json({
