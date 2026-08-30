@@ -2,7 +2,7 @@
 import { useEffect, useRef } from "react";
 import "leaflet/dist/leaflet.css";
 
-export default function ChennaiMap({ selectedArea, onSelectArea, onSelectFeature }: { selectedArea?: any; onSelectArea?: (a:any)=>void; onSelectFeature?: (f:any)=>void }) {
+export default function ChennaiMap({ selectedArea, onSelectArea, onSelectFeature, aoiSizeKm, onMapClick }: { selectedArea?: any; onSelectArea?: (a:any)=>void; onSelectFeature?: (f:any)=>void; aoiSizeKm?: number; onMapClick?: (lat:number,lng:number)=>void }) {
   const ref = useRef<HTMLDivElement>(null);
   const countRef = useRef<HTMLSpanElement>(null);
   const mapRef = useRef<any>(null);
@@ -22,6 +22,18 @@ export default function ChennaiMap({ selectedArea, onSelectArea, onSelectFeature
 
       (map as any)._floin = { layers: {} };
       mapRef.current = map;
+      map.on("click", (e: any) => {
+        const { lat, lng } = e.latlng;
+        if (lng < 80.10 || lng > 80.35 || lat < 12.88 || lat > 13.25) {
+          return;
+        }
+        if (onMapClick) onMapClick(lat, lng);
+        else if (onSelectArea) {
+          const delta = (aoiSizeKm || 1) / 111;
+          onSelectArea({ id: `click-${Date.now()}`, name: `Clicked ${lat.toFixed(4)}, ${lng.toFixed(4)}`, bounds: { xmin: lng - delta, xmax: lng + delta, ymin: lat - delta, ymax: lat + delta }, center: [lng, lat], lat, lng });
+        }
+      });
+
       const layers: Record<string, any> = (map as any)._floin.layers;
       const colors = { buildings: "#8b5cf6", highway: "#facc15", water: "#06b6d4", rainfall: "#ef4444" };
 
