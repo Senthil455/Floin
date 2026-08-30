@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 interface SimulationRequest {
   requestId: string;
   aoi: {
+    id?: string;
     center: [number, number];
     bounds: { xmin: number; xmax: number; ymin: number; ymax: number };
   };

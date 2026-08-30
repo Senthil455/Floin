@@ -279,11 +279,17 @@ export default function FloodSimulation({ selectedArea }: { selectedArea?: any }
           <canvas ref={simRef} id="sim" aria-label="Localized 3D flood terrain" style={{ width: "100%", height: 560, display: "block" }} />
 
           {debug && (
-            <div style={{ position: "absolute", bottom: 12, left: 12, background: "rgba(0,0,0,0.72)", backdropFilter: "blur(8px)", border: "1px solid #1e3a5a", borderRadius: 10, padding: "8px 10px", fontSize: ".62rem", fontFamily: "JetBrains Mono", lineHeight: 1.4, maxWidth: "62%" }}>
+            <div style={{ position: "absolute", bottom: 12, left: 12, background: "rgba(0,0,0,0.72)", backdropFilter: "blur(8px)", border: "1px solid #1e3a5a", borderRadius: 10, padding: "8px 10px", fontSize: ".62rem", fontFamily: "JetBrains Mono", lineHeight: 1.4, maxWidth: "72%" }}>
               <div style={{ fontWeight: 700, color: "#22d3ee" }}>Req #{debug.requestId} • {debug.aoi?.id} {debug.cached ? "(cached)" : ""}</div>
-              <div style={{ color: "#e6eef8" }}>AOI: {debug.aoi?.center[1].toFixed(4)}, {debug.aoi?.center[0].toFixed(4)} • {debug.aoi?.bounds.xmin.toFixed(3)}-{debug.aoi?.bounds.xmax.toFixed(3)} × {debug.aoi?.bounds.ymin.toFixed(3)}-{debug.aoi?.bounds.ymax.toFixed(3)}</div>
-              <div style={{ color: "#8aa0b8" }}>Terrain: {debug.terrain?.min?.toFixed(2)}-{debug.terrain?.max?.toFixed(2)}m • {debug.terrain?.grid} grid • {debug.terrain?.source}</div>
-              <div style={{ color: "#8aa0b8" }}>Buildings: {debug.counts?.buildings} • Roads: {debug.counts?.roads} • Hotspots: {debug.counts?.hotspots ?? 0} • Rivers: {debug.counts?.rivers ?? 0}</div>
+              <div style={{ color: "#e6eef8" }}>📍 {debug.location || `${debug.aoi?.center[1].toFixed(4)}°N, ${debug.aoi?.center[0].toFixed(4)}°E`}</div>
+              <div style={{ color: "#e6eef8" }}>AOI: {debug.aoi?.bounds.xmin.toFixed(3)}-{debug.aoi?.bounds.xmax.toFixed(3)} × {debug.aoi?.bounds.ymin.toFixed(3)}-{debug.aoi?.bounds.ymax.toFixed(3)}</div>
+              <div style={{ color: "#8aa0b8" }}>Terrain: {debug.terrain?.min?.toFixed(2)}-{debug.terrain?.max?.toFixed(2)}m • {debug.terrain?.grid} • {debug.terrain?.source}</div>
+              <div style={{ color: "#8aa0b8" }}>Buildings: {debug.counts?.buildings} • Roads: {debug.counts?.roads} • Rivers: {debug.counts?.rivers ?? 0} • Hotspots: {debug.counts?.hotspots ?? 0}</div>
+              {debug.datasetCoverage && (
+                <div style={{ color: "#06b6d4", marginTop: 6, fontWeight: 600 }}>
+                  📦 Datasets: B:{debug.datasetCoverage.buildings} R:{debug.datasetCoverage.roads} W:{debug.datasetCoverage.waterways} S:{debug.datasetCoverage.rainStations}
+                </div>
+              )}
             </div>
           )}
 
@@ -653,35 +659,66 @@ function disposeGroup(group: THREE.Group) {
 
 function buildBuildings(group: THREE.Group, features: any[], accurate: boolean) {
   group.clear();
+  
+  if (!features || features.length === 0) return;
+  
   const winTex = accurate ? createWindowTexture() : null;
   const matBase = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.78, metalness: 0.04, map: winTex as any });
   const matAlt = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, roughness: 0.72, metalness: 0.06, map: winTex as any });
   const matDark = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.85, metalness: 0.02 });
+  
   features.forEach((f: any) => {
-    const geom = f.geometry; if (!geom) return;
+    const geom = f.geometry; 
+    if (!geom) return;
+    
     const polys = geom.type === "Polygon" ? [geom.coordinates] : geom.type === "MultiPolygon" ? geom.coordinates : [];
+    
     polys.forEach((poly: any) => {
-      const outer = poly[0]; if (!outer || outer.length < 3) return;
-      const shape = new THREE.Shape();
-      outer.forEach(([lng, lat]: any, i: number) => {
-        const [x, z] = lngLatToXZ(lng, lat);
-        if (i === 0) shape.moveTo(x, z); else shape.lineTo(x, z);
-      });
-      const levels = parseInt(f.properties?.["building:levels"]) || 2 + Math.floor(Math.random() * 3);
-      const h = levels * 0.19 + (accurate ? Math.random() * 0.08 : 0);
-      const g = new THREE.ExtrudeGeometry(shape, { depth: h, bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.01, bevelSegments: 1 } as any);
-      (g as any).rotateX(Math.PI / 2);
-      const mats = [matBase, matAlt, matDark];
-      const m = mats[Math.floor(Math.random() * mats.length)].clone() as any;
-      const mesh = new THREE.Mesh(g, m);
-      mesh.position.y = -1.05;
-      mesh.castShadow = accurate; mesh.receiveShadow = accurate;
-      if (accurate) m.emissive = new THREE.Color(0x000000);
-      let sumX = 0, sumZ = 0;
-      outer.forEach(([lng, lat]: any) => { const [x, z] = lngLatToXZ(lng, lat); sumX += x; sumZ += z; });
-      mesh.userData.centerX = sumX / outer.length;
-      mesh.userData.centerZ = sumZ / outer.length;
-      group.add(mesh);
+      try {
+        const outer = poly[0]; 
+        if (!outer || outer.length < 3) return;
+        
+        const shape = new THREE.Shape();
+        outer.forEach(([lng, lat]: any, i: number) => {
+          const [x, z] = lngLatToXZ(lng, lat);
+          if (i === 0) shape.moveTo(x, z); 
+          else shape.lineTo(x, z);
+        });
+        
+        const levels = parseInt(f.properties?.["building:levels"]) || 2 + Math.floor(Math.random() * 3);
+        const h = levels * 0.19 + (accurate ? Math.random() * 0.08 : 0);
+        const g = new THREE.ExtrudeGeometry(shape, { 
+          depth: h, 
+          bevelEnabled: true, 
+          bevelThickness: 0.01, 
+          bevelSize: 0.01, 
+          bevelSegments: 1 
+        } as any);
+        
+        (g as any).rotateX(Math.PI / 2);
+        
+        const mats = [matBase, matAlt, matDark];
+        const m = mats[Math.floor(Math.random() * mats.length)].clone() as any;
+        const mesh = new THREE.Mesh(g, m);
+        mesh.position.y = -1.05;
+        mesh.castShadow = accurate; 
+        mesh.receiveShadow = accurate;
+        
+        if (accurate) m.emissive = new THREE.Color(0x000000);
+        
+        let sumX = 0, sumZ = 0;
+        outer.forEach(([lng, lat]: any) => { 
+          const [x, z] = lngLatToXZ(lng, lat); 
+          sumX += x; 
+          sumZ += z; 
+        });
+        
+        mesh.userData.centerX = sumX / outer.length;
+        mesh.userData.centerZ = sumZ / outer.length;
+        group.add(mesh);
+      } catch (error) {
+        console.warn('Error building geometry:', error);
+      }
     });
   });
 }
