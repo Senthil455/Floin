@@ -46,7 +46,7 @@ def flood_depth_grid(dem, acc, Q, t_factor=0.6):
     norm = min(Q/120.0,1.0)
     base = norm * 2.2 * (0.3 + 0.7*t_factor)
     acc_norm = np.clip(acc / acc.max() if acc.max() else 1, 0, 1)
-    terrain_factor = (dem - dem.min()) / (dem.ptp() if dem.ptp() else 1)
+    terrain_factor = (dem - dem.min()) / (np.ptp(dem) if np.ptp(dem) else 1)
     depth = np.maximum(0, base * (0.6 + 0.7*acc_norm) - terrain_factor*0.9)
     depth = np.clip(depth, 0, 3.5)
     return depth

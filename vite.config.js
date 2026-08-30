@@ -5,9 +5,10 @@ export default defineConfig({
     chunkSizeWarningLimit: 800,
     rollupOptions: {
       output: {
-        manualChunks: {
-          three: ['three'],
-          leaflet: ['leaflet'],
+        manualChunks(id) {
+          if (id.includes('three')) return 'three'
+          if (id.includes('leaflet')) return 'leaflet'
+          if (id.includes('geotiff')) return 'geotiff'
         },
       },
     },
