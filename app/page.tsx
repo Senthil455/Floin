@@ -1,711 +1,1186 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import dynamic from "next/dynamic";
 
-const ChennaiMap = dynamic(() => import("@/components/ChennaiMap"), { ssr: false, loading: () => <div style={{ height: 360, display: "grid", placeItems: "center", background: "#08121f", borderRadius: 12, border: "1px solid #1e3a5a" }}>Loading map...</div> });
-const FloodSimulation = dynamic(() => import("@/components/FloodSimulation"), { ssr: false, loading: () => <div style={{ height: 480, display: "grid", placeItems: "center", background: "#08121f", borderRadius: 12 }}>Loading 3D...</div> });
+const ChennaiMap = dynamic(() => import("@/components/ChennaiMap"), {
+  ssr: false,
+  loading: () => (
+    <div style={{ height: 380, display: "grid", placeItems: "center", background: "#08121f", borderRadius: 12, border: "1px solid #1e3a5a" }}>
+      Loading Chennai Leaflet Map...
+    </div>
+  ),
+});
 
-type Project = { id: string; name: string; location: string; area: string; updated: string; status: string; scenario: string; runs: number; scenarios: number };
+const FloodSimulation = dynamic(() => import("@/components/FloodSimulation"), {
+  ssr: false,
+  loading: () => (
+    <div style={{ height: 480, display: "grid", placeItems: "center", background: "#08121f", borderRadius: 12 }}>
+      Loading 3D Terrain Engine...
+    </div>
+  ),
+});
+
+type Project = {
+  id: string;
+  name: string;
+  location: string;
+  area: string;
+  updated: string;
+  status: string;
+  scenario: string;
+  runs: number;
+  scenarios: number;
+  center: [number, number];
+};
+
+type Scenario = {
+  id: string;
+  name: string;
+  P: number;
+  CN: number;
+  duration: number;
+  depth: string;
+  area: string;
+  buildings: number;
+  runoff: number;
+};
+
 type Toast = { id: number; msg: string; action?: string };
+
+const AREAS = [
+  { id: "all", name: "All Chennai", bounds: { xmin: 80.10, xmax: 80.35, ymin: 12.88, ymax: 13.25 }, center: [80.225, 13.065] as [number, number] },
+  { id: "central", name: "Central Chennai (Ripon/Egmore)", bounds: { xmin: 80.24, xmax: 80.28, ymin: 13.05, ymax: 13.09 }, center: [80.26, 13.07] as [number, number] },
+  { id: "adyar", name: "Adyar River Basin", bounds: { xmin: 80.18, xmax: 80.28, ymin: 12.98, ymax: 13.03 }, center: [80.23, 13.01] as [number, number] },
+  { id: "ennore", name: "Ennore Industrial North", bounds: { xmin: 80.28, xmax: 80.33, ymin: 13.18, ymax: 13.24 }, center: [80.305, 13.21] as [number, number] },
+  { id: "velachery", name: "Velachery - South Lowlands", bounds: { xmin: 80.20, xmax: 80.24, ymin: 12.96, ymax: 13.00 }, center: [80.22, 12.98] as [number, number] },
+];
+
+const CHENNAI_SEARCH_INDEX = [
+  { name: "Ripon Building (GCC HQ)", type: "Building", coords: [80.2755, 13.0827] },
+  { name: "Tidel Park (OMR)", type: "Tech Hub", coords: [80.2483, 12.9893] },
+  { name: "Chennai Central Station", type: "Transit", coords: [80.2754, 13.0823] },
+  { name: "Anna Salai (Mount Road)", type: "Road", coords: [80.258, 13.055] },
+  { name: "Adyar Bridge & Estuary", type: "Waterway", coords: [80.2645, 13.0102] },
+  { name: "Marina Beach", type: "Coastal", coords: [80.2825, 13.0625] },
+  { name: "Nungambakkam Weather Station", type: "Rain Station", coords: [80.243, 13.063] },
+  { name: "Meenambakkam IMD Station", type: "Rain Station", coords: [80.181, 12.994] },
+  { name: "Chembarambakkam Lake", type: "Waterway", coords: [80.0578, 13.0118] },
+  { name: "Ennore Port", type: "Industrial", coords: [80.3245, 13.2312] },
+];
+
+function calcScsRunoff(P: number, CN: number) {
+  const S = 25400 / CN - 254;
+  const Ia = 0.2 * S;
+  const Q = P <= Ia ? 0 : ((P - Ia) ** 2) / (P + 0.8 * S);
+  return { S, Ia, Q };
+}
 
 export default function Page() {
   const [active, setActive] = useState("home");
-  const [project, setProject] = useState<Project>({ id: "p1", name: "Chennai South Flood Study", location: "Chennai, TN", area: "80.10-80.35 / 12.88-13.25", updated: "Today, 09:24", status: "Ready to simulate", scenario: "Monsoon Peak", runs: 3, scenarios: 2 });
+  const [project, setProject] = useState<Project>({
+    id: "p1",
+    name: "Chennai South Flood Study",
+    location: "Chennai, TN",
+    area: "80.10-80.35 / 12.88-13.25",
+    updated: "Live Session",
+    status: "Ready to simulate",
+    scenario: "Monsoon Peak (2015 Ref)",
+    runs: 6,
+    scenarios: 3,
+    center: [80.225, 13.065],
+  });
+
   const [projects, setProjects] = useState<Project[]>([
-    { id: "p1", name: "Chennai South Flood Study", location: "Chennai, TN", area: "80.10-80.35", updated: "Today", status: "Ready", scenario: "Monsoon Peak", runs: 3, scenarios: 2 },
-    { id: "p2", name: "Adyar Basin Analysis", location: "Adyar", area: "80.18-80.28", updated: "Yesterday", status: "Processing M2", scenario: "Base", runs: 1, scenarios: 1 },
-    { id: "p3", name: "North Chennai Drainage", location: "Ennore", area: "80.28-80.35", updated: "2 days ago", status: "Draft", scenario: "-", runs: 0, scenarios: 0 },
+    { id: "p1", name: "Chennai South Flood Study", location: "Chennai, TN", area: "80.10-80.35", updated: "Today", status: "Ready", scenario: "Monsoon Peak", runs: 6, scenarios: 3, center: [80.225, 13.065] },
+    { id: "p2", name: "Adyar Basin Analysis", location: "Adyar", area: "80.18-80.28", updated: "Yesterday", status: "Validated", scenario: "Base", runs: 2, scenarios: 2, center: [80.23, 13.01] },
+    { id: "p3", name: "Ennore North Industrial Drainage", location: "Ennore", area: "80.28-80.33", updated: "2 days ago", status: "Draft", scenario: "Cyclonic Storm", runs: 1, scenarios: 1, center: [80.305, 13.21] },
   ]);
-  const [rainfall, setRainfall] = useState(120);
-  const [cn, setCn] = useState(78);
-  const [t, setT] = useState(45);
+
+  // Simulation Parameters
+  const [rainfall, setRainfall] = useState(140);
+  const [cn, setCn] = useState(82);
+  const [duration, setDuration] = useState(45);
+  const [timeSpeed, setTimeSpeed] = useState(1);
   const [simRunning, setSimRunning] = useState(false);
   const [simProgress, setSimProgress] = useState(45);
-  const [layers, setLayers] = useState({ terrain: true, water: true, depth: true, buildings: true, roads: true, flowDir: false, flowAcc: false });
-  const [timeSpeed, setTimeSpeed] = useState(1);
-  const [selected, setSelected] = useState<any>({ type: "terrain", elevation: "6.2m", slope: "1.4%", depth: "0.42m", velocity: "0.4 m/s", status: "Flooded" });
-  const AREAS = [
-    { id: "all", name: "All Chennai", bounds: { xmin: 80.10, xmax: 80.35, ymin: 12.88, ymax: 13.25 }, center: [80.225, 13.065] as [number,number] },
-    { id: "central", name: "Central", bounds: { xmin: 80.24, xmax: 80.28, ymin: 13.05, ymax: 13.09 }, center: [80.26, 13.07] as [number,number] },
-    { id: "adyar", name: "Adyar Basin", bounds: { xmin: 80.18, xmax: 80.28, ymin: 12.98, ymax: 13.03 }, center: [80.23, 13.01] as [number,number] },
-    { id: "ennore", name: "Ennore North", bounds: { xmin: 80.28, xmax: 80.33, ymin: 13.18, ymax: 13.24 }, center: [80.305, 13.21] as [number,number] },
-  ];
+
   const [selectedArea, setSelectedArea] = useState(AREAS[0]);
   const [clicked, setClicked] = useState<{ lat: number; lng: number } | null>(null);
-  const [aoiKm, setAoiKm] = useState(1);
-  const [workflow, setWorkflow] = useState<"idle" | "validating" | "analyzing" | "preview" | "simulating" | "done">("idle");
+  const [aoiKm, setAoiKm] = useState(1.5);
+  const [workflow, setWorkflow] = useState<"idle" | "analyzing" | "preview" | "simulating" | "done">("idle");
   const [analysis, setAnalysis] = useState<any>(null);
-  const [simStage, setSimStage] = useState(0);
-  const [scenarios, setScenarios] = useState([{ id: "s1", name: "Monsoon Peak", P: 210, CN: 85, depth: "0.75m", area: "16.1%" }, { id: "s2", name: "Base Case", P: 120, CN: 78, depth: "0.42m", area: "8.4%" }]);
-  const [activeScenario, setActiveScenario] = useState("s1");
+
+  const [layers, setLayers] = useState({
+    terrain: true,
+    water: true,
+    depth: true,
+    buildings: true,
+    roads: true,
+    hotspots: true,
+    inundation: true,
+  });
+
+  const [selectedObject, setSelectedObject] = useState<any>({
+    name: "Ripon Building (GCC HQ)",
+    type: "Building",
+    elevation: "6.4m",
+    depth: "0.52m",
+    velocity: "0.45 m/s",
+    status: "Medium Risk",
+  });
+
+  const [scenarios, setScenarios] = useState<Scenario[]>([
+    { id: "s1", name: "Monsoon Peak (2015 Ref)", P: 240, CN: 86, duration: 60, depth: "0.85m", area: "18.4%", buildings: 680, runoff: 156.2 },
+    { id: "s2", name: "Standard 50-Yr Storm", P: 140, CN: 82, duration: 45, depth: "0.48m", area: "10.2%", buildings: 340, runoff: 78.4 },
+    { id: "s3", name: "Base Moderate Rain", P: 75, CN: 74, duration: 30, depth: "0.22m", area: "4.1%", buildings: 110, runoff: 26.8 },
+  ]);
+  const [activeScenarioId, setActiveScenarioId] = useState("s1");
+
   const [search, setSearch] = useState("");
   const [toasts, setToasts] = useState<Toast[]>([]);
-  const [bookmarks, setBookmarks] = useState([{ name: "Ripon Building", type: "Building" }, { name: "Tidel Park Junction", type: "Road" }]);
-  const pushToast = (msg: string, action?: string) => { const id = Date.now(); setToasts((t) => [...t, { id, msg, action }]); setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3000); };
+  const [bookmarks, setBookmarks] = useState([
+    { name: "Ripon Building (GCC HQ)", type: "Government Building", coords: [80.2755, 13.0827] },
+    { name: "Tidel Park Junction", type: "Road Intersection", coords: [80.2483, 12.9893] },
+    { name: "Saidapet Adyar Crossing", type: "Historical Hotspot", coords: [80.2215, 13.0182] },
+  ]);
 
-  useEffect(() => {
-    if (!simRunning) return;
-    const iv = setInterval(() => setSimProgress((p) => (p >= 100 ? 0 : p + 1)), 800 / timeSpeed);
-    return () => clearInterval(iv);
-  }, [simRunning, timeSpeed]);
+  const pushToast = (msg: string, action?: string) => {
+    const id = Date.now();
+    setToasts((t) => [...t, { id, msg, action }]);
+    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3500);
+  };
+
+  const { S, Ia, Q } = useMemo(() => calcScsRunoff(rainfall, cn), [rainfall, cn]);
+
+  const searchResults = useMemo(() => {
+    if (!search.trim()) return [];
+    const q = search.toLowerCase();
+    return CHENNAI_SEARCH_INDEX.filter((item) => item.name.toLowerCase().includes(q) || item.type.toLowerCase().includes(q));
+  }, [search]);
+
+  // Execute Click-to-AOI Discovery via real APIs
+  const handleMapClickLocation = async (lat: number, lng: number) => {
+    const delta = aoiKm / 111;
+    const b = { xmin: lng - delta, xmax: lng + delta, ymin: lat - delta, ymax: lat + delta };
+    const area = {
+      id: `loc-${Date.now()}`,
+      name: `AOI (${lat.toFixed(3)}°N, ${lng.toFixed(3)}°E) • ${aoiKm}km`,
+      bounds: b,
+      center: [lng, lat] as [number, number],
+      lat,
+      lng,
+    };
+    setSelectedArea(area);
+    setClicked({ lat, lng });
+    setWorkflow("analyzing");
+    setAnalysis(null);
+
+    try {
+      // 1. Query location dataset counts
+      const queryRes = await fetch("/api/location/query", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ aoi: area, requestId: `ui-${Date.now()}` }),
+      }).then((r) => r.json());
+
+      // 2. Fetch location features summary
+      const featRes = await fetch("/api/location/features", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ aoi: area, datasets: ["buildings", "highway", "waterway", "chennai2015_hotspots"], limit: 500 }),
+      }).then((r) => r.json());
+
+      const bldCount = featRes.features?.buildings?.count ?? queryRes.summary?.buildings ?? 0;
+      const roadCount = featRes.features?.highway?.count ?? queryRes.summary?.roads ?? 0;
+      const hotCount = featRes.features?.chennai2015_hotspots?.count ?? queryRes.summary?.hotspots ?? 0;
+
+      setAnalysis({
+        buildings: bldCount,
+        roads: roadCount,
+        hotspots: hotCount,
+        elevMin: "1.8m",
+        elevMax: "14.2m",
+        coverage: hotCount > 0 ? "2015 GCC Flood Hotspots Detected" : "Standard Chennai Drainage Zone",
+      });
+      setWorkflow("preview");
+      pushToast(`Discovered ${bldCount} buildings and ${roadCount} roads in AOI`, "View 3D");
+    } catch (e) {
+      console.error(e);
+      setAnalysis({ buildings: 24, roads: 8, hotspots: 1, elevMin: "2m", elevMax: "12m", coverage: "Sample AOI" });
+      setWorkflow("preview");
+    }
+  };
+
+  // Switch active scenario
+  const handleLoadScenario = (sc: Scenario) => {
+    setActiveScenarioId(sc.id);
+    setRainfall(sc.P);
+    setCn(sc.CN);
+    setDuration(sc.duration);
+    setProject((p) => ({ ...p, scenario: sc.name }));
+    pushToast(`Loaded Scenario: ${sc.name} (P=${sc.P}mm, CN=${sc.CN})`);
+  };
+
+  // Export GeoJSON snapshot
+  const handleExportGeoJSON = () => {
+    const data = {
+      type: "FeatureCollection",
+      name: `FLOIN_${selectedArea.name.replace(/\s+/g, "_")}`,
+      properties: {
+        projectName: project.name,
+        rainfall_mm: rainfall,
+        curveNumber: cn,
+        runoff_mm: +Q.toFixed(2),
+        estimatedDepth_m: (Math.min(Q / 120, 1) * 2.2 * (0.3 + 0.7 * (duration / 100))).toFixed(2),
+        aoi: selectedArea,
+        timestamp: new Date().toISOString(),
+      },
+      features: [
+        {
+          type: "Feature",
+          properties: { name: "Study AOI Boundary", id: selectedArea.id },
+          geometry: {
+            type: "Polygon",
+            coordinates: [
+              [
+                [selectedArea.bounds.xmin, selectedArea.bounds.ymin],
+                [selectedArea.bounds.xmax, selectedArea.bounds.ymin],
+                [selectedArea.bounds.xmax, selectedArea.bounds.ymax],
+                [selectedArea.bounds.xmin, selectedArea.bounds.ymax],
+                [selectedArea.bounds.xmin, selectedArea.bounds.ymin],
+              ],
+            ],
+          },
+        },
+      ],
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `floin-simulation-${selectedArea.id || "chennai"}.geojson`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    pushToast("Exported GeoJSON flood simulation dataset");
+  };
+
+  // Export printable HTML report
+  const handleExportReport = () => {
+    const win = window.open("", "_blank");
+    if (!win) return;
+    const estDepth = (Math.min(Q / 120, 1) * 2.2 * (0.3 + 0.7 * (duration / 100))).toFixed(2);
+    win.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>FLOIN Flood Intelligence Report - ${project.name}</title>
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #fff; color: #111; padding: 32px; line-height: 1.5; }
+          h1 { color: #0284c7; margin-bottom: 4px; }
+          .header { border-bottom: 2px solid #0284c7; padding-bottom: 12px; margin-bottom: 24px; }
+          .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px; }
+          .card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+          th, td { border: 1px solid #e2e8f0; padding: 8px 12px; text-align: left; }
+          th { background: #f8fafc; font-weight: 600; }
+          .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+          .badge-high { background: #fee2e2; color: #991b1b; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>FLOIN - Chennai Flood Intelligence Report</h1>
+          <div><b>Project:</b> ${project.name} | <b>Location:</b> ${selectedArea.name}</div>
+          <div><b>Generated:</b> ${new Date().toLocaleString()}</div>
+        </div>
+        <div class="grid">
+          <div class="card">
+            <h3>Hydrological Simulation Summary</h3>
+            <p><b>Rainfall (P):</b> ${rainfall} mm</p>
+            <p><b>Curve Number (CN):</b> ${cn} (Soil/Imperviousness)</p>
+            <p><b>Duration:</b> ${duration} minutes</p>
+            <p><b>SCS Runoff Volume (Q):</b> ${Q.toFixed(2)} mm</p>
+            <p><b>Mean Flood Depth:</b> ${estDepth} m</p>
+          </div>
+          <div class="card">
+            <h3>Area of Interest Metrics</h3>
+            <p><b>Center:</b> ${selectedArea.center[1].toFixed(4)}°N, ${selectedArea.center[0].toFixed(4)}°E</p>
+            <p><b>Bounds:</b> ${selectedArea.bounds.xmin.toFixed(3)} - ${selectedArea.bounds.xmax.toFixed(3)}°E, ${selectedArea.bounds.ymin.toFixed(3)} - ${selectedArea.bounds.ymax.toFixed(3)}°N</p>
+            <p><b>Est. Affected Buildings:</b> ${Math.round(80 + +estDepth * 900)}</p>
+            <p><b>Historical Risk:</b> ${analysis?.coverage || "2015 GCC Flood Zone"}</p>
+          </div>
+        </div>
+        <h3>Comparative Scenario Table</h3>
+        <table>
+          <thead>
+            <tr><th>Scenario</th><th>Rainfall (mm)</th><th>CN</th><th>Runoff Q (mm)</th><th>Peak Depth</th><th>Risk</th></tr>
+          </thead>
+          <tbody>
+            ${scenarios
+              .map(
+                (s) => `
+              <tr>
+                <td><b>${s.name}</b></td>
+                <td>${s.P}</td>
+                <td>${s.CN}</td>
+                <td>${s.runoff}</td>
+                <td>${s.depth}</td>
+                <td><span class="badge ${s.P > 150 ? "badge-high" : ""}">${s.P > 150 ? "Severe" : "Moderate"}</span></td>
+              </tr>
+            `
+              )
+              .join("")}
+          </tbody>
+        </table>
+        <div style="margin-top: 32px; text-align: center; color: #64748b; font-size: 12px;">
+          Generated by FLOIN Flood Intelligence Platform • Powered by SRTM DEM + SCS-CN Hydrology
+        </div>
+      </body>
+      </html>
+    `);
+    win.document.close();
+    pushToast("Generated printable Flood Intelligence Report");
+  };
 
   const NavItem = ({ id, label, icon, badge }: any) => (
-    <button onClick={() => setActive(id)} className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 text-sm transition ${active === id ? "bg-[#12233a] text-cyan-300 border border-[#1e3a5a]" : "text-[#8aa0b8] hover:bg-[#0f1e2e] hover:text-white"}`}>
-      <span className="w-5 text-center">{icon}</span> {label} {badge && <span className="ml-auto text-xs bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full">{badge}</span>}
+    <button
+      onClick={() => setActive(id)}
+      className={`w-full text-left px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm transition ${
+        active === id ? "bg-[#12233a] text-cyan-300 border border-[#1e3a5a] font-semibold" : "text-[#8aa0b8] hover:bg-[#0f1e2e] hover:text-white"
+      }`}
+    >
+      <span className="w-5 text-center text-cyan-400">{icon}</span>
+      <span>{label}</span>
+      {badge && <span className="ml-auto text-xs bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full">{badge}</span>}
     </button>
   );
 
   return (
     <div className="min-h-screen bg-[#0a1018] text-[#e6eef8] flex">
+      {/* Left Navigation Sidebar */}
       <aside className="w-[280px] shrink-0 border-r border-[#1e3a5a] bg-[#0a1018] sticky top-0 h-screen flex flex-col hidden lg:flex">
         <div className="p-4 border-b border-[#1e3a5a]">
-          <div className="flex items-center gap-2 font-black tracking-widest"><span className="text-cyan-400">◈</span> FLOIN</div>
-          <div className="text-xs text-[#8aa0b8] mt-1">Chennai Flood Intelligence • 2026</div>
-          <div className="mt-3 p-2.5 rounded-lg bg-[#0f1e2e] border border-[#1e3a5a]">
-            <div className="text-xs text-[#8aa0b8]">Active Project</div>
-            <div className="font-semibold text-sm truncate">{project.name}</div>
-            <div className="text-xs text-[#8aa0b8]">{project.location} • {project.updated}</div>
+          <div className="flex items-center gap-2 font-black tracking-widest text-lg">
+            <span className="text-cyan-400">◈</span> FLOIN
+          </div>
+          <div className="text-xs text-[#8aa0b8] mt-1">Chennai Flood Intelligence System</div>
+          <div className="mt-3 p-2.5 rounded-xl bg-[#0f1e2e] border border-[#1e3a5a]">
+            <div className="text-[11px] text-[#8aa0b8]">Active Project</div>
+            <div className="font-semibold text-sm truncate text-cyan-300">{project.name}</div>
+            <div className="text-xs text-[#8aa0b8] mt-0.5">{selectedArea.name}</div>
           </div>
         </div>
+
         <div className="flex-1 overflow-y-auto p-3 space-y-4">
           <div>
-            <div className="text-xs font-bold tracking-widest text-[#8aa0b8] px-2 mb-2">WORKSPACE</div>
+            <div className="text-[10px] font-bold tracking-wider text-[#8aa0b8] px-2 mb-2">WORKSPACE</div>
             <div className="space-y-1">
               <NavItem id="home" label="Project Home" icon="▦" />
-              <NavItem id="data" label="Data Management" icon="🗃" badge="9" />
-              <NavItem id="modules" label="Modules 1-4" icon="◈" />
+              <NavItem id="data" label="Data Management" icon="🗃" badge="13" />
+              <NavItem id="modules" label="Hydrology Pipeline" icon="◈" />
             </div>
           </div>
+
           <div>
-            <div className="text-xs font-bold tracking-widest text-[#8aa0b8] px-2 mb-2">SIMULATION</div>
+            <div className="text-[10px] font-bold tracking-wider text-[#8aa0b8] px-2 mb-2">SIMULATION & MAPS</div>
             <div className="space-y-1">
+              <NavItem id="visualize" label="3D Flood Lab & Map" icon="🗺" badge="Live" />
               <NavItem id="simulate" label="Control Center" icon="▶" />
-              <NavItem id="visualize" label="2D / 3D Map" icon="🗺" />
               <NavItem id="impact" label="Impact Analysis" icon="◉" />
             </div>
           </div>
+
           <div>
-            <div className="text-xs font-bold tracking-widest text-[#8aa0b8] px-2 mb-2">ANALYSIS</div>
+            <div className="text-[10px] font-bold tracking-wider text-[#8aa0b8] px-2 mb-2">ANALYSIS & OUTPUT</div>
             <div className="space-y-1">
-              <NavItem id="scenarios" label="Scenarios" icon="≡" badge={`${scenarios.length}`} />
+              <NavItem id="scenarios" label="Scenarios & Compare" icon="≡" badge={`${scenarios.length}`} />
               <NavItem id="reports" label="Reports & Export" icon="⤓" />
-            </div>
-          </div>
-          <div>
-            <div className="text-xs font-bold tracking-widest text-[#8aa0b8] px-2 mb-2">WORKSPACE</div>
-            <div className="space-y-1">
               <NavItem id="bookmarks" label="Bookmarks" icon="☆" badge={`${bookmarks.length}`} />
               <NavItem id="settings" label="Settings" icon="⚙" />
             </div>
           </div>
         </div>
+
         <div className="p-3 border-t border-[#1e3a5a]">
-          <div className="text-xs text-[#8aa0b8]">Storage • 1,811 buildings • 8 stations</div>
-          <div className="w-full h-1.5 bg-[#0f1e2e] rounded-full mt-1"><div className="h-1.5 bg-cyan-500 rounded-full" style={{ width: "68%" }} /></div>
+          <div className="flex justify-between text-xs text-[#8aa0b8]">
+            <span>SRTM DEM + 2015 GCC</span>
+            <span className="text-emerald-400">Validated</span>
+          </div>
+          <div className="w-full h-1.5 bg-[#0f1e2e] rounded-full mt-1.5 overflow-hidden">
+            <div className="h-1.5 bg-cyan-500 rounded-full" style={{ width: "88%" }} />
+          </div>
         </div>
       </aside>
 
+      {/* Main Content Area */}
       <div className="flex-1 min-w-0 flex flex-col">
-        <header className="sticky top-0 z-30 backdrop-blur bg-[#0a1018]/80 border-b border-[#1e3a5a]">
+        {/* Top Header */}
+        <header className="sticky top-0 z-30 backdrop-blur bg-[#0a1018]/85 border-b border-[#1e3a5a]">
           <div className="flex items-center gap-3 px-4 py-3">
-            <div className="lg:hidden font-black"><span className="text-cyan-400">◈</span> FLOIN</div>
+            <div className="lg:hidden font-black text-cyan-400">◈ FLOIN</div>
             <div className="hidden sm:flex items-center gap-2 text-sm">
-              <span className="px-2.5 py-1 rounded-full bg-[#0f1e2e] border border-[#1e3a5a] text-xs">{project.scenario}</span>
+              <span className="px-2.5 py-1 rounded-full bg-[#0f1e2e] border border-[#1e3a5a] text-xs text-cyan-300 font-mono">
+                {project.scenario}
+              </span>
               <span className="text-[#8aa0b8]">•</span>
-              <span className={`text-xs px-2 py-1 rounded-full ${simRunning ? "bg-amber-500/20 text-amber-300" : "bg-emerald-500/20 text-emerald-300"}`}>{simRunning ? `Simulating ${simProgress}%` : project.status}</span>
+              <span className="text-xs text-[#8aa0b8]">
+                P: <b className="text-white">{rainfall}mm</b> | CN: <b className="text-white">{cn}</b> | Runoff Q:{" "}
+                <b className="text-cyan-300">{Q.toFixed(1)}mm</b>
+              </span>
             </div>
+
             <div className="ml-auto flex items-center gap-2">
+              {/* Search Bar */}
               <div className="relative hidden md:block">
-                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search buildings, roads, coordinates..." className="w-[280px] bg-[#0f1e2e] border border-[#1e3a5a] rounded-full px-4 py-2 text-sm placeholder:text-[#8aa0b8] focus:outline-none focus:border-cyan-500" />
-                {search && (
-                  <div className="absolute top-full mt-2 w-full bg-[#0f1e2e] border border-[#1e3a5a] rounded-xl p-2 text-sm">
-                    <div className="px-2 py-1.5 hover:bg-[#12233a] rounded cursor-pointer" onClick={() => { setSelected({ type: "building", name: "Ripon Building", depth: "0.42m", status: "Flooded" }); setSearch(""); pushToast("Focused Ripon Building", "View"); }}>Ripon Building • Building</div>
-                    <div className="px-2 py-1.5 hover:bg-[#12233a] rounded cursor-pointer">Anna Salai • Road</div>
-                    <div className="px-2 py-1.5 text-xs text-[#8aa0b8]">Press Enter to search all</div>
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search landmarks, stations, roads..."
+                  className="w-[280px] bg-[#0f1e2e] border border-[#1e3a5a] rounded-full px-4 py-1.5 text-xs placeholder:text-[#8aa0b8] focus:outline-none focus:border-cyan-500"
+                />
+                {searchResults.length > 0 && (
+                  <div className="absolute top-full mt-2 w-full bg-[#0f1e2e] border border-[#1e3a5a] rounded-xl p-2 text-xs shadow-2xl z-50 max-h-60 overflow-y-auto">
+                    {searchResults.map((item) => (
+                      <div
+                        key={item.name}
+                        onClick={() => {
+                          const delta = aoiKm / 111;
+                          setSelectedArea({
+                            id: `search-${item.name.toLowerCase().replace(/\s+/g, "-")}`,
+                            name: item.name,
+                            bounds: { xmin: item.coords[0] - delta, xmax: item.coords[0] + delta, ymin: item.coords[1] - delta, ymax: item.coords[1] + delta },
+                            center: item.coords as [number, number],
+                          });
+                          setSelectedObject({ name: item.name, type: item.type, depth: "0.48m", status: "Medium" });
+                          setSearch("");
+                          setActive("visualize");
+                          pushToast(`Focused ${item.name} in 3D`);
+                        }}
+                        className="px-2.5 py-1.5 hover:bg-[#12233a] rounded-lg cursor-pointer flex justify-between items-center"
+                      >
+                        <span className="font-semibold text-white truncate">{item.name}</span>
+                        <span className="text-[10px] text-[#8aa0b8] ml-2">{item.type}</span>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
-              <button onClick={() => pushToast("Project saved")} className="hidden sm:inline-flex px-3 py-2 rounded-full bg-cyan-500 text-[#001018] text-sm font-semibold">Save</button>
-              <button onClick={() => pushToast("Export started", "Open")} className="px-3 py-2 rounded-full border border-[#1e3a5a] text-sm">Export</button>
+
+              <button onClick={() => pushToast("Project checkpoint saved")} className="hidden sm:inline-flex px-3.5 py-1.5 rounded-full bg-cyan-500 text-black text-xs font-bold hover:bg-cyan-400">
+                Save
+              </button>
+              <button onClick={handleExportGeoJSON} className="px-3.5 py-1.5 rounded-full border border-[#1e3a5a] text-xs hover:bg-[#12233a]">
+                Export GeoJSON
+              </button>
             </div>
           </div>
-          <div className="flex lg:hidden gap-1 px-2 pb-2 overflow-x-auto">
-            {["home", "data", "modules", "simulate", "visualize", "impact", "scenarios"].map((k) => (
-              <button key={k} onClick={() => setActive(k)} className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap ${active === k ? "bg-cyan-500 text-black" : "bg-[#0f1e2e] border border-[#1e3a5a]"}`}>{k}</button>
+
+          {/* Mobile Tab Bar */}
+          <div className="flex lg:hidden gap-1 px-2 pb-2 overflow-x-auto border-t border-[#1e3a5a]/50 pt-2">
+            {["home", "visualize", "simulate", "impact", "scenarios", "data", "reports"].map((k) => (
+              <button
+                key={k}
+                onClick={() => setActive(k)}
+                className={`px-3 py-1 rounded-full text-xs capitalize whitespace-nowrap ${
+                  active === k ? "bg-cyan-500 text-black font-semibold" : "bg-[#0f1e2e] border border-[#1e3a5a]"
+                }`}
+              >
+                {k === "visualize" ? "3D & Map" : k}
+              </button>
             ))}
           </div>
         </header>
 
+        {/* Content Body */}
         <main className="flex-1 p-4 lg:p-6 space-y-6">
+          {/* 1. PROJECT HOME */}
           {active === "home" && (
-            <>
+            <div className="space-y-5">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <h1 className="text-2xl font-extrabold">Project Workspace</h1>
-                  <p className="text-sm text-[#8aa0b8]">Create, open and manage flood studies. Your progress is saved automatically.</p>
+                  <h1 className="text-2xl font-extrabold tracking-tight">Chennai Flood Intelligence Workspace</h1>
+                  <p className="text-sm text-[#8aa0b8] mt-1">
+                    Integrated high-resolution flood simulation platform combining SRTM DEM, 2015 GCC historical inundation data, and SCS-CN hydrology.
+                  </p>
                 </div>
-                <button onClick={() => pushToast("New project created")} className="px-4 py-2 rounded-full bg-cyan-500 text-black font-semibold text-sm">+ New Project</button>
+                <button
+                  onClick={() => {
+                    const newProj: Project = {
+                      id: `p${Date.now()}`,
+                      name: `New Flood Study ${projects.length + 1}`,
+                      location: "Chennai, TN",
+                      area: "80.10-80.35 / 12.88-13.25",
+                      updated: "Just now",
+                      status: "Ready",
+                      scenario: "Monsoon Base",
+                      runs: 0,
+                      scenarios: 1,
+                      center: [80.225, 13.065],
+                    };
+                    setProjects([newProj, ...projects]);
+                    setProject(newProj);
+                    pushToast("Created new flood study project");
+                  }}
+                  className="px-4 py-2 rounded-full bg-cyan-500 text-black font-semibold text-xs"
+                >
+                  + New Study
+                </button>
               </div>
 
               <div className="grid lg:grid-cols-3 gap-4">
                 <div className="lg:col-span-2 bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-bold">Recent Projects</h3>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-bold text-sm text-cyan-300">Recent Projects</h3>
                     <span className="text-xs text-[#8aa0b8]">{projects.length} projects</span>
                   </div>
-                  <div className="mt-3 grid sm:grid-cols-2 gap-3">
+                  <div className="grid sm:grid-cols-2 gap-3">
                     {projects.map((p) => (
-                      <div key={p.id} onClick={() => setProject(p)} className={`p-3 rounded-xl border cursor-pointer transition ${project.id === p.id ? "bg-[#12233a] border-cyan-500/50" : "bg-[#0a1018] border-[#1e3a5a] hover:border-cyan-500/30"}`}>
-                        <div className="font-semibold text-sm truncate">{p.name}</div>
-                        <div className="text-xs text-[#8aa0b8]">{p.location} • {p.area}</div>
-                        <div className="flex gap-2 mt-2">
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-[#0f1e2e] border border-[#1e3a5a]">{p.status}</span>
-                          <span className="text-xs text-[#8aa0b8]">{p.scenarios} scenarios • {p.runs} runs</span>
-                        </div>
-                        <div className="flex gap-2 mt-3">
-                          <button onClick={(e) => { e.stopPropagation(); pushToast(`Duplicated ${p.name}`); }} className="text-xs px-2 py-1 rounded-full border border-[#1e3a5a]">Duplicate</button>
-                          <button onClick={(e) => { e.stopPropagation(); if (confirm(`Delete ${p.name}?`)) setProjects((x) => x.filter((y) => y.id !== p.id)); }} className="text-xs px-2 py-1 rounded-full border border-red-900 text-red-300">Delete</button>
+                      <div
+                        key={p.id}
+                        onClick={() => {
+                          setProject(p);
+                          pushToast(`Switched active project to ${p.name}`);
+                        }}
+                        className={`p-3.5 rounded-xl border cursor-pointer transition ${
+                          project.id === p.id ? "bg-[#12233a] border-cyan-500/60 shadow-lg" : "bg-[#0a1018] border-[#1e3a5a] hover:border-cyan-500/40"
+                        }`}
+                      >
+                        <div className="font-bold text-sm truncate text-white">{p.name}</div>
+                        <div className="text-xs text-[#8aa0b8] mt-1">{p.location} • {p.area}</div>
+                        <div className="flex gap-2 mt-3 items-center">
+                          <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#0f1e2e] border border-[#1e3a5a] text-cyan-300">{p.scenario}</span>
+                          <span className="text-[11px] text-[#8aa0b8]">{p.runs} simulation runs</span>
                         </div>
                       </div>
                     ))}
-                    {projects.length === 0 && <div className="col-span-2 py-10 text-center border border-dashed border-[#1e3a5a] rounded-xl text-[#8aa0b8]">No projects yet — create your first flood study to begin.</div>}
                   </div>
                 </div>
 
-                <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-4">
-                  <h3 className="font-bold">Current Project</h3>
-                  <div className="mt-3 space-y-2 text-sm">
-                    <div className="flex justify-between"><span className="text-[#8aa0b8]">Name</span><span className="font-medium">{project.name}</span></div>
-                    <div className="flex justify-between"><span className="text-[#8aa0b8]">Location</span><span>{project.location}</span></div>
-                    <div className="flex justify-between"><span className="text-[#8aa0b8]">Area</span><span className="text-xs">{project.area}</span></div>
-                    <div className="flex justify-between"><span className="text-[#8aa0b8]">Scenario</span><span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-xs">{project.scenario}</span></div>
-                    <div className="flex justify-between"><span className="text-[#8aa0b8]">Updated</span><span>{project.updated}</span></div>
-                  </div>
-                  <div className="mt-4">
-                    <div className="text-xs text-[#8aa0b8] mb-1">Workflow Progress</div>
-                    <div className="grid grid-cols-4 gap-1 text-xs">
-                      {["Collect", "Preprocess", "Store", "Simulate"].map((s, i) => (
-                        <div key={s} className={`p-2 rounded-lg text-center ${i < 3 ? "bg-emerald-500/20 text-emerald-300" : "bg-amber-500/20 text-amber-300"}`}>{s}<div className="text-[10px]">{i < 3 ? "Done" : "Active"}</div></div>
-                      ))}
-                    </div>
-                  </div>
-                  <button onClick={() => setActive("visualize")} className="w-full mt-4 py-2 rounded-full bg-cyan-500 text-black font-semibold text-sm">Continue in 3D →</button>
-                </div>
-              </div>
-
-              <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-4">
-                <h3 className="font-bold">Quick Actions</h3>
-                <div className="grid sm:grid-cols-4 gap-3 mt-3">
-                  {[
-                    { t: "Upload Data", d: "Terrain, rainfall, OSM", a: "data" },
-                    { t: "Run Simulation", d: "SCS-CN + D8", a: "simulate" },
-                    { t: "Visualize Flood", d: "2D / 3D + layers", a: "visualize" },
-                    { t: "Generate Report", d: "PDF + export", a: "reports" },
-                  ].map((x) => (
-                    <button key={x.t} onClick={() => setActive(x.a)} className="p-3 rounded-xl bg-[#0a1018] border border-[#1e3a5a] text-left hover:border-cyan-500/40">
-                      <div className="font-semibold text-sm">{x.t}</div>
-                      <div className="text-xs text-[#8aa0b8]">{x.d}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-
-          {active === "data" && (
-            <div className="space-y-4">
-              <div>
-                <h1 className="text-2xl font-extrabold">Data Management</h1>
-                <p className="text-sm text-[#8aa0b8]">Import, validate and manage all layers for this project.</p>
-              </div>
-
-              <div className="grid lg:grid-cols-3 gap-4">
-                <div className="lg:col-span-2 space-y-4">
-                  <div className="bg-[#0f1e2e] border-2 border-dashed border-[#1e3a5a] rounded-2xl p-6 text-center">
-                    <div className="text-3xl">⬆</div>
-                    <div className="font-semibold mt-2">Drag & drop files here</div>
-                    <div className="text-xs text-[#8aa0b8]">GeoTIFF, GeoJSON, CSV, SHP • 9 files already loaded</div>
-                    <div className="flex gap-2 justify-center mt-3">
-                      <label className="px-4 py-2 rounded-full bg-cyan-500 text-black text-sm font-semibold cursor-pointer">
-                        Browse Files<input type="file" className="hidden" multiple onChange={(e) => pushToast(`${e.target.files?.length || 0} files selected for upload`)} />
-                      </label>
-                      <button onClick={() => pushToast("Connected sample Chennai data")} className="px-4 py-2 rounded-full border border-[#1e3a5a] text-sm">Use Sample Data</button>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl overflow-hidden">
-                    <div className="p-3 font-bold border-b border-[#1e3a5a]">Datasets • 9 files</div>
-                    <div className="divide-y divide-[#1e3a5a]">
-                      {[
-                        { name: "DEM.tif", type: "GeoTIFF", size: "5.94 MB", crs: "EPSG:4326", status: "Valid" },
-                        { name: "buildings.geojson", type: "GeoJSON", size: "2.8 MB", crs: "CRS84", status: "Valid" },
-                        { name: "rainfall_stations.geojson", type: "GeoJSON", size: "2 KB", crs: "CRS84", status: "Valid" },
-                        { name: "highway.geojson", type: "GeoJSON", size: "26 KB", crs: "CRS84", status: "Valid" },
-                        { name: "custom_upload.shp", type: "SHP", size: "—", crs: "—", status: "Missing CRS" },
-                      ].map((f) => (
-                        <div key={f.name} className="p-3 flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-[#0a1018] border border-[#1e3a5a] grid place-items-center text-xs">{f.type[0]}</div>
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-sm truncate">{f.name}</div>
-                            <div className="text-xs text-[#8aa0b8]">{f.type} • {f.size} • {f.crs}</div>
-                          </div>
-                          <span className={`text-xs px-2 py-1 rounded-full border ${f.status === "Valid" ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" : "bg-amber-500/20 text-amber-300 border-amber-500/30"}`}>{f.status}</span>
-                          <button onClick={() => pushToast(`Previewing ${f.name}`)} className="text-xs px-2 py-1 rounded-full border border-[#1e3a5a]">Preview</button>
-                          <button onClick={() => pushToast(`Removed ${f.name}`)} className="text-xs px-2 py-1 rounded-full border border-red-900 text-red-300">Remove</button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-4">
-                    <h4 className="font-bold">Validation</h4>
-                    <div className="mt-2 space-y-2 text-sm">
-                      <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30">✓ 4 rasters valid • 9 vectors valid</div>
-                      <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30">⚠ custom_upload.shp — Missing CRS. <button onClick={() => pushToast("Set CRS to EPSG:4326")} className="underline">Fix</button>: assign EPSG:4326.</div>
-                      <div className="p-2 rounded-lg bg-[#0a1018] border border-[#1e3a5a]">Bounds 80.10/12.88 — 80.35/13.25 • All layers overlap.</div>
-                    </div>
-                  </div>
-                  <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-4">
-                    <h4 className="font-bold">Quick Preview</h4>
-                    <div className="flex gap-1.5 mb-2 flex-wrap">
-                      {AREAS.map((a) => (
-                        <button key={a.id} onClick={() => { setSelectedArea(a); pushToast(`Focus: ${a.name}`, "View 3D"); setActive("visualize"); }} className={`px-2.5 py-1 rounded-full text-xs border ${selectedArea.id === a.id ? "bg-cyan-500 text-black border-transparent" : "bg-[#0a1018] border-[#1e3a5a] text-[#8aa0b8]"}`}>{a.name}</button>
-                      ))}
-                    </div>
-                    <div className="mt-2 h-[220px] rounded-xl overflow-hidden border border-[#1e3a5a]"><ChennaiMap selectedArea={selectedArea} onSelectArea={(a:any)=>{ const found=AREAS.find(x=>x.id===a.id); if(found) setSelectedArea(found); }} onSelectFeature={(f:any)=>{ setSelected(f); pushToast(`Selected ${f.name||f.type}`); }} /></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {active === "modules" && (
-            <div className="space-y-4">
-              <h1 className="text-2xl font-extrabold">Modules 1-4</h1>
-              <p className="text-sm text-[#8aa0b8]">Each module has its own inputs, parameters and outputs. Run them in order.</p>
-              <div className="grid lg:grid-cols-2 gap-4">
-                {[
-                  { id: "m1", name: "Module 1: Collect", desc: "SRTM DEM, IMD rainfall, OSM", inputs: "9 vectors + 5 rasters", status: "Done • 1811 buildings", action: "Re-validate" },
-                  { id: "m2", name: "Module 2: Preprocess", desc: "CRS align, clean, terrain", inputs: "QGIS-equivalent", status: "Done • 8/8 stations", action: "Re-run" },
-                  { id: "m3", name: "Module 3: Store", desc: "PostGIS geometry + raster", inputs: "docker-compose.yml", status: "Ready • 10 tables", action: "Load" },
-                  { id: "m4", name: "Module 4: Simulate", desc: "SCS-CN + D8 + depth", inputs: "P, CN, t", status: "Ready • Q 63mm", action: "Simulate" },
-                ].map((m) => (
-                  <div key={m.id} className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-4">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="font-bold">{m.name}</div>
-                        <div className="text-xs text-[#8aa0b8]">{m.desc} • {m.inputs}</div>
+                <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-4 flex flex-col justify-between">
+                  <div>
+                    <h3 className="font-bold text-sm text-cyan-300">Active Study Parameters</h3>
+                    <div className="mt-3 space-y-2 text-xs">
+                      <div className="flex justify-between py-1 border-b border-[#1e3a5a]/60">
+                        <span className="text-[#8aa0b8]">Rainfall Input</span>
+                        <span className="font-mono font-bold text-white">{rainfall} mm</span>
                       </div>
-                      <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-300">{m.status}</span>
+                      <div className="flex justify-between py-1 border-b border-[#1e3a5a]/60">
+                        <span className="text-[#8aa0b8]">Curve Number (CN)</span>
+                        <span className="font-mono font-bold text-white">{cn}</span>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-[#1e3a5a]/60">
+                        <span className="text-[#8aa0b8]">Runoff Volume (Q)</span>
+                        <span className="font-mono font-bold text-cyan-300">{Q.toFixed(1)} mm</span>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-[#1e3a5a]/60">
+                        <span className="text-[#8aa0b8]">Target Area</span>
+                        <span className="font-semibold text-white">{selectedArea.name}</span>
+                      </div>
                     </div>
-                    <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
-                      <label className="space-y-1"><span className="text-[#8aa0b8]">Parameter A</span><input defaultValue="78" className="w-full bg-[#0a1018] border border-[#1e3a5a] rounded px-2 py-1" /><span className="text-[10px] text-[#8aa0b8]">Range 30-98 • Default 78</span></label>
-                      <label className="space-y-1"><span className="text-[#8aa0b8]">Threshold</span><input defaultValue="0.15" className="w-full bg-[#0a1018] border border-[#1e3a5a] rounded px-2 py-1" /><span className="text-[10px] text-[#8aa0b8]">Depth &gt; 0.15m = flooded</span></label>
-                    </div>
-                    <div className="flex gap-2 mt-3">
-                      <button onClick={() => pushToast(`${m.name} started`)} className="px-3 py-1.5 rounded-full bg-cyan-500 text-black text-xs font-semibold">{m.action}</button>
-                      <button onClick={() => pushToast("Parameters reset")} className="px-3 py-1.5 rounded-full border border-[#1e3a5a] text-xs">Reset</button>
-                      <button onClick={() => pushToast("Preset saved")} className="px-3 py-1.5 rounded-full border border-[#1e3a5a] text-xs">Save Preset</button>
-                    </div>
-                    <div className="mt-3 text-xs text-[#8aa0b8]">History: 3 runs • Last run Today 09:24 • <button onClick={() => pushToast("History opened")} className="underline">View</button></div>
                   </div>
+                  <button
+                    onClick={() => setActive("visualize")}
+                    className="w-full mt-4 py-2.5 rounded-full bg-cyan-500 text-black font-bold text-xs hover:bg-cyan-400 transition"
+                  >
+                    Open in 3D Flood Lab →
+                  </button>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="grid sm:grid-cols-4 gap-3">
+                {[
+                  { t: "3D Click-to-Simulate", d: "Interactive terrain & 2015 hotspots", a: "visualize" },
+                  { t: "Simulation Control", d: "SCS runoff & 6-hr progression", a: "simulate" },
+                  { t: "Impact Analysis", d: "Asset vulnerability & risk zones", a: "impact" },
+                  { t: "Export & Reports", d: "GeoJSON, CSV & printable PDF", a: "reports" },
+                ].map((x) => (
+                  <button
+                    key={x.t}
+                    onClick={() => setActive(x.a)}
+                    className="p-3.5 rounded-xl bg-[#0f1e2e] border border-[#1e3a5a] text-left hover:border-cyan-500/40 transition group"
+                  >
+                    <div className="font-bold text-sm text-white group-hover:text-cyan-300">{x.t}</div>
+                    <div className="text-xs text-[#8aa0b8] mt-1">{x.d}</div>
+                  </button>
                 ))}
               </div>
             </div>
           )}
 
+          {/* 2. VISUALIZE & CLICK-TO-SIMULATE (3D + MAP) */}
+          {active === "visualize" && (
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h1 className="text-2xl font-extrabold">3D Flood Lab & Click-to-Simulate</h1>
+                  <p className="text-xs text-[#8aa0b8]">
+                    Click anywhere in Chennai to generate a localized 3D simulation with accurate DEM elevation, buildings, roads, and 2015 flood overlays.
+                  </p>
+                </div>
+                <div className="flex gap-1.5 items-center bg-[#0f1e2e] p-1 rounded-full border border-[#1e3a5a]">
+                  <span className="text-xs text-[#8aa0b8] px-2">AOI Box:</span>
+                  {[0.5, 1, 1.5, 2.5].map((km) => (
+                    <button
+                      key={km}
+                      onClick={() => {
+                        setAoiKm(km);
+                        pushToast(`AOI Size set to ${km}km`);
+                      }}
+                      className={`px-2.5 py-1 rounded-full text-xs ${
+                        aoiKm === km ? "bg-cyan-500 text-black font-bold" : "text-[#8aa0b8] hover:text-white"
+                      }`}
+                    >
+                      {km}km
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Preset Area Fast-Switch Bar */}
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {AREAS.map((a) => (
+                  <button
+                    key={a.id}
+                    onClick={() => {
+                      setSelectedArea(a);
+                      setClicked({ lat: a.center[1], lng: a.center[0] });
+                      pushToast(`Selected ${a.name}`);
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap border transition ${
+                      selectedArea.id === a.id ? "bg-cyan-500 text-black font-bold border-cyan-500" : "bg-[#0f1e2e] border-[#1e3a5a] text-[#8aa0b8] hover:text-white"
+                    }`}
+                  >
+                    {a.name}
+                  </button>
+                ))}
+              </div>
+
+              {/* Main 3D & 2D Layout */}
+              <div className="grid lg:grid-cols-12 gap-4">
+                {/* 3D Scene (7 cols) */}
+                <div className="lg:col-span-7 bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-3 flex flex-col">
+                  <div className="flex justify-between items-center mb-2 px-1">
+                    <span className="text-xs font-bold tracking-wider text-cyan-300">
+                      3D SIMULATION ENGINE • {selectedArea.name}
+                    </span>
+                    <span className="text-[11px] font-mono text-[#8aa0b8]">
+                      Rain: {rainfall}mm | CN: {cn}
+                    </span>
+                  </div>
+                  <FloodSimulation
+                    selectedArea={selectedArea}
+                    rainfall={rainfall}
+                    cn={cn}
+                    duration={duration}
+                    layers={layers}
+                    onSelectObject={(obj) => {
+                      setSelectedObject(obj);
+                      pushToast(`Inspecting: ${obj.name}`);
+                    }}
+                  />
+                </div>
+
+                {/* 2D Leaflet Map & Info (5 cols) */}
+                <div className="lg:col-span-5 space-y-4">
+                  <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-3">
+                    <div className="flex justify-between items-center mb-2 px-1">
+                      <span className="text-xs font-bold tracking-wider text-[#8aa0b8]">
+                        INTERACTIVE CHENNAI MAP (CLICK TO FOCUS)
+                      </span>
+                      <span className="text-[11px] text-cyan-300">Leaflet 2D</span>
+                    </div>
+                    <ChennaiMap
+                      selectedArea={selectedArea}
+                      aoiSizeKm={aoiKm}
+                      onMapClick={handleMapClickLocation}
+                      onSelectArea={(a) => setSelectedArea(a)}
+                      onSelectFeature={(f) => {
+                        setSelectedObject(f);
+                        pushToast(`Selected ${f.name}`);
+                      }}
+                    />
+                  </div>
+
+                  {/* Selected Object Inspector */}
+                  <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="text-xs font-bold tracking-wider text-cyan-300">FEATURE INSPECTOR</h4>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-mono">
+                        {selectedObject?.type || "Asset"}
+                      </span>
+                    </div>
+                    <div className="text-sm font-bold text-white mb-2">{selectedObject?.name}</div>
+                    <div className="grid grid-cols-3 gap-2 text-xs">
+                      <div className="p-2 rounded-lg bg-[#0a1018] border border-[#1e3a5a]">
+                        <div className="text-[#8aa0b8] text-[10px]">Est. Water Depth</div>
+                        <div className="font-bold text-amber-300 font-mono mt-0.5">{selectedObject?.depth || "0.45m"}</div>
+                      </div>
+                      <div className="p-2 rounded-lg bg-[#0a1018] border border-[#1e3a5a]">
+                        <div className="text-[#8aa0b8] text-[10px]">Flow Velocity</div>
+                        <div className="font-bold text-cyan-300 font-mono mt-0.5">{selectedObject?.velocity || "0.4 m/s"}</div>
+                      </div>
+                      <div className="p-2 rounded-lg bg-[#0a1018] border border-[#1e3a5a]">
+                        <div className="text-[#8aa0b8] text-[10px]">Risk Tier</div>
+                        <div className="font-bold text-red-400 font-mono mt-0.5">{selectedObject?.risk || "Moderate"}</div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setBookmarks((b) => [...b, { name: selectedObject.name, type: selectedObject.type, coords: selectedArea.center }]);
+                        pushToast(`Bookmarked ${selectedObject.name}`);
+                      }}
+                      className="w-full mt-3 py-1.5 rounded-full border border-[#1e3a5a] text-xs hover:bg-[#12233a] transition"
+                    >
+                      ★ Bookmark this Asset
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 3. SIMULATION CONTROL CENTER */}
           {active === "simulate" && (
             <div className="space-y-4">
               <h1 className="text-2xl font-extrabold">Simulation Control Center</h1>
               <div className="grid lg:grid-cols-3 gap-4">
                 <div className="lg:col-span-2 space-y-4">
+                  {/* Parameter Sliders */}
                   <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-4">
-                    <h3 className="font-bold">Rainfall Input</h3>
-                    <div className="grid sm:grid-cols-3 gap-3 mt-3">
-                      <label className="space-y-1 text-sm"><span className="text-[#8aa0b8]">Rainfall P (mm)</span><input type="number" value={rainfall} onChange={(e) => setRainfall(+e.target.value)} className="w-full bg-[#0a1018] border border-[#1e3a5a] rounded px-2 py-1.5" /></label>
-                      <label className="space-y-1 text-sm"><span className="text-[#8aa0b8]">CN (Urban Density)</span><input type="number" value={cn} onChange={(e) => setCn(+e.target.value)} className="w-full bg-[#0a1018] border border-[#1e3a5a] rounded px-2 py-1.5" /></label>
-                      <label className="space-y-1 text-sm"><span className="text-[#8aa0b8]">Duration</span><select className="w-full bg-[#0a1018] border border-[#1e3a5a] rounded px-2 py-1.5"><option>3h Peak</option><option>6h</option><option>24h</option></select></label>
-                    </div>
-                    <div className="flex gap-2 mt-3">
-                      <button onClick={() => pushToast("Historical 2015 event loaded")} className="text-xs px-3 py-1.5 rounded-full border border-[#1e3a5a]">Load Historical 2015</button>
-                      <button onClick={() => pushToast("Custom rainfall uploaded")} className="text-xs px-3 py-1.5 rounded-full border border-[#1e3a5a]">Upload CSV</button>
-                      <span className="text-xs text-[#8aa0b8] self-center">Runoff Q ~ {(rainfall > 14 ? ((rainfall - 14) ** 2 / (rainfall + 56)).toFixed(1) : 0)} mm</span>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-bold">Simulation</h3>
-                      <span className={`text-xs px-2 py-1 rounded-full ${simRunning ? "bg-amber-500/20 text-amber-300" : "bg-emerald-500/20 text-emerald-300"}`}>{simRunning ? "Running" : "Idle"}</span>
-                    </div>
-                    <div className="mt-3 space-y-2">
-                      <div className="flex gap-2">
-                        <button onClick={() => setSimRunning(true)} className="px-4 py-2 rounded-full bg-cyan-500 text-black text-sm font-semibold">Start</button>
-                        <button onClick={() => setSimRunning(false)} className="px-4 py-2 rounded-full border border-[#1e3a5a] text-sm">Pause</button>
-                        <button onClick={() => { setSimRunning(false); setSimProgress(0); }} className="px-4 py-2 rounded-full border border-[#1e3a5a] text-sm">Stop</button>
-                        <button onClick={() => { setSimProgress(0); setSimRunning(true); }} className="px-4 py-2 rounded-full border border-[#1e3a5a] text-sm">Restart</button>
+                    <h3 className="font-bold text-sm text-cyan-300 mb-3">Hydrology Model Parameters (SCS-CN)</h3>
+                    <div className="grid sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="text-xs text-[#8aa0b8] flex justify-between">
+                          <span>Rainfall P</span>
+                          <span className="font-mono text-cyan-300 font-bold">{rainfall} mm</span>
+                        </label>
+                        <input
+                          type="range"
+                          min={20}
+                          max={350}
+                          value={rainfall}
+                          onChange={(e) => setRainfall(+e.target.value)}
+                          className="w-full accent-cyan-500 mt-2"
+                        />
                       </div>
                       <div>
-                        <div className="flex justify-between text-xs text-[#8aa0b8]"><span>Progress</span><span>{simProgress}%</span></div>
-                        <div className="w-full h-2 bg-[#0a1018] rounded-full mt-1"><div className="h-2 bg-cyan-500 rounded-full transition-all" style={{ width: `${simProgress}%` }} /></div>
-                        <div className="flex justify-between text-xs text-[#8aa0b8] mt-1"><span>Stage: Routing</span><span>~{Math.max(0, 60 - simProgress)}s left • 2,340 cells</span></div>
+                        <label className="text-xs text-[#8aa0b8] flex justify-between">
+                          <span>Curve Number (CN)</span>
+                          <span className="font-mono text-cyan-300 font-bold">{cn}</span>
+                        </label>
+                        <input
+                          type="range"
+                          min={45}
+                          max={98}
+                          value={cn}
+                          onChange={(e) => setCn(+e.target.value)}
+                          className="w-full accent-cyan-500 mt-2"
+                        />
                       </div>
-                      {!simRunning && simProgress === 45 && <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs">No simulation running — click Start to begin.</div>}
+                      <div>
+                        <label className="text-xs text-[#8aa0b8] flex justify-between">
+                          <span>Storm Duration</span>
+                          <span className="font-mono text-cyan-300 font-bold">{duration} min</span>
+                        </label>
+                        <input
+                          type="range"
+                          min={15}
+                          max={180}
+                          value={duration}
+                          onChange={(e) => setDuration(+e.target.value)}
+                          className="w-full accent-cyan-500 mt-2"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-4 p-3 rounded-xl bg-[#0a1018] border border-[#1e3a5a] grid sm:grid-cols-3 gap-3 text-xs">
+                      <div>
+                        <span className="text-[#8aa0b8]">Storage Potential S:</span>
+                        <div className="font-mono font-bold text-white mt-0.5">{S.toFixed(1)} mm</div>
+                      </div>
+                      <div>
+                        <span className="text-[#8aa0b8]">Initial Abstraction Ia:</span>
+                        <div className="font-mono font-bold text-white mt-0.5">{Ia.toFixed(1)} mm</div>
+                      </div>
+                      <div>
+                        <span className="text-[#8aa0b8]">Direct Runoff Q:</span>
+                        <div className="font-mono font-bold text-cyan-300 mt-0.5">{Q.toFixed(1)} mm</div>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="grid sm:grid-cols-3 gap-3">
-                    {[
-                      { k: "Flow Direction", v: "D8 enabled", on: layers.flowDir },
-                      { k: "Flow Accumulation", v: "Convergence visible", on: layers.flowAcc },
-                      { k: "Flood Depth", v: "0.42m mean", on: layers.depth },
-                    ].map((x) => (
-                      <div key={x.k} className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-xl p-3">
-                        <div className="font-semibold text-sm">{x.k}</div>
-                        <div className="text-xs text-[#8aa0b8]">{x.v}</div>
-                        <button onClick={() => setLayers((l) => ({ ...l, [x.k === "Flow Direction" ? "flowDir" : x.k === "Flow Accumulation" ? "flowAcc" : "depth"]: !x.on }))} className={`mt-2 text-xs px-2 py-1 rounded-full border ${x.on ? "bg-cyan-500 text-black" : "border-[#1e3a5a]"}`}>{x.on ? "Disable" : "Enable"} layer</button>
-                      </div>
-                    ))}
+                  {/* Simulation Execution & Presets */}
+                  <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-4">
+                    <h3 className="font-bold text-sm text-cyan-300 mb-3">Historical Calibration Presets</h3>
+                    <div className="grid sm:grid-cols-3 gap-3">
+                      <button
+                        onClick={() => {
+                          setRainfall(240);
+                          setCn(86);
+                          setDuration(90);
+                          pushToast("Loaded 2015 Historical Chennai Extreme Monsoon Event");
+                        }}
+                        className="p-3 rounded-xl bg-[#0a1018] border border-[#1e3a5a] text-left hover:border-cyan-500/50 transition"
+                      >
+                        <div className="font-bold text-xs text-white">2015 GCC Extreme (Peak)</div>
+                        <div className="text-[11px] text-[#8aa0b8] mt-1">240mm • CN 86 • Severe Flood</div>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setRainfall(140);
+                          setCn(80);
+                          setDuration(45);
+                          pushToast("Loaded 50-Year Design Storm");
+                        }}
+                        className="p-3 rounded-xl bg-[#0a1018] border border-[#1e3a5a] text-left hover:border-cyan-500/50 transition"
+                      >
+                        <div className="font-bold text-xs text-white">50-Year Design Storm</div>
+                        <div className="text-[11px] text-[#8aa0b8] mt-1">140mm • CN 80 • High Inundation</div>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setRainfall(65);
+                          setCn(75);
+                          setDuration(30);
+                          pushToast("Loaded Moderate Monsoon Scenario");
+                        }}
+                        className="p-3 rounded-xl bg-[#0a1018] border border-[#1e3a5a] text-left hover:border-cyan-500/50 transition"
+                      >
+                        <div className="font-bold text-xs text-white">Moderate Monsoon Shower</div>
+                        <div className="text-[11px] text-[#8aa0b8] mt-1">65mm • CN 75 • Low Risk</div>
+                      </button>
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-4">
-                    <h4 className="font-bold">Time Control</h4>
-                    <div className="flex items-center gap-2 mt-3">
-                      <button onClick={() => setT((t) => Math.max(0, t - 5))} className="w-8 h-8 rounded-full border border-[#1e3a5a]">◀</button>
-                      <button onClick={() => setSimRunning(!simRunning)} className="flex-1 py-2 rounded-full bg-cyan-500 text-black font-semibold">{simRunning ? "Pause" : "Play"}</button>
-                      <button onClick={() => setT((t) => Math.min(100, t + 5))} className="w-8 h-8 rounded-full border border-[#1e3a5a]">▶</button>
-                    </div>
-                    <input type="range" min={0} max={100} value={t} onChange={(e) => setT(+e.target.value)} className="w-full mt-3" />
-                    <div className="flex justify-between text-xs text-[#8aa0b8]"><span>Start</span><span>Peak</span><span>End</span></div>
-                    <div className="flex gap-1 mt-2">
-                      {["1x", "2x", "4x"].map((s) => (
-                        <button key={s} onClick={() => setTimeSpeed(s === "1x" ? 1 : s === "2x" ? 2 : 4)} className={`flex-1 py-1 rounded-full text-xs ${timeSpeed === (s === "1x" ? 1 : s === "2x" ? 2 : 4) ? "bg-cyan-500 text-black" : "border border-[#1e3a5a]"}`}>{s}</button>
-                      ))}
-                    </div>
+                {/* Simulation Summary Card */}
+                <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-4 space-y-4">
+                  <h3 className="font-bold text-sm text-cyan-300">Active Study Area</h3>
+                  <div className="p-3 rounded-xl bg-[#0a1018] border border-[#1e3a5a] text-xs space-y-1.5">
+                    <div className="font-bold text-white">{selectedArea.name}</div>
+                    <div className="text-[#8aa0b8]">Center: {selectedArea.center[1].toFixed(3)}°N, {selectedArea.center[0].toFixed(3)}°E</div>
+                    <div className="text-[#8aa0b8]">Bounds: {selectedArea.bounds.xmin.toFixed(3)} - {selectedArea.bounds.xmax.toFixed(3)}°E</div>
                   </div>
-                  <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-4">
-                    <h4 className="font-bold">Current Location</h4>
-                    <div className="text-sm mt-2 space-y-1">
-                      <div className="flex justify-between"><span className="text-[#8aa0b8]">Type</span><span>{selected.type}</span></div>
-                      <div className="flex justify-between"><span className="text-[#8aa0b8]">Elevation</span><span>{selected.elevation || "-"}</span></div>
-                      <div className="flex justify-between"><span className="text-[#8aa0b8]">Depth</span><span className="text-amber-300">{selected.depth || "0.00m"}</span></div>
-                      <div className="flex justify-between"><span className="text-[#8aa0b8]">Velocity</span><span>{selected.velocity || "-"}</span></div>
-                      <div className="flex justify-between"><span className="text-[#8aa0b8]">Status</span><span className={`px-2 py-0.5 rounded-full text-xs ${selected.status === "Flooded" ? "bg-red-500/20 text-red-300" : "bg-emerald-500/20 text-emerald-300"}`}>{selected.status}</span></div>
-                    </div>
-                    <button onClick={() => setBookmarks((b) => [...b, { name: `Point ${b.length + 1}`, type: selected.type }])} className="w-full mt-3 py-1.5 rounded-full border border-[#1e3a5a] text-sm">Bookmark Location</button>
-                  </div>
+                  <button
+                    onClick={() => setActive("visualize")}
+                    className="w-full py-2.5 rounded-full bg-cyan-500 text-black font-bold text-xs hover:bg-cyan-400 transition"
+                  >
+                    View in 3D Simulator →
+                  </button>
                 </div>
               </div>
             </div>
           )}
 
-          {active === "visualize" && (
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <h1 className="text-2xl font-extrabold">Click-to-Simulate • 3D Flood Lab</h1>
-                  <p className="text-sm text-[#8aa0b8]">Click any location on the map. The system builds a localized 3D simulation from real terrain, buildings, roads and 2015 flood data.</p>
-                </div>
-                <div className="flex gap-2 items-center">
-                  <span className="text-xs text-[#8aa0b8]">AOI Size</span>
-                  {[0.5, 1, 2, 3].map((km) => (
-                    <button key={km} onClick={() => setAoiKm(km)} className={`px-3 py-1.5 rounded-full text-xs border ${aoiKm === km ? "bg-cyan-500 text-black border-transparent" : "bg-[#0f1e2e] border-[#1e3a5a] text-[#8aa0b8]"}`}>{km}km</button>
-                  ))}
-                </div>
-              </div>
-
-              {!clicked ? (
-                <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-xl p-3 text-sm flex items-center gap-3">
-                  <span className="w-8 h-8 rounded-full bg-cyan-500 text-black grid place-items-center">◈</span>
-                  <div><b>Click any valid location on the map below</b> to start. The click becomes the simulation center.</div>
-                  <div className="ml-auto flex gap-1.5">
-                    {AREAS.map((a) => (
-                      <button key={a.id} onClick={() => { setSelectedArea(a); setClicked({ lat: a.center[1], lng: a.center[0] }); setWorkflow("preview"); }} className="px-2.5 py-1 rounded-full text-xs bg-[#0a1018] border border-[#1e3a5a]">Try {a.name}</button>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="grid lg:grid-cols-3 gap-3">
-                  <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-xl p-3">
-                    <div className="text-xs font-bold tracking-widest text-[#8aa0b8]">STEP 1 • LOCATION</div>
-                    <div className="font-mono text-sm mt-1">{clicked.lat.toFixed(5)}, {clicked.lng.toFixed(5)}</div>
-                    <div className="text-xs text-[#8aa0b8]">AOI {aoiKm}km • {selectedArea.name} • {selectedArea.bounds.xmin.toFixed(3)} - {selectedArea.bounds.xmax.toFixed(3)}</div>
-                    <div className="flex gap-2 mt-2">
-                      <button onClick={() => { setClicked(null); setWorkflow("idle"); setAnalysis(null); }} className="flex-1 py-1.5 rounded-full border border-[#1e3a5a] text-xs">Clear</button>
-                      <button onClick={() => setSelectedArea(AREAS[0])} className="flex-1 py-1.5 rounded-full border border-[#1e3a5a] text-xs">Reset AOI</button>
-                    </div>
-                  </div>
-                  <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-xl p-3">
-                    <div className="text-xs font-bold tracking-widest text-[#8aa0b8]">STEP 2 • DATA DISCOVERY</div>
-                    {analysis ? (
-                      <div className="text-xs mt-1 space-y-1">
-                        <div className="flex justify-between"><span className="text-[#8aa0b8]">Buildings</span><b>{analysis.buildings}</b></div>
-                        <div className="flex justify-between"><span className="text-[#8aa0b8]">Roads</span><b>{analysis.roads}</b></div>
-                        <div className="flex justify-between"><span className="text-[#8aa0b8]">2015 Hotspots</span><b>{analysis.hotspots}</b></div>
-                        <div className="flex justify-between"><span className="text-[#8aa0b8]">Flooded Streets (2015)</span><b>{analysis.floodedStreets}</b></div>
-                        <div className="flex justify-between"><span className="text-[#8aa0b8]">Terrain</span><span className="text-emerald-300">DEM 30m ✓</span></div>
-                        <div className="text-[11px] text-[#8aa0b8] mt-1">Elevation {analysis.elevMin} - {analysis.elevMax} • {analysis.coverage}</div>
-                      </div>
-                    ) : (
-                      <div className="text-xs text-[#8aa0b8] mt-2">Analyzing 1.1km surroundings...</div>
-                    )}
-                  </div>
-                  <div className="bg-[#0f1e2e] border border-cyan-500/40 rounded-xl p-3">
-                    <div className="text-xs font-bold tracking-widest text-cyan-300">STEP 3 • SIMULATE</div>
-                    {workflow === "preview" ? (
-                      <>
-                        <div className="text-xs mt-1">Ready to generate localized 3D terrain + flood for this AOI.</div>
-                        <button
-                          onClick={() => {
-                            setWorkflow("simulating");
-                            setSimStage(0);
-                            let s = 0;
-                            const stages = ["Validating", "Extracting terrain", "Buildings/roads", "2015 data", "Runoff SCS", "D8 flow", "Depth", "3D terrain", "Water", "Done"];
-                            const iv = setInterval(() => {
-                              s += 1;
-                              setSimStage(s);
-                              setSimProgress(Math.min(100, Math.round((s / stages.length) * 100)));
-                              if (s >= stages.length) {
-                                clearInterval(iv);
-                                setWorkflow("done");
-                                pushToast(`Simulation done for ${selectedArea.name}`, "View 3D");
-                              }
-                            }, 420);
-                          }}
-                          className="w-full mt-2 py-2 rounded-full bg-cyan-500 text-black font-semibold text-sm"
-                        >
-                          Generate 3D Simulation →
-                        </button>
-                      </>
-                    ) : workflow === "simulating" ? (
-                      <div className="mt-2">
-                        <div className="flex justify-between text-xs"><span className="text-[#8aa0b8]">{["Validating", "Terrain", "Buildings", "2015 data", "Runoff", "D8", "Depth", "3D", "Water", "Done"][simStage] || "Processing"}</span><span>{simProgress}%</span></div>
-                        <div className="w-full h-2 bg-[#0a1018] rounded-full mt-1"><div className="h-2 bg-cyan-500 rounded-full transition-all" style={{ width: `${simProgress}%` }} /></div>
-                      </div>
-                    ) : workflow === "done" ? (
-                      <div className="text-xs mt-1 text-emerald-300">✓ 3D ready - explore below. Data: DEM + {analysis?.buildings || 0} buildings + 2015 layers.</div>
-                    ) : (
-                      <div className="text-xs text-[#8aa0b8] mt-2">Select a location first.</div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              <div className="grid lg:grid-cols-4 gap-4">
-                <div className="lg:col-span-1 bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-3 space-y-3">
-                  <h4 className="font-bold">Layers & Data Used</h4>
-                  {Object.entries({ Terrain: "terrain", Water: "water", "Flood Depth": "depth", Buildings: "buildings", Roads: "roads", "2015 Hotspots": "hotspots", "2015 Inundation": "inundation" }).map(([label, key]) => (
-                    <label key={key} className="flex items-center justify-between p-2 rounded-lg bg-[#0a1018] border border-[#1e3a5a] text-sm">
-                      <span>{label}</span>
-                      <input type="checkbox" defaultChecked={key !== "hotspots" || !!clicked} onChange={() => pushToast(`${label} toggled`)} className="accent-cyan-500" />
-                    </label>
-                  ))}
-                  <div className="p-2 rounded-lg bg-[#0a1018] border border-[#1e3a5a] text-xs">
-                    <div className="font-semibold">Data Sources for this AOI</div>
-                    <div className="text-[#8aa0b8] mt-1">• DEM 30m (SRTM) • Buildings 1,811 • Roads • 2015 hotspots 327 • Flooded streets 7,894 • Inundation 4,001</div>
-                    <div className="text-[11px] text-[#8aa0b8] mt-1">{analysis ? `${analysis.buildings} buildings, ${analysis.roads} roads inside AOI` : "Click map to see AOI counts"}</div>
-                  </div>
-                </div>
-
-                <div className="lg:col-span-3 space-y-4">
-                  <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-2">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold tracking-widest text-[#8aa0b8]">3D TERRAIN • {clicked ? `${clicked.lat.toFixed(4)}, ${clicked.lng.toFixed(4)}` : selectedArea.name} • {aoiKm}km AOI</span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${workflow === "done" ? "bg-emerald-500/20 text-emerald-300" : "bg-[#0a1018] border border-[#1e3a5a] text-[#8aa0b8]"}`}>{workflow === "done" ? "Simulated" : workflow === "simulating" ? `Stage ${simStage}/10` : "Preview"}</span>
-                    </div>
-                    <FloodSimulation selectedArea={selectedArea} />
-                  </div>
-                  <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-3">
-                    <div className="text-xs text-[#8aa0b8] mb-2">Click-to-Simulate Map • Click any valid location to set AOI center. Valid area: 80.10-80.35, 12.88-13.25</div>
-                    <div className="h-[420px] rounded-xl overflow-hidden border border-[#1e3a5a]"><ChennaiMap selectedArea={selectedArea} aoiSizeKm={aoiKm} onMapClick={(lat, lng) => {
-                      const delta = aoiKm / 111;
-                      const b = { xmin: lng - delta, xmax: lng + delta, ymin: lat - delta, ymax: lat + delta };
-                      if (lng < 80.10 || lng > 80.35 || lat < 12.88 || lat > 13.25) { pushToast("Outside study area - pick inside Chennai"); return; }
-                      setClicked({ lat, lng });
-                      const area = { id: `click-${Date.now()}`, name: `AOI ${lat.toFixed(3)},${lng.toFixed(3)} ${aoiKm}km`, bounds: b, center: [lng, lat] as [number,number], lat, lng };
-                      setSelectedArea(area);
-                      setWorkflow("analyzing");
-                      setAnalysis(null);
-                      setTimeout(async () => {
-                        try {
-                          const [bld, hw, hot, flood] = await Promise.all([
-                            fetch("/buildings.geojson").then(r=>r.json()).then(j=> j.features.filter((f:any)=>{ const c=f.geometry.coordinates[0][0] || f.geometry.coordinates[0]; const lng2=c[0], lat2=c[1]; return lng2>=b.xmin && lng2<=b.xmax && lat2>=b.ymin && lat2<=b.ymax; }).length).catch(()=>0),
-                            fetch("/highway.geojson").then(r=>r.json()).then(j=> j.features.filter((f:any)=> f.geometry.coordinates.some((p:any)=> p[0]>=b.xmin && p[0]<=b.xmax && p[1]>=b.ymin && p[1]<=b.ymax)).length).catch(()=>0),
-                            fetch("/chennai2015_hotspots.geojson").then(r=>r.json()).then(j=> j.features.filter((f:any)=> f.geometry.coordinates[0]>=b.xmin && f.geometry.coordinates[0]<=b.xmax && f.geometry.coordinates[1]>=b.ymin && f.geometry.coordinates[1]<=b.ymax).length).catch(()=>0),
-                            fetch("/chennai2015_flooded_streets.geojson").then(r=>r.json()).then(j=> j.features.filter((f:any)=> f.geometry.coordinates.some((p:any)=> p[0]>=b.xmin && p[0]<=b.xmax && p[1]>=b.ymin && p[1]<=b.ymax)).length).catch(()=>0),
-                          ]);
-                          setAnalysis({ buildings: bld, roads: hw, hotspots: hot, floodedStreets: flood, elevMin: "2.1m", elevMax: "18.4m", coverage: hot>0 || flood>0 ? "2015 flood data ✓" : "No 2015 in AOI" });
-                          setWorkflow("preview");
-                          pushToast(`AOI ready: ${bld} buildings, ${hot} hotspots`);
-                        } catch { setAnalysis({ buildings: 12, roads: 3, hotspots: 0, floodedStreets: 5, elevMin: "3m", elevMax: "12m", coverage: "Sample" }); setWorkflow("preview"); }
-                      }, 700);
-                    }} onSelectArea={(a:any)=>setSelectedArea(a)} onSelectFeature={(f:any)=>{ setSelected(f); setClicked({ lat: f.properties?.latitude || 13.08, lng: f.properties?.longitude || 80.27 }); }} /></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
+          {/* 4. IMPACT ANALYSIS */}
           {active === "impact" && (
             <div className="space-y-4">
-              <h1 className="text-2xl font-extrabold">Impact Analysis</h1>
+              <h1 className="text-2xl font-extrabold">Impact Analysis & Risk Zones</h1>
               <div className="grid sm:grid-cols-4 gap-3">
                 {[
-                  { k: "Flooded Area", v: "4.2 km²", sub: "16.1% of study", action: () => setActive("visualize") },
-                  { k: "Max Depth", v: "0.75 m", sub: "Ennore lowland", action: () => pushToast("Highlighted max depth") },
-                  { k: "Buildings Hit", v: "581", sub: "Click to list", action: () => pushToast("580 buildings - open in map") },
-                  { k: "Roads Affected", v: "12.4 km", sub: "8 segments", action: () => pushToast("Roads highlighted") },
+                  { k: "Direct Runoff (Q)", v: `${Q.toFixed(1)} mm`, sub: `SCS Volume for ${rainfall}mm rain` },
+                  { k: "Mean Inundation", v: `${(Math.min(Q / 120, 1) * 2.2 * (0.3 + 0.7 * (duration / 100))).toFixed(2)} m`, sub: "Peak flood level" },
+                  { k: "Vulnerable Assets", v: `${Math.round(80 + (Q / 120) * 800)}`, sub: "Buildings in risk boundary" },
+                  { k: "Affected Streets", v: "14.8 km", sub: "GCC arterial roads" },
                 ].map((m) => (
-                  <button key={m.k} onClick={m.action} className="p-4 rounded-2xl bg-[#0f1e2e] border border-[#1e3a5a] text-left hover:border-cyan-500/40">
+                  <div key={m.k} className="p-4 rounded-2xl bg-[#0f1e2e] border border-[#1e3a5a]">
                     <div className="text-xs text-[#8aa0b8]">{m.k}</div>
-                    <div className="text-xl font-extrabold">{m.v}</div>
-                    <div className="text-xs text-[#8aa0b8]">{m.sub}</div>
-                  </button>
+                    <div className="text-xl font-black text-cyan-300 mt-1">{m.v}</div>
+                    <div className="text-xs text-[#8aa0b8] mt-1">{m.sub}</div>
+                  </div>
                 ))}
               </div>
+
+              {/* Risk Zone Matrix & Asset Inspector */}
               <div className="grid lg:grid-cols-2 gap-4">
                 <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-4">
-                  <h4 className="font-bold">Risk Zones</h4>
-                  <div className="grid grid-cols-3 gap-2 mt-3 text-center text-sm">
-                    <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30"><div className="font-bold text-emerald-300">Low</div><div className="text-xs">62%</div></div>
-                    <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30"><div className="font-bold text-amber-300">Medium</div><div className="text-xs">22%</div></div>
-                    <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30"><div className="font-bold text-red-300">High</div><div className="text-xs">16%</div></div>
+                  <h4 className="font-bold text-sm text-cyan-300 mb-3">Zonal Vulnerability Distribution</h4>
+                  <div className="grid grid-cols-3 gap-3 text-center">
+                    <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                      <div className="font-bold text-emerald-300">Low Risk</div>
+                      <div className="text-xs text-[#8aa0b8] mt-1">&lt;0.3m depth</div>
+                      <div className="text-lg font-mono font-bold text-white mt-1">54%</div>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30">
+                      <div className="font-bold text-amber-300">Medium Risk</div>
+                      <div className="text-xs text-[#8aa0b8] mt-1">0.3 - 0.8m</div>
+                      <div className="text-lg font-mono font-bold text-white mt-1">28%</div>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30">
+                      <div className="font-bold text-red-400">High / Critical</div>
+                      <div className="text-xs text-[#8aa0b8] mt-1">&gt;0.8m depth</div>
+                      <div className="text-lg font-mono font-bold text-white mt-1">18%</div>
+                    </div>
                   </div>
-                  <div className="mt-3 text-xs text-[#8aa0b8]">Risk = depth &gt;0.5m + velocity &gt;0.4m/s + accumulation. Click a zone to filter map.</div>
                 </div>
+
                 <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-4">
-                  <h4 className="font-bold">Filter Analysis</h4>
-                  <div className="grid grid-cols-2 gap-2 mt-3">
-                    <select className="bg-[#0a1018] border border-[#1e3a5a] rounded px-2 py-1.5 text-sm"><option>All Time</option><option>Peak (t=90)</option><option>Final</option></select>
-                    <select className="bg-[#0a1018] border border-[#1e3a5a] rounded px-2 py-1.5 text-sm"><option>Depth &gt;0.15m</option><option>&gt;0.5m</option><option>&gt;1.5m</option></select>
-                    <select className="bg-[#0a1018] border border-[#1e3a5a] rounded px-2 py-1.5 text-sm"><option>All Assets</option><option>Buildings</option><option>Roads</option></select>
-                    <button onClick={() => pushToast("Filters applied")} className="py-1.5 rounded-full bg-cyan-500 text-black text-sm font-semibold">Apply</button>
+                  <h4 className="font-bold text-sm text-cyan-300 mb-3">Key Infrastructure Assets in Study Area</h4>
+                  <div className="space-y-2">
+                    {CHENNAI_SEARCH_INDEX.slice(0, 4).map((asset) => (
+                      <div
+                        key={asset.name}
+                        onClick={() => {
+                          setSelectedObject({ name: asset.name, type: asset.type, depth: "0.52m", risk: "Medium" });
+                          setActive("visualize");
+                          pushToast(`Focusing ${asset.name} in 3D viewer`);
+                        }}
+                        className="p-2.5 rounded-xl bg-[#0a1018] border border-[#1e3a5a] flex items-center justify-between hover:border-cyan-500/40 cursor-pointer transition text-xs"
+                      >
+                        <div>
+                          <div className="font-bold text-white">{asset.name}</div>
+                          <div className="text-[11px] text-[#8aa0b8]">{asset.type}</div>
+                        </div>
+                        <button className="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 font-semibold hover:bg-cyan-500 hover:text-black transition">
+                          Inspect 3D →
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                  <div className="mt-3 p-3 rounded-xl bg-[#0a1018] border border-[#1e3a5a] text-sm">Selected: Ripon Building • Depth 0.42m • <span className="text-amber-300">Medium Risk</span> • Velocity 0.38 m/s</div>
                 </div>
               </div>
             </div>
           )}
 
+          {/* 5. SCENARIOS & COMPARISON */}
           {active === "scenarios" && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-extrabold">Scenarios</h1>
-                <button onClick={() => { const id = `s${Date.now()}`; setScenarios((s) => [...s, { id, name: `Scenario ${s.length + 1}`, P: rainfall, CN: cn, depth: "0.42m", area: "8.1%" }]); pushToast("Scenario created"); }} className="px-4 py-2 rounded-full bg-cyan-500 text-black text-sm font-semibold">+ New Scenario</button>
+                <div>
+                  <h1 className="text-2xl font-extrabold">Flood Scenarios & Multi-Run Comparison</h1>
+                  <p className="text-xs text-[#8aa0b8]">Compare multiple rainfall & Curve Number scenarios side-by-side with live computed runoff deltas.</p>
+                </div>
+                <button
+                  onClick={() => {
+                    const newSc: Scenario = {
+                      id: `s${Date.now()}`,
+                      name: `Scenario ${scenarios.length + 1}`,
+                      P: rainfall,
+                      CN: cn,
+                      duration: duration,
+                      depth: `${(Math.min(Q / 120, 1) * 2.2 * (0.3 + 0.7 * (duration / 100))).toFixed(2)}m`,
+                      area: "12.4%",
+                      buildings: Math.round(80 + (Q / 120) * 600),
+                      runoff: +Q.toFixed(1),
+                    };
+                    setScenarios([...scenarios, newSc]);
+                    pushToast(`Saved ${newSc.name}`);
+                  }}
+                  className="px-4 py-2 rounded-full bg-cyan-500 text-black text-xs font-bold hover:bg-cyan-400"
+                >
+                  + Save Current as Scenario
+                </button>
               </div>
+
               <div className="grid lg:grid-cols-3 gap-4">
-                <div className="lg:col-span-1 bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-3 space-y-2">
-                  {scenarios.map((s) => (
-                    <div key={s.id} onClick={() => setActiveScenario(s.id)} className={`p-3 rounded-xl border cursor-pointer ${activeScenario === s.id ? "bg-[#12233a] border-cyan-500/50" : "bg-[#0a1018] border-[#1e3a5a]"}`}>
-                      <div className="font-semibold text-sm">{s.name}</div>
-                      <div className="text-xs text-[#8aa0b8]">P {s.P} • CN {s.CN} • Depth {s.depth} • {s.area}</div>
-                      <div className="flex gap-2 mt-2">
-                        <button onClick={(e) => { e.stopPropagation(); const n = prompt("Rename", s.name); if (n) setScenarios((x) => x.map((y) => (y.id === s.id ? { ...y, name: n } : y))); }} className="text-xs px-2 py-1 rounded-full border border-[#1e3a5a]">Rename</button>
-                        <button onClick={(e) => { e.stopPropagation(); setScenarios((x) => x.filter((y) => y.id !== s.id)); }} className="text-xs px-2 py-1 rounded-full border border-red-900 text-red-300">Archive</button>
+                {/* Scenario List */}
+                <div className="lg:col-span-1 space-y-2">
+                  {scenarios.map((sc) => (
+                    <div
+                      key={sc.id}
+                      onClick={() => handleLoadScenario(sc)}
+                      className={`p-3.5 rounded-xl border cursor-pointer transition ${
+                        activeScenarioId === sc.id ? "bg-[#12233a] border-cyan-500 shadow-md" : "bg-[#0f1e2e] border-[#1e3a5a] hover:border-cyan-500/40"
+                      }`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="font-bold text-sm text-white">{sc.name}</div>
+                        {activeScenarioId === sc.id && (
+                          <span className="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full font-semibold">Active</span>
+                        )}
+                      </div>
+                      <div className="text-xs text-[#8aa0b8] mt-1">
+                        Rainfall: {sc.P}mm | CN: {sc.CN} | Runoff: {sc.runoff}mm
+                      </div>
+                      <div className="flex justify-between items-center mt-3 pt-2 border-t border-[#1e3a5a]/60 text-xs">
+                        <span className="text-amber-300 font-mono">{sc.depth} depth</span>
+                        <span className="text-[#8aa0b8]">{sc.buildings} buildings</span>
                       </div>
                     </div>
                   ))}
                 </div>
+
+                {/* Scenario Comparison Table */}
                 <div className="lg:col-span-2 bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-4">
-                  <h3 className="font-bold">Compare</h3>
-                  <div className="grid sm:grid-cols-2 gap-3 mt-3">
-                    {scenarios.slice(0, 2).map((s) => (
-                      <div key={s.id} className="p-3 rounded-xl bg-[#0a1018] border border-[#1e3a5a]">
-                        <div className="font-semibold">{s.name}</div>
-                        <div className="text-xs text-[#8aa0b8]">Flood extent {s.area} • Max {s.depth}</div>
-                        <div className="mt-2 h-24 rounded-lg bg-[#12233a] grid place-items-center text-xs text-[#8aa0b8]">Map sync preview</div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-3 overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead className="text-xs text-[#8aa0b8]"><tr><th className="text-left py-1">Metric</th><th>Monsoon Peak</th><th>Base</th><th>Delta</th></tr></thead>
-                      <tbody>
-                        <tr><td>Flooded area</td><td>16.1%</td><td>8.4%</td><td className="text-amber-300">+7.7%</td></tr>
-                        <tr><td>Max depth</td><td>0.75m</td><td>0.42m</td><td className="text-red-300">+0.33m</td></tr>
-                        <tr><td>Buildings</td><td>581</td><td>312</td><td>+269</td></tr>
+                  <h3 className="font-bold text-sm text-cyan-300 mb-3">Scenario Comparison Matrix</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead className="text-[#8aa0b8] border-b border-[#1e3a5a]">
+                        <tr>
+                          <th className="text-left py-2">Scenario</th>
+                          <th>Rainfall (P)</th>
+                          <th>Curve No. (CN)</th>
+                          <th>Runoff (Q)</th>
+                          <th>Peak Depth</th>
+                          <th>Vulnerable Assets</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#1e3a5a]/60">
+                        {scenarios.map((sc) => (
+                          <tr key={sc.id} className="hover:bg-[#12233a]/50">
+                            <td className="py-2.5 font-bold text-white">{sc.name}</td>
+                            <td className="text-center font-mono">{sc.P} mm</td>
+                            <td className="text-center font-mono">{sc.CN}</td>
+                            <td className="text-center font-mono text-cyan-300">{sc.runoff} mm</td>
+                            <td className="text-center font-mono text-amber-300">{sc.depth}</td>
+                            <td className="text-center font-mono">{sc.buildings}</td>
+                            <td className="text-center">
+                              <button
+                                onClick={() => handleLoadScenario(sc)}
+                                className="px-2.5 py-1 rounded-full bg-[#0a1018] border border-[#1e3a5a] hover:border-cyan-500 text-cyan-300 font-semibold"
+                              >
+                                Load
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>
-                  <div className="flex gap-2 mt-3">
-                    <button onClick={() => pushToast("Timelines synchronized")} className="px-3 py-1.5 rounded-full border border-[#1e3a5a] text-sm">Sync Timelines</button>
-                    <button onClick={() => pushToast("Comparison exported")} className="px-3 py-1.5 rounded-full bg-cyan-500 text-black text-sm">Export Compare</button>
-                  </div>
                 </div>
               </div>
             </div>
           )}
 
+          {/* 6. DATA MANAGEMENT */}
+          {active === "data" && (
+            <div className="space-y-4">
+              <h1 className="text-2xl font-extrabold">Data Management & Discovery</h1>
+              <p className="text-xs text-[#8aa0b8]">Discovered and validated spatial datasets for Chennai regional flood intelligence.</p>
+
+              <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-4">
+                <div className="divide-y divide-[#1e3a5a]">
+                  {[
+                    { name: "buildings.geojson", type: "Vector Footprints", features: "1,811", crs: "EPSG:4326 (WGS84)", status: "Validated" },
+                    { name: "highway.geojson", type: "Road Network", features: "64", crs: "EPSG:4326 (WGS84)", status: "Validated" },
+                    { name: "waterway.geojson", type: "Canals & Rivers", features: "12", crs: "EPSG:4326 (WGS84)", status: "Validated" },
+                    { name: "rainfall_stations.geojson", type: "IMD Rain Stations", features: "8", crs: "EPSG:4326 (WGS84)", status: "Validated" },
+                    { name: "chennai2015_hotspots.geojson", type: "2015 GCC Flood Hotspots", features: "327", crs: "EPSG:4326 (WGS84)", status: "Validated" },
+                    { name: "chennai2015_flooded_streets.geojson", type: "2015 Inundated Streets", features: "7,894", crs: "EPSG:4326 (WGS84)", status: "Validated" },
+                    { name: "SRTM_DEM_30m.tif", type: "Elevation Raster (DEM)", features: "30m grid", crs: "EPSG:4326", status: "Active" },
+                  ].map((ds) => (
+                    <div key={ds.name} className="py-3 flex items-center justify-between text-xs">
+                      <div>
+                        <div className="font-bold text-white">{ds.name}</div>
+                        <div className="text-[#8aa0b8]">{ds.type} • {ds.features} features • {ds.crs}</div>
+                      </div>
+                      <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold">{ds.status}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 7. REPORTS & EXPORT */}
           {active === "reports" && (
             <div className="space-y-4">
-              <h1 className="text-2xl font-extrabold">Reports & Export</h1>
-              <div className="grid lg:grid-cols-3 gap-4">
-                <div className="lg:col-span-2 bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-4">
-                  <h3 className="font-bold">Report Builder</h3>
-                  <div className="grid sm:grid-cols-2 gap-2 mt-3 text-sm">
-                    {["Project info", "Rainfall", "Flood extent", "Flood depth", "Buildings", "Roads", "Risk", "Maps", "Charts", "Comparison"].map((k) => (
-                      <label key={k} className="flex items-center gap-2 p-2 rounded-lg bg-[#0a1018] border border-[#1e3a5a]"><input type="checkbox" defaultChecked className="accent-cyan-500" /> {k}</label>
-                    ))}
-                  </div>
-                  <div className="flex gap-2 mt-3">
-                    <button onClick={() => pushToast("Report preview opened")} className="px-4 py-2 rounded-full border border-[#1e3a5a] text-sm">Preview</button>
-                    <button onClick={() => pushToast("Report exported as PDF", "Open")} className="px-4 py-2 rounded-full bg-cyan-500 text-black text-sm font-semibold">Export PDF</button>
-                  </div>
+              <h1 className="text-2xl font-extrabold">Reports & Dataset Export</h1>
+              <div className="grid lg:grid-cols-2 gap-4">
+                <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-5 space-y-4">
+                  <h3 className="font-bold text-sm text-cyan-300">Generate Executive Flood Intelligence Report</h3>
+                  <p className="text-xs text-[#8aa0b8]">
+                    Generates a formatted report with hydrological calculations, AOI boundary data, asset vulnerability tables, and comparative scenarios.
+                  </p>
+                  <button
+                    onClick={handleExportReport}
+                    className="px-5 py-2.5 rounded-full bg-cyan-500 text-black font-bold text-xs hover:bg-cyan-400 transition"
+                  >
+                    Open Printable Report →
+                  </button>
                 </div>
-                <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-4">
-                  <h4 className="font-bold">Export</h4>
-                  <div className="space-y-2 mt-2 text-sm">
-                    <select className="w-full bg-[#0a1018] border border-[#1e3a5a] rounded px-2 py-1.5"><option>GeoJSON</option><option>GeoTIFF</option><option>CSV</option><option>PNG</option></select>
-                    <select className="w-full bg-[#0a1018] border border-[#1e3a5a] rounded px-2 py-1.5"><option>Current time</option><option>Full timeline</option><option>Peak only</option></select>
-                    <button onClick={() => pushToast("Export started • simulation.geojson")} className="w-full py-2 rounded-full bg-cyan-500 text-black font-semibold">Export Data</button>
-                    <div className="text-xs text-[#8aa0b8]">Includes: flood depth, extent, affected assets for active scenario.</div>
-                  </div>
+
+                <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-5 space-y-4">
+                  <h3 className="font-bold text-sm text-cyan-300">Export Spatial Simulation Datasets</h3>
+                  <p className="text-xs text-[#8aa0b8]">
+                    Download GeoJSON feature collections containing simulation attributes, AOI polygons, and runoff properties.
+                  </p>
+                  <button
+                    onClick={handleExportGeoJSON}
+                    className="px-5 py-2.5 rounded-full border border-cyan-500 text-cyan-300 font-bold text-xs hover:bg-[#12233a] transition"
+                  >
+                    Download Simulation GeoJSON
+                  </button>
                 </div>
               </div>
             </div>
           )}
 
+          {/* 8. BOOKMARKS */}
           {active === "bookmarks" && (
-            <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-4">
-              <h3 className="font-bold">Bookmarks</h3>
-              <div className="space-y-2 mt-3">
+            <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-4 space-y-3">
+              <h3 className="font-bold text-sm text-cyan-300">Saved Study Bookmarks</h3>
+              <div className="space-y-2">
                 {bookmarks.map((b, i) => (
-                  <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-[#0a1018] border border-[#1e3a5a] text-sm">
-                    <span>{b.name} • <span className="text-[#8aa0b8]">{b.type}</span></span>
+                  <div key={i} className="p-3 rounded-xl bg-[#0a1018] border border-[#1e3a5a] flex items-center justify-between text-xs">
+                    <div>
+                      <div className="font-bold text-white">{b.name}</div>
+                      <div className="text-[#8aa0b8]">{b.type}</div>
+                    </div>
                     <div className="flex gap-2">
-                      <button onClick={() => pushToast(`Focused ${b.name}`)} className="text-xs px-2 py-1 rounded-full border border-[#1e3a5a]">Go</button>
-                      <button onClick={() => setBookmarks((x) => x.filter((_, j) => j !== i))} className="text-xs px-2 py-1 rounded-full border border-red-900 text-red-300">Remove</button>
+                      <button
+                        onClick={() => {
+                          const delta = aoiKm / 111;
+                          setSelectedArea({
+                            id: `bm-${i}`,
+                            name: b.name,
+                            bounds: { xmin: b.coords[0] - delta, xmax: b.coords[0] + delta, ymin: b.coords[1] - delta, ymax: b.coords[1] + delta },
+                            center: b.coords as [number, number],
+                          });
+                          setActive("visualize");
+                          pushToast(`Navigated to ${b.name}`);
+                        }}
+                        className="px-3 py-1 rounded-full bg-cyan-500 text-black font-semibold"
+                      >
+                        Inspect in 3D
+                      </button>
+                      <button
+                        onClick={() => setBookmarks((prev) => prev.filter((_, idx) => idx !== i))}
+                        className="px-2 py-1 rounded-full border border-red-900 text-red-300"
+                      >
+                        Remove
+                      </button>
                     </div>
                   </div>
                 ))}
-                {bookmarks.length === 0 && <div className="py-8 text-center border border-dashed border-[#1e3a5a] rounded-xl text-[#8aa0b8] text-sm">No bookmarks yet — inspect a building or road and save it.</div>}
               </div>
             </div>
           )}
 
+          {/* 9. SETTINGS */}
           {active === "settings" && (
-            <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-4">
-              <h3 className="font-bold">Settings & Customization</h3>
-              <div className="grid sm:grid-cols-2 gap-4 mt-3 text-sm">
-                <label className="space-y-1"><span className="text-[#8aa0b8]">Units</span><select className="w-full bg-[#0a1018] border border-[#1e3a5a] rounded px-2 py-1.5"><option>Metric (m, mm)</option><option>Imperial</option></select></label>
-                <label className="space-y-1"><span className="text-[#8aa0b8]">Default Speed</span><select value={timeSpeed} onChange={(e) => setTimeSpeed(+e.target.value)} className="w-full bg-[#0a1018] border border-[#1e3a5a] rounded px-2 py-1.5"><option value={1}>1x</option><option value={2}>2x</option><option value={4}>4x</option></select></label>
-                <label className="flex items-center gap-2"><input type="checkbox" defaultChecked /> Show depth legend</label>
-                <label className="flex items-center gap-2"><input type="checkbox" /> Reduce motion</label>
+            <div className="bg-[#0f1e2e] border border-[#1e3a5a] rounded-2xl p-5 max-w-xl space-y-4 text-xs">
+              <h3 className="font-bold text-sm text-cyan-300">Platform Settings</h3>
+              <div>
+                <label className="text-[#8aa0b8] block mb-1">Units of Measurement</label>
+                <select className="w-full bg-[#0a1018] border border-[#1e3a5a] rounded-lg p-2 text-white">
+                  <option>Metric (mm rainfall, meters depth, km/h velocity)</option>
+                  <option>Imperial</option>
+                </select>
               </div>
-              <button onClick={() => pushToast("Settings saved")} className="mt-4 px-4 py-2 rounded-full bg-cyan-500 text-black text-sm font-semibold">Save Preferences</button>
+              <div>
+                <label className="text-[#8aa0b8] block mb-1">Coordinate Reference System (CRS)</label>
+                <input readOnly value="EPSG:4326 (WGS84 Lat/Long)" className="w-full bg-[#0a1018] border border-[#1e3a5a] rounded-lg p-2 text-white font-mono" />
+              </div>
+              <button onClick={() => pushToast("Settings saved")} className="px-4 py-2 rounded-full bg-cyan-500 text-black font-bold">
+                Save Preferences
+              </button>
             </div>
           )}
         </main>
 
-        <div className="fixed bottom-4 right-4 space-y-2 z-50">
+        {/* Floating Toast Notifications */}
+        <div className="fixed bottom-4 right-4 space-y-2 z-50 pointer-events-none">
           {toasts.map((t) => (
-            <div key={t.id} className="px-4 py-2 rounded-full bg-[#12233a] border border-cyan-500/30 text-sm shadow-lg flex items-center gap-3">
-              <span>{t.msg}</span>
-              {t.action && <button onClick={() => pushToast(`${t.action} opened`)} className="text-cyan-300 underline text-xs">{t.action}</button>}
+            <div key={t.id} className="pointer-events-auto px-4 py-2.5 rounded-full bg-[#12233a] border border-cyan-500/40 text-xs shadow-2xl flex items-center gap-3">
+              <span className="text-white font-medium">{t.msg}</span>
+              {t.action && (
+                <button onClick={() => setActive("visualize")} className="text-cyan-300 underline font-bold">
+                  {t.action}
+                </button>
+              )}
             </div>
           ))}
         </div>
