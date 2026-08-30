@@ -1,34 +1,61 @@
-# FLOIN — 3D Flood Simulation Platform
+# FLOIN - 3D Flood Simulation Platform
 
-```
-Floin/                 ← main folder (this repo)
-├── index.html         ← Vite entry
-├── src/               ← Three.js + Leaflet app
-│   ├── main.js
-│   └── style.css
-├── public/            ← static (favicon, GeoJSON copies for dev)
-├── data/              ← all project data (organized)
-│   ├── vectors/       ← curated GeoJSONs (committed)
-│   │   ├── buildings.geojson (1,811)
-│   │   ├── highway.geojson
-│   │   ├── natural_water.geojson (555)
-│   │   └── waterway*.geojson
-│   ├── rasters/       ← DEM / Flow_* / Watershed (local, gitignored *.tif)
-│   ├── qgis/          ← .qgz projects (local)
-│   ├── raw/           ← OSM PBF, SRTM zips, tars (local, gitignored)
-│   └── tEAM fLOIN.pdf ← proposal (local)
-├── package.json
-└── vite.config.js (implicit)
-```
+Chennai flood model: SRTM DEM + IMD rainfall + OSM (buildings/roads/water) -> QGIS preprocess -> PostGIS -> Python (SCS-CN, D8, routing) -> Three.js 3D.
 
-## Run
+## Quick Start
+
 ```
 npm install
-npm run dev   # http://localhost:5173
+npm run dev     # http://localhost:5173
 npm run build
+npm run preview
+```
+
+Python (Module 2 + 4):
+```
+pip install -r requirements.txt
+python scripts/preprocess.py
+python scripts/simulate.py --P 120 --CN 78 --t 45
+```
+
+PostGIS (Module 3):
+```
+docker compose up -d
+python scripts/load_postgis.py --dry-run
+python scripts/load_postgis.py
+```
+
+## Structure
+
+```
+Floin/  (repo root = Vite project)
+ index.html, src/, public/, vite.config.js, package.json
+ data/
+  vectors/          curated GeoJSON + CSV (committed)
+  processed/vectors cleaned (generated, gitignored)
+  rasters/          DEM / Flow_* / Watershed / Streams
+  rasters/rasters_COP30/DEM.tif
+  raw/              OSM PBF 530MB, SRTM zips (gitignored)
+  qgis/             .qgz (gitignored)
+ scripts/
+  preprocess.py  Module 2
+  load_postgis.py/.ps1  Module 3
+  simulate.py    Module 4
+ docker-compose.yml Module 3
 ```
 
 ## Modules
-1. **Collect** — SRTM DEM + IMD rainfall + OSM vectors → `data/vectors` & `data/rasters`
-2. Preprocess (QGIS) → 3. Store (PostGIS) → 4. Simulate (Python) → 5. Visualize (Three.js)
-Currently focused on **Module 1** — see `/#module1` live layer explorer.
+
+1. Collect - 9 vectors + 5 rasters validated
+2. Preprocess - `scripts/preprocess.py` CRS 4326, clip 80.10/12.88-80.35/13.25, terrain
+3. Store - `docker compose up -d` + `ogr2ogr`/`raster2pgsql`
+4. Simulate - `scripts/simulate.py` SCS-CN -> D8 -> accumulation -> depth
+5. Visualize - Three.js + Leaflet live map + depth slider
+
+Env: copy `.env.example` to `.env` if needed (DATABASE_URL).
+
+## Production Notes
+
+- Build splits three/leaflet via vite.config.js
+- No secrets in repo (.env gitignored)
+- All vectors CRS84, rasters 4326
