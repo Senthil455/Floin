@@ -14,10 +14,10 @@
 <div class="nav-links">
 <a href="#module1">M1 ✓</a>
 <a href="#module2">M2 ✓</a>
-<a href="#module3" style="color:var(--accent2);font-weight:700">● M3 Store</a>
-<a href="#simulation">Sim</a>
+<a href="#module3">M3 ✓</a>
+<a href="#module4" style="color:var(--accent2);font-weight:700">● M4 Sim</a>
 </div>
-<a class="btn btn-primary nav-cta" href="#module3">M3 →</a>
+<a class="btn btn-primary nav-cta" href="#module4">M4 →</a>
 </div>
 </nav>
 
@@ -235,6 +235,44 @@ GeoTIFF ──raster2pgsql──▶ rast column
 <li>Three.js time-step flood extent</li>
 </ul>
 </div>
+</div>
+</div>
+</section>
+
+<section id="module4" class="section" style="background:linear-gradient(180deg,#0f1e2e 0%, #0a1018 100%);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+<div class="container">
+<div class="section-head">
+<div class="pill" style="margin-bottom:10px"><span class="dot"></span> MODULE 4 — SIMULATE • CURRENT FOCUS</div>
+<h2>Module 4: Simulate — Python + NumPy Flood Model</h2>
+<p>Rainfall → Runoff (SCS) → Flow Direction (D8) → Accumulation → Routing → Depth/Extent/Velocity → time-step. Run <code>python scripts/simulate.py --P 120 --CN 78 --t 45</code>.</p>
+</div>
+<div class="algo-grid" style="grid-template-columns:repeat(3,1fr)">
+<div class="algo-card" style="border-left:3px solid #22d3ee"><h4>SCS Runoff</h4><code>Q = (P-0.2S)²/(P+0.8S)</code><p>P=120, CN=78 → S=71.64, Q≈63mm. Base water volume.</p><span class="mono" style="color:#34d399">● NUMPY</span></div>
+<div class="algo-card" style="border-left:3px solid var(--amber)"><h4>D8 + Accumulation</h4><code>8-neighbor steepest</code><p>Flow dir per cell → accumulation grid.</p><span class="mono" style="color:#34d399">● D8</span></div>
+<div class="algo-card" style="border-left:3px solid #ef4444"><h4>Depth / Extent</h4><code>water balance + threshold</code><p>Depth 0–3.5m, extent if &gt;0.15m, velocity 0.2+0.5*depth.</p><span class="mono" style="color:#34d399">● OUTPUT JSON</span></div>
+</div>
+<div class="pipe-cards" style="margin-top:16px">
+<div class="pipe-card">
+<h4>▶ Run Simulation</h4>
+<pre style="font-size:.7rem">python scripts/simulate.py --P 120 --CN 78 --t 45
+python scripts/simulate.py --P 210 --CN 85 --t 90 --grid 100
+# → data/processed/simulation/result.json
+cat data/processed/simulation/result.json</pre>
+<pre id="m4-result" style="font-size:.68rem;margin-top:8px;background:#08121f;padding:8px;border-radius:8px;overflow:auto">P=120 CN=78 t=45 → depth_max=0.71 mean=0.60 flooded=100% velocity=0.50</pre>
+<a href="scripts/simulate.py" download class="btn btn-outline" style="margin-top:8px;width:100%;padding:7px;font-size:.75rem">⤓ simulate.py</a>
+</div>
+<div class="pipe-card">
+<h4>📊 Algorithm Chain</h4>
+<table><tr><th>Step</th><th>Method</th><th>Output</th></tr><tr><td>Runoff</td><td>SCS CN</td><td>Q mm</td></tr><tr><td>Direction</td><td>D8</td><td>code 1–128</td></tr><tr><td>Accum.</td><td>grid</td><td>upstream count</td></tr><tr><td>Routing</td><td>terrain</td><td>flow path</td></tr><tr><td>Depth</td><td>balance</td><td>m</td></tr><tr><td>Extent</td><td>threshold 0.15m</td><td>mask</td></tr></table>
+<small>Feeds <code>#simulation</code> 3D view below — water height = depth.</small>
+</div>
+</div>
+<div class="why-card" style="margin-top:16px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center">
+<div>
+<h4>✅ Module 4 Ready</h4>
+<p style="font-size:.82rem;margin-top:4px">✔ SCS + D8 + accumulation + depth in NumPy • ✔ CLI with --P/--CN/--t • ✔ JSON output. <b>Next: Module 5 visualizes this in Three.js.</b></p>
+</div>
+<a href="#simulation" class="btn btn-ghost">Go to 3D →</a>
 </div>
 </div>
 </section>
