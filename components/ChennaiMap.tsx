@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
+import { CHENNAI_RELIEF_SHELTERS } from "./EvacuationRouting";
 
 const CHENNAI_CRITICAL_INFRASTRUCTURE = [
   { name: "Ripon Building (GCC HQ)", lat: 13.0827, lng: 80.2755, type: "Command Center", basin: "Cooum Basin", risk: "Medium" },
@@ -80,6 +81,7 @@ export default function ChennaiMap({
         rainfall: "#38bdf8",
         hotspots: "#ef4444",
         inundation: "#dc2626",
+        shelters: "#10b981",
       };
 
       async function loadGeoJson(name: string, file: string, style: any, pointHandler?: any) {
@@ -154,6 +156,29 @@ export default function ChennaiMap({
         }).bindPopup(`<b>${f.properties?.station} Station</b><br>Rainfall: ${f.properties?.rainfall_mm} mm<br>CN Zone: ${f.properties?.cn_zone}`)
       );
 
+      // Evacuation Shelters & Hospitals Layer (from CrisisFlow)
+      const shelterGroup = L.layerGroup();
+      CHENNAI_RELIEF_SHELTERS.forEach((sh) => {
+        const marker = L.circleMarker([sh.lat, sh.lng], {
+          radius: 8,
+          fillColor: colors.shelters,
+          color: "#ffffff",
+          weight: 2,
+          fillOpacity: 0.95,
+        });
+        marker.bindPopup(`
+          <div style="font-family: sans-serif; font-size: 12px;">
+            <b>🏥 ${sh.name}</b><br/>
+            <span style="color:#64748b;">${sh.type}</span><br/>
+            <span style="color:#10b981; font-weight:bold;">Available Beds: ${sh.bedsAvailable} / ${sh.capacity}</span><br/>
+            <span style="color:${sh.dryAccess ? "#10b981" : "#f59e0b"}; font-size:11px;">Access: ${sh.dryAccess ? "High Ground Safe" : "Passable via Detour"}</span>
+          </div>
+        `);
+        marker.addTo(shelterGroup);
+      });
+      shelterGroup.addTo(map);
+      layers.shelters = shelterGroup;
+
       // Add Critical Infrastructure Markers Layer
       const landmarkGroup = L.layerGroup();
       CHENNAI_CRITICAL_INFRASTRUCTURE.forEach((lm) => {
@@ -179,8 +204,8 @@ export default function ChennaiMap({
             name: lm.name,
             bounds: { xmin: lm.lng - delta, xmax: lm.lng + delta, ymin: lm.lat - delta, ymax: lm.lat + delta },
             center: [lm.lng, lm.lat],
-            lat: lm.lat,
-            lng: lm.lng,
+            lat,
+            lng,
           });
         });
         marker.addTo(landmarkGroup);
@@ -188,7 +213,7 @@ export default function ChennaiMap({
       landmarkGroup.addTo(map);
       layers.landmarks = landmarkGroup;
 
-      const total = cBld + cRoad + cWater + cHot + cRain + CHENNAI_CRITICAL_INFRASTRUCTURE.length;
+      const total = cBld + cRoad + cWater + cHot + cRain + CHENNAI_CRITICAL_INFRASTRUCTURE.length + CHENNAI_RELIEF_SHELTERS.length;
       if (countRef.current) countRef.current.textContent = `${total.toLocaleString()} features loaded`;
 
       setTimeout(() => map.invalidateSize(), 250);
@@ -242,7 +267,7 @@ export default function ChennaiMap({
   return (
     <div>
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10, alignItems: "center" }}>
-        {["all", "buildings", "highway", "water", "hotspots", "rainfall", "landmarks"].map((key) => (
+        {["all", "buildings", "highway", "water", "hotspots", "rainfall", "shelters", "landmarks"].map((key) => (
           <button
             key={key}
             onClick={() => handleLayerToggle(key)}
@@ -250,7 +275,7 @@ export default function ChennaiMap({
               currentLayerFilter === key ? "bg-cyan-500 text-black font-bold" : "bg-[#0f1e2e] text-[#8aa0b8] border border-[#1e3a5a] hover:text-white"
             }`}
           >
-            {key === "highway" ? "Road Network" : key === "hotspots" ? "2015 Hotspots" : key === "water" ? "Waterways" : key}
+            {key === "highway" ? "Road Network" : key === "hotspots" ? "2015 Hotspots" : key === "water" ? "Waterways" : key === "shelters" ? "🏥 Hospitals / Relief" : key}
           </button>
         ))}
         <span ref={countRef} className="mono" style={{ marginLeft: "auto", fontSize: ".72rem", color: "#8aa0b8" }}>

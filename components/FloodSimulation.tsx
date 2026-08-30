@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState, useMemo } from "react";
 import * as THREE from "three";
+import RainParticleOverlay from "./RainParticleOverlay";
 
 const CHENNAI_BOUNDS = { xmin: 80.10, xmax: 80.35, ymin: 12.88, ymax: 13.25 };
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
@@ -63,6 +64,7 @@ interface FloodSimulationProps {
   viewMode?: ViewMode;
   currentHour?: number;
   isPlaying?: boolean;
+  rainOverlayEnabled?: boolean;
   onTimeChange?: (h: number) => void;
   layers?: {
     terrain?: boolean;
@@ -85,6 +87,7 @@ export default function FloodSimulation({
   viewMode = "digital_twin",
   currentHour = 0,
   isPlaying = false,
+  rainOverlayEnabled = true,
   onTimeChange,
   layers: externalLayers,
   onSelectObject,
@@ -95,9 +98,9 @@ export default function FloodSimulation({
   const requestIdRef = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const [P, setP] = useState(externalP ?? 140);
-  const [CN, setCN] = useState(externalCN ?? 82);
-  const [t, setT] = useState(externalT ?? 45);
+  const [P, setP] = useState(externalP ?? 160);
+  const [CN, setCN] = useState(externalCN ?? 84);
+  const [t, setT] = useState(externalT ?? 60);
   const [cameraView, setCameraView] = useState<"3d" | "top" | "street" | "aoi">("3d");
 
   const [showBuildings, setShowBuildings] = useState(true);
@@ -140,7 +143,7 @@ export default function FloodSimulation({
 
   const currentVelocity = useMemo(() => {
     if (timeSeries.length > 0 && currentHour >= 0 && currentHour < timeSeries.length) {
-      return timeSeries[currentHour]?.velocity || (0.2 + currentTimeValue * 0.5);
+      return timeSeries[currentHour]?.velocity || 0.2 + currentTimeValue * 0.5;
     }
     return 0.2 + currentTimeValue * 0.5;
   }, [timeSeries, currentHour, currentTimeValue]);
@@ -380,11 +383,11 @@ export default function FloodSimulation({
       raf = requestAnimationFrame(animate);
       phase += isPlaying ? 0.01 : 0.003;
 
-      // Update water mesh elevation & ripples
+      // Update water mesh elevation, wave dynamics & caustics
       if (ctx.water) {
         const pos: any = ctx.water.geometry.attributes.position;
         for (let i = 0; i < pos.count; i++) {
-          pos.setZ(i, Math.sin(pos.getX(i) * 1.1 + phase * 3) * 0.035);
+          pos.setZ(i, Math.sin(pos.getX(i) * 1.1 + phase * 3) * 0.035 + Math.cos(pos.getY(i) * 0.95 + phase * 2.2) * 0.025);
         }
         pos.needsUpdate = true;
         (ctx.water.material as any).uniforms.time.value = phase;
@@ -428,13 +431,16 @@ export default function FloodSimulation({
   return (
     <div className="sim-layout">
       <div className="sim-canvas-wrap" style={{ position: "relative", background: "#040a14", borderRadius: 16, overflow: "hidden", border: "1px solid #1e3a5a" }}>
+        {/* Dynamic Canvas Rain Storm Particle Overlay (from CrisisFlow) */}
+        <RainParticleOverlay rainfall={P} enabled={rainOverlayEnabled} windAngle={18} />
+
         {/* Status HUD Badge */}
-        <div id="sim-status" style={{ position: "absolute", top: 12, left: 12, zIndex: 2, background: "rgba(4,10,20,0.85)", backdropFilter: "blur(8px)", padding: "5px 12px", borderRadius: 999, fontSize: ".72rem", border: "1px solid #1e3a5a", fontFamily: "JetBrains Mono", color: "#22d3ee" }}>
+        <div id="sim-status" style={{ position: "absolute", top: 12, left: 12, zIndex: 6, background: "rgba(4,10,20,0.85)", backdropFilter: "blur(8px)", padding: "5px 12px", borderRadius: 999, fontSize: ".72rem", border: "1px solid #1e3a5a", fontFamily: "JetBrains Mono", color: "#22d3ee" }}>
           {loading ? "Computing Hydrology..." : "Digital Twin Online"}
         </div>
 
         {/* Camera Preset Toolbar */}
-        <div style={{ position: "absolute", top: 12, left: 190, zIndex: 2, display: "flex", gap: 3, background: "rgba(4,10,20,0.8)", backdropFilter: "blur(6px)", padding: "3px 4px", borderRadius: 999, border: "1px solid #1e3a5a" }}>
+        <div style={{ position: "absolute", top: 12, left: 190, zIndex: 6, display: "flex", gap: 3, background: "rgba(4,10,20,0.8)", backdropFilter: "blur(6px)", padding: "3px 4px", borderRadius: 999, border: "1px solid #1e3a5a" }}>
           <button onClick={() => setCameraPreset("3d")} className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition ${cameraView === "3d" ? "bg-cyan-500 text-black" : "text-[#8aa0b8] hover:text-white"}`}>3D Orbit</button>
           <button onClick={() => setCameraPreset("top")} className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition ${cameraView === "top" ? "bg-cyan-500 text-black" : "text-[#8aa0b8] hover:text-white"}`}>Nadir 2D</button>
           <button onClick={() => setCameraPreset("street")} className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition ${cameraView === "street" ? "bg-cyan-500 text-black" : "text-[#8aa0b8] hover:text-white"}`}>Street</button>
@@ -446,7 +452,7 @@ export default function FloodSimulation({
 
         {/* Telemetry & Provenance HUD */}
         {debug && (
-          <div style={{ position: "absolute", bottom: 12, left: 12, background: "rgba(4,10,20,0.85)", backdropFilter: "blur(10px)", border: "1px solid #1e3a5a", borderRadius: 12, padding: "10px 14px", fontSize: ".65rem", fontFamily: "JetBrains Mono", lineHeight: 1.45, maxWidth: "70%", zIndex: 2 }}>
+          <div style={{ position: "absolute", bottom: 12, left: 12, background: "rgba(4,10,20,0.85)", backdropFilter: "blur(10px)", border: "1px solid #1e3a5a", borderRadius: 12, padding: "10px 14px", fontSize: ".65rem", fontFamily: "JetBrains Mono", lineHeight: 1.45, maxWidth: "70%", zIndex: 6 }}>
             <div style={{ fontWeight: 700, color: "#22d3ee", display: "flex", gap: 8 }}>
               <span>PROVENANCE: {selectedArea?.name || debug.aoi?.id}</span>
               <span style={{ color: "#38bdf8" }}>[{viewMode.toUpperCase()}]</span>
@@ -461,7 +467,7 @@ export default function FloodSimulation({
         )}
 
         {/* Legend Overlay */}
-        <div style={{ position: "absolute", top: 12, right: 12, background: "rgba(4,10,20,0.85)", backdropFilter: "blur(8px)", border: "1px solid #1e3a5a", borderRadius: 12, padding: "8px 12px", fontSize: ".68rem", lineHeight: 1.4, zIndex: 2 }}>
+        <div style={{ position: "absolute", top: 12, right: 12, background: "rgba(4,10,20,0.85)", backdropFilter: "blur(8px)", border: "1px solid #1e3a5a", borderRadius: 12, padding: "8px 12px", fontSize: ".68rem", lineHeight: 1.4, zIndex: 6 }}>
           <div style={{ fontWeight: 700, color: "#e6eef8" }}>
             {selectedArea?.center ? `${selectedArea.center[1].toFixed(3)}°N, ${selectedArea.center[0].toFixed(3)}°E` : "Chennai South Basin"}
           </div>
@@ -595,11 +601,9 @@ function generateTerrainForAOI(terrain: THREE.Mesh, aoi: any, viewMode: ViewMode
   for (let i = 0; i < zVals.length; i++) {
     const t = (zVals[i] - minZ) / (maxZ - minZ || 1);
     if (viewMode === "hydrology") {
-      // Contour banding
       const band = Math.floor(t * 12) % 2;
       color.setHSL(0.55, 0.6, band === 0 ? 0.15 : 0.35);
     } else if (viewMode === "data_quality") {
-      // High confidence DEM coloring
       color.setHSL(0.45, 0.5, 0.25 + t * 0.2);
     } else {
       if (t < 0.25) color.setHSL(0.42, 0.35, 0.18 + t * 0.3);
@@ -763,6 +767,7 @@ function createProScene(canvas: HTMLCanvasElement, opts: { isHero?: boolean; d?:
   (grid as any).material.transparent = true;
   scene.add(grid);
 
+  // Caustic Water Simulation Shader (inspired by webgl-water & WebFlood)
   const wgeo = new THREE.PlaneGeometry(13.4, 13.4, 64, 64);
   const waterMat = new THREE.ShaderMaterial({
     uniforms: {
@@ -795,8 +800,13 @@ function createProScene(canvas: HTMLCanvasElement, opts: { isHero?: boolean; d?:
         vec3 deep = vec3(0.94, 0.27, 0.27);
         vec3 col = mix(shallow, mid, smoothstep(0.0, 0.45, d));
         col = mix(col, deep, smoothstep(0.45, 0.95, d));
-        float ripple = sin(vUv.x * 22.0 + vWave * 40.0) * 0.04 + cos(vUv.y * 18.0 - vWave * 30.0) * 0.04;
-        col += ripple;
+        
+        // Caustic light pattern modulation
+        float c1 = sin(vUv.x * 32.0 + vWave * 45.0) * cos(vUv.y * 32.0 - vWave * 35.0);
+        float c2 = cos(vUv.x * 24.0 - vWave * 20.0) * sin(vUv.y * 24.0 + vWave * 25.0);
+        float caustics = clamp(pow(max(0.0, c1 + c2), 3.0) * 0.35, 0.0, 0.4);
+        col += caustics * (1.0 - d * 0.5);
+
         float foam = smoothstep(0.48, 0.52, fract(vUv.x * 6.0 + vWave * 2.0)) * 0.12 * (1.0 - d * 0.5);
         col += foam;
         gl_FragColor = vec4(col, opacity + d * 0.22);
