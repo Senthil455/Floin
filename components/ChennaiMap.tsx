@@ -2,21 +2,23 @@
 import { useEffect, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
 
-const CHENNAI_LANDMARKS = [
-  { name: "Ripon Building (GCC HQ)", lat: 13.0827, lng: 80.2755, type: "Government Building", risk: "Medium" },
-  { name: "Tidel Park (IT Corridor)", lat: 12.9893, lng: 80.2483, type: "Tech Hub", risk: "High" },
-  { name: "Chennai Central Station", lat: 13.0823, lng: 80.2754, type: "Transit Hub", risk: "Medium" },
-  { name: "Adyar River Estuary", lat: 13.0102, lng: 80.2645, type: "Waterway / Basin", risk: "High" },
-  { name: "Marina Beach / Cooum Mouth", lat: 13.0625, lng: 80.2825, type: "Coastal Outfall", risk: "Low" },
-  { name: "Chembarambakkam Reservoir", lat: 13.0118, lng: 80.0578, type: "Reservoir Outflow", risk: "Critical" },
-  { name: "Ennore Port & Creek", lat: 13.2312, lng: 80.3245, type: "Industrial Coastal", risk: "High" },
+const CHENNAI_CRITICAL_INFRASTRUCTURE = [
+  { name: "Ripon Building (GCC HQ)", lat: 13.0827, lng: 80.2755, type: "Command Center", basin: "Cooum Basin", risk: "Medium" },
+  { name: "Tidel Park (OMR Tech Corridor)", lat: 12.9893, lng: 80.2483, type: "IT Infrastructure", basin: "Kovalam / Buckingham", risk: "High" },
+  { name: "Chennai Central Railway Station", lat: 13.0823, lng: 80.2754, type: "Transit Terminal", basin: "Buckingham Canal", risk: "Medium" },
+  { name: "Adyar River Estuary / Saidapet", lat: 13.0102, lng: 80.2645, type: "River Outfall", basin: "Adyar Basin", risk: "Critical" },
+  { name: "Chembarambakkam Reservoir", lat: 13.0118, lng: 80.0578, type: "Water Storage / Sluice", basin: "Adyar Headwaters", risk: "Critical" },
+  { name: "Poondi Reservoir (Sathyamurthy)", lat: 13.1912, lng: 79.8601, type: "Major Reservoir", basin: "Kosasthalaiyar", risk: "High" },
+  { name: "Red Hills / Puzhal Lake", lat: 13.1856, lng: 80.1745, type: "Urban Drinking Storage", basin: "Puzhal Basin", risk: "Medium" },
+  { name: "Ennore Creek & Port Channel", lat: 13.2312, lng: 80.3245, type: "Coastal Outfall", basin: "Kosasthalaiyar Delta", risk: "High" },
+  { name: "Velachery Lowland Intersection", lat: 12.9785, lng: 80.2185, type: "Urban Marsh Area", basin: "Pallikaranai Marsh", risk: "Critical" },
 ];
 
 export default function ChennaiMap({
   selectedArea,
   onSelectArea,
   onSelectFeature,
-  aoiSizeKm = 1,
+  aoiSizeKm = 1.5,
   onMapClick,
   activeLayer = "all",
 }: {
@@ -39,11 +41,11 @@ export default function ChennaiMap({
       if (!ref.current) return;
       if ((ref.current as any)._leaflet_map) return;
 
-      const map = L.map(ref.current, { zoomControl: true }).setView([13.08, 80.26], 11);
+      const map = L.map(ref.current, { zoomControl: true }).setView([13.08, 80.25], 11);
       (ref.current as any)._leaflet_map = map;
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap contributors",
+        attribution: "© OpenStreetMap • Chennai Flood Intelligence",
         maxZoom: 18,
       }).addTo(map);
 
@@ -54,15 +56,15 @@ export default function ChennaiMap({
       // Click listener for AOI creation
       map.on("click", (e: any) => {
         const { lat, lng } = e.latlng;
-        if (lng < 80.05 || lng > 80.40 || lat < 12.85 || lat > 13.30) return;
+        if (lng < 79.80 || lng > 80.45 || lat < 12.80 || lat > 13.35) return;
 
         if (onMapClick) {
           onMapClick(lat, lng);
         } else if (onSelectArea) {
-          const delta = (aoiSizeKm || 1) / 111;
+          const delta = (aoiSizeKm || 1.5) / 111;
           onSelectArea({
             id: `click-${Date.now()}`,
-            name: `AOI ${lat.toFixed(3)}, ${lng.toFixed(3)}`,
+            name: `AOI (${lat.toFixed(3)}°N, ${lng.toFixed(3)}°E)`,
             bounds: { xmin: lng - delta, xmax: lng + delta, ymin: lat - delta, ymax: lat + delta },
             center: [lng, lat],
             lat,
@@ -97,7 +99,7 @@ export default function ChennaiMap({
                   name: nameStr,
                   type: f.geometry.type,
                   properties: props,
-                  depth: props.rainfall_mm ? `${(props.rainfall_mm / 120).toFixed(2)}m` : "0.45m",
+                  depth: props.rainfall_mm ? `${(props.rainfall_mm / 120).toFixed(2)}m` : "0.52m",
                 });
                 const b = (ly as any).getBounds?.();
                 if (b && onSelectArea) {
@@ -110,7 +112,7 @@ export default function ChennaiMap({
                   });
                 }
               });
-              ly.bindPopup(`<b>${f.properties?.name || f.properties?.Location || f.properties?.station || "Chennai Feature"}</b><br><small>${name} • Click to focus</small>`);
+              ly.bindPopup(`<b>${f.properties?.name || f.properties?.Location || f.properties?.station || "Chennai Asset"}</b><br><small>${name} • Click to focus</small>`);
             },
           }).addTo(map);
           layers[name] = l;
@@ -123,16 +125,17 @@ export default function ChennaiMap({
       const cBld = await loadGeoJson("buildings", "buildings.geojson", { color: colors.buildings, weight: 1, fillOpacity: 0.35 });
       const cRoad = await loadGeoJson("highway", "highway.geojson", { color: colors.highway, weight: 2, fillOpacity: 0.3 });
       const cWater = await loadGeoJson("water", "natural_water.geojson", { color: colors.water, weight: 1.5, fillOpacity: 0.5 });
-      
+
       try {
         const wj = await fetch("/waterway.geojson").then((r) => r.json());
-        L.geoJSON(wj, { style: { color: colors.water, weight: 2 } }).addTo(map);
+        const wl = L.geoJSON(wj, { style: { color: colors.water, weight: 2.5 } }).addTo(map);
+        layers.waterway = wl;
       } catch {}
 
       // 2015 Hotspots
       const cHot = await loadGeoJson("hotspots", "chennai2015_hotspots.geojson", {}, (f: any, latlng: any) =>
         L.circleMarker(latlng, {
-          radius: 6,
+          radius: 6.5,
           fillColor: colors.hotspots,
           color: "#fff",
           weight: 1.5,
@@ -143,27 +146,34 @@ export default function ChennaiMap({
       // Rainfall Stations
       const cRain = await loadGeoJson("rainfall", "rainfall_stations.geojson", {}, (f: any, latlng: any) =>
         L.circleMarker(latlng, {
-          radius: 7,
+          radius: 7.5,
           fillColor: colors.rainfall,
           color: "#0f172a",
           weight: 2,
-          fillOpacity: 0.85,
+          fillOpacity: 0.9,
         }).bindPopup(`<b>${f.properties?.station} Station</b><br>Rainfall: ${f.properties?.rainfall_mm} mm<br>CN Zone: ${f.properties?.cn_zone}`)
       );
 
-      // Add Landmark Pins Layer
+      // Add Critical Infrastructure Markers Layer
       const landmarkGroup = L.layerGroup();
-      CHENNAI_LANDMARKS.forEach((lm) => {
+      CHENNAI_CRITICAL_INFRASTRUCTURE.forEach((lm) => {
         const marker = L.circleMarker([lm.lat, lm.lng], {
-          radius: 8,
+          radius: 8.5,
           fillColor: lm.risk === "Critical" ? "#dc2626" : lm.risk === "High" ? "#ea580c" : "#0284c7",
           color: "#ffffff",
           weight: 2,
           fillOpacity: 0.95,
         });
-        marker.bindPopup(`<b>${lm.name}</b><br><small>${lm.type} • Risk: ${lm.risk}</small><br><button style="margin-top:4px;padding:2px 8px;border-radius:4px;background:#06b6d4;color:#000;border:none;cursor:pointer;font-size:11px">Simulate Here</button>`);
+        marker.bindPopup(`
+          <div style="font-family: sans-serif; font-size: 12px;">
+            <b>${lm.name}</b><br>
+            <span style="color:#64748b;">${lm.type} • Basin: ${lm.basin}</span><br>
+            <span style="color:${lm.risk === "Critical" ? "#ef4444" : "#f59e0b"}; font-weight: bold;">Risk: ${lm.risk}</span><br>
+            <button style="margin-top:6px; padding:3px 8px; border-radius:4px; background:#06b6d4; color:#000; font-weight:bold; border:none; cursor:pointer;">Simulate Catchment</button>
+          </div>
+        `);
         marker.on("click", () => {
-          const delta = (aoiSizeKm || 1) / 111;
+          const delta = (aoiSizeKm || 1.5) / 111;
           onSelectArea?.({
             id: `landmark-${lm.name.toLowerCase().replace(/\s+/g, "-")}`,
             name: lm.name,
@@ -178,7 +188,7 @@ export default function ChennaiMap({
       landmarkGroup.addTo(map);
       layers.landmarks = landmarkGroup;
 
-      const total = cBld + cRoad + cWater + cHot + cRain + CHENNAI_LANDMARKS.length;
+      const total = cBld + cRoad + cWater + cHot + cRain + CHENNAI_CRITICAL_INFRASTRUCTURE.length;
       if (countRef.current) countRef.current.textContent = `${total.toLocaleString()} features loaded`;
 
       setTimeout(() => map.invalidateSize(), 250);
@@ -193,6 +203,7 @@ export default function ChennaiMap({
       try {
         if (rectRef.current) mapRef.current.removeLayer(rectRef.current);
         const b = selectedArea.bounds;
+        if (!b) return;
         rectRef.current = L.rectangle(
           [
             [b.ymin, b.xmin],
@@ -239,14 +250,14 @@ export default function ChennaiMap({
               currentLayerFilter === key ? "bg-cyan-500 text-black font-bold" : "bg-[#0f1e2e] text-[#8aa0b8] border border-[#1e3a5a] hover:text-white"
             }`}
           >
-            {key === "highway" ? "Roads" : key === "hotspots" ? "2015 Hotspots" : key}
+            {key === "highway" ? "Road Network" : key === "hotspots" ? "2015 Hotspots" : key === "water" ? "Waterways" : key}
           </button>
         ))}
-        <span ref={countRef} className="mono" style={{ marginLeft: "auto", fontSize: ".75rem", color: "#8aa0b8" }}>
+        <span ref={countRef} className="mono" style={{ marginLeft: "auto", fontSize: ".72rem", color: "#8aa0b8" }}>
           Ready
         </span>
       </div>
-      <div ref={ref} style={{ height: 400, borderRadius: 14, overflow: "hidden", border: "1px solid #1e3a5a", background: "#08121f" }} />
+      <div ref={ref} style={{ height: 410, borderRadius: 14, overflow: "hidden", border: "1px solid #1e3a5a", background: "#08121f" }} />
     </div>
   );
 }
