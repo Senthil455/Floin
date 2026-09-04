@@ -461,8 +461,26 @@ function generateTerrainForAOI(terrain: THREE.Mesh, aoi: any, viewMode: ViewMode
     colors.push(color.r,color.g,color.b);
   }
   (geo as any).setAttribute("color", new THREE.Float32BufferAttribute(colors,3)); (geo as any).computeVertexNormals(); geo.attributes.position.needsUpdate=true;
+  // Detail: add contour isolines to scene for survey map feel (every 0.5m)
+  try {
+    const sceneRef=(terrain as any).__sceneRef;
+    if(sceneRef && (terrain as any).__contourGroup){
+      const cg=(terrain as any).__contourGroup as THREE.Group; cg.clear();
+      const levels=5; for(let l=1;l<=levels;l++){
+        const t=l/(levels+1); const elev=minZ + (maxZ-minZ)*t;
+        const pts:THREE.Vector3[]=[];
+        for(let i=0;i<pos.count;i++){ if(Math.abs(zVals[i]-elev)<0.04) pts.push(new THREE.Vector3(pos.getX(i), elev -1.2 +0.02, pos.getY(i))); }
+        if(pts.length>6){
+          const g=new THREE.BufferGeometry().setFromPoints(pts.slice(0,120));
+          const m=new THREE.LineBasicMaterial({ color:0x8B7355, transparent:true, opacity:0.22, depthWrite:false });
+          const line=new THREE.Line(g,m); cg.add(line);
+        }
+      }
+    }
+  } catch {}
   const basinLabel = aoi.id ? aoi.id.toUpperCase() : "BASIN";
-  return { min:Math.max(0.6,(minZ+1.2)*3.5+profile.base*0.4), max:Math.max(8.5,(maxZ+1.2)*7+profile.base*0.6), grid:`${(geo as any).attributes.position.count} cells`, source:`SRTM DEM 30m / ${basinLabel} - ${viewMode}`, bounds:aoi.bounds, profile: profile.base };
+  const segLabel = Math.sqrt(pos.count).toFixed(0);
+  return { min:Math.max(0.6,(minZ+1.2)*3.5+profile.base*0.4), max:Math.max(8.5,(maxZ+1.2)*7+profile.base*0.6), grid:`${(geo as any).attributes.position.count} cells • contours 5`, source:`SRTM DEM 30m / ${basinLabel} - ${viewMode} · ${segLabel}seg`, bounds:aoi.bounds, profile: profile.base };
 }
 function applyCachedResult(ctx:any,cached:any,aoi:any,viewMode:ViewMode){
   generateTerrainForAOI(ctx.terrain,aoi,viewMode);
@@ -494,10 +512,11 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
   const hemi=new THREE.HemisphereLight(0xdbeafe,0x0a1a2e,0.95); scene.add(hemi);
   const dir=new THREE.DirectionalLight(0xffffff,0.9); dir.position.set(8,12,6); dir.castShadow=true; dir.shadow.mapSize.set(1024,1024); dir.shadow.camera.near=0.5; dir.shadow.camera.far=30; dir.shadow.camera.left=-10; dir.shadow.camera.right=10; dir.shadow.camera.top=10; dir.shadow.camera.bottom=-10; dir.shadow.bias=-0.0005; scene.add(dir);
   const fill=new THREE.DirectionalLight(0x7dd3fc,0.4); fill.position.set(-6,5,-4); scene.add(fill);
-  const aoiW=opts.aoi?.bounds?Math.abs(opts.aoi.bounds.xmax-opts.aoi.bounds.xmin):0.25; const seg=aoiW>0.15?90:72; const size=14;
-  const geo=new THREE.PlaneGeometry(size,size,seg,seg); const tmat=new THREE.MeshStandardMaterial({ vertexColors:true, roughness:0.92, metalness:0.02 }); const terrain=new THREE.Mesh(geo,tmat); terrain.rotation.x=-Math.PI/2; terrain.position.y=-1.2; terrain.receiveShadow=true; scene.add(terrain);
+  const aoiW=opts.aoi?.bounds?Math.abs(opts.aoi.bounds.xmax-opts.aoi.bounds.xmin):0.25; const seg=aoiW>0.15?140:110; const size=14;
+  const geo=new THREE.PlaneGeometry(size,size,seg,seg); const tmat=new THREE.MeshStandardMaterial({ vertexColors:true, roughness:0.88, metalness:0.02 }); const terrain=new THREE.Mesh(geo,tmat); terrain.rotation.x=-Math.PI/2; terrain.position.y=-1.2; terrain.receiveShadow=true; scene.add(terrain);
   if(opts.aoi) generateTerrainForAOI(terrain,opts.aoi,opts.viewMode);
-  const grid=new THREE.GridHelper(size,14,0x1e3a5a,0x0f1e2e); (grid as any).position.y=-1.19; (grid as any).material.opacity=0.18; (grid as any).material.transparent=true; (grid as any).material.depthWrite=false; scene.add(grid);
+  const grid=new THREE.GridHelper(size,28,0x1e3a5a,0x0f1e2e); (grid as any).position.y=-1.19; (grid as any).material.opacity=0.14; (grid as any).material.transparent=true; (grid as any).material.depthWrite=false; scene.add(grid);
+  const contourGroup=new THREE.Group(); scene.add(contourGroup); (scene as any).userData.contourGroup=contourGroup; (terrain as any).__contourGroup=contourGroup; (terrain as any).__sceneRef=scene;
   const wSeg=opts.viewMode==="depth_heatmap"?64:40; const wgeo=new THREE.PlaneGeometry(13.4,13.4,wSeg,wSeg);
   const waterMat=new THREE.ShaderMaterial({
     uniforms:{ time:{value:0}, depth:{value:opts.d??0.5}, opacity:{value:opts.viewMode==="depth_heatmap"?0.72:0.54}, rippleCenter:{value:new THREE.Vector2(0.5,0.5)}, rippleTime:{value:10} },
@@ -543,7 +562,7 @@ function updateBuildingImpact(group:THREE.Group,depth:number,viewMode:ViewMode){
 function buildBuildings(group:THREE.Group,features:any[],viewMode:ViewMode,aoi?:any){
   group.clear(); if(!features||features.length===0) return;
   const basin=aoi?.id||"all";
-  const cap = basin==="central"?380 : basin==="velachery"?160 : basin==="chembarambakkam"?90 : basin==="ennore"?220 : 340;
+  const cap = basin==="central"?520 : basin==="velachery"?240 : basin==="chembarambakkam"?140 : basin==="ennore"?320 : 480;
   const capped=features.length>cap?features.filter((_,i)=>i%Math.ceil(features.length/cap)===0).slice(0,cap):features;
   const isVelachery=basin==="velachery", isEnnore=basin==="ennore", isChem=basin==="chembarambakkam";
   const winTex=viewMode==="digital_twin"?createWindowTexture():null;
