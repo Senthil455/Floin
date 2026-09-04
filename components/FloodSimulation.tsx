@@ -33,29 +33,30 @@ function lngLatToXZ(lng: number, lat: number, size = 14) {
   return [(nx - 0.5) * size, (ny - 0.5) * size] as const;
 }
 
+let _winTex: THREE.CanvasTexture | null = null;
 function createWindowTexture() {
+  if (_winTex) return _winTex;
   const c = document.createElement("canvas");
-  c.width = 256;
-  c.height = 256;
+  c.width = 256; c.height = 256;
   const ctx = c.getContext("2d")!;
-  ctx.fillStyle = "#cbd5e1";
-  ctx.fillRect(0, 0, 256, 256);
+  ctx.fillStyle = "#cbd5e1"; ctx.fillRect(0, 0, 256, 256);
   ctx.fillStyle = "#0f172a";
-  for (let y = 20; y < 236; y += 32) {
-    for (let x = 16; x < 240; x += 28) {
-      ctx.fillRect(x, y, 18, 22);
-      ctx.fillStyle = y % 64 === 20 ? "#38bdf8" : "#0f172a";
-      ctx.fillRect(x + 2, y + 2, 14, 18);
-      ctx.fillStyle = "#0f172a";
-    }
+  for (let y = 20; y < 236; y += 32) for (let x = 16; x < 240; x += 28) {
+    ctx.fillRect(x, y, 18, 22);
+    ctx.fillStyle = y % 64 === 20 ? "#38bdf8" : "#0f172a";
+    ctx.fillRect(x + 2, y + 2, 14, 18); ctx.fillStyle = "#0f172a";
   }
-  const t = new THREE.CanvasTexture(c);
-  t.wrapS = t.wrapT = THREE.RepeatWrapping;
-  return t;
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  _winTex = t; return t;
 }
 
 let requestCounter = 0;
 const cache = new Map<string, any>();
+const MAX_CACHE = 20;
+function cacheSet(k: string, v: any) {
+  if (cache.size >= MAX_CACHE) { const first = cache.keys().next().value; if (first) cache.delete(first); }
+  cache.set(k, v);
+}
 
 interface FloodSimulationProps {
   selectedArea?: any;
@@ -348,7 +349,7 @@ export default function FloodSimulation({
         const timeSeriesData = simResponse.timeSeries || [];
         setTimeSeries(timeSeriesData);
 
-        cache.set(cacheKey, {
+        cacheSet(cacheKey, {
           terrain: terrainStats,
           counts,
           simResult: simResponse,
@@ -923,7 +924,7 @@ function updateBuildingImpact(group: THREE.Group, depth: number, viewMode: ViewM
 function buildBuildings(group: THREE.Group, features: any[], viewMode: ViewMode) {
   group.clear();
   if (!features || features.length === 0) return;
-
+  const capped = features.length > 400 ? features.filter((_, i) => i % Math.ceil(features.length / 400) === 0).slice(0, 400) : features;
   const winTex = viewMode === "digital_twin" ? createWindowTexture() : null;
   const matBase = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.78, metalness: 0.04, map: winTex as any });
   const matAlt = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, roughness: 0.72, metalness: 0.06, map: winTex as any });
