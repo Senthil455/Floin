@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { fileFallbackQuery, tryPostGISQuery } from '@/app/lib/postgis';
 
 /**
  * POST /api/location/query
@@ -88,39 +87,18 @@ function geometryIntersectsBounds(
   return false;
 }
 
-// Load and filter GeoJSON features for AOI
-async function queryGeoJSONForAOI(
-  filename: string,
-  aoi: AOI
-): Promise<{ count: number; features: any[] }> {
-  try {
-    const filePath = path.join(process.cwd(), 'public', `${filename}.geojson`);
-    if (!fs.existsSync(filePath)) {
-      return { count: 0, features: [] };
+const TABLE_MAP: Record<string, string> = { buildings:"buildings", highway:"highway", waterway:"waterway", rainfall_stations:"rainfall_stations", chennai2015_inundation:"chennai2015_inundation", chennai2015_hotspots:"chennai2015_hotspots", chennai2015_flooded_streets:"chennai2015_flooded_streets" };
+async function queryGeoJSONForAOI(filename: string, aoi: AOI): Promise<{ count:number; features:any[] }>{
+  const table=TABLE_MAP[filename];
+  if(table && process.env.DATABASE_URL){
+    const sql=`SELECT ST_AsGeoJSON(geom)::json as geometry, row_to_json(t) - 'geom' as props FROM ${table} t WHERE ST_Intersects(geom, ST_MakeEnvelope($1,$2,$3,$4,4326)) LIMIT 500`;
+    const rows=await tryPostGISQuery(sql,[aoi.bounds.xmin, aoi.bounds.ymin, aoi.bounds.xmax, aoi.bounds.ymax]);
+    if(rows && rows.length>=0){
+      const features=rows.map((r:any)=>({ type:"Feature", geometry:r.geometry, properties:r.props }));
+      return { count: features.length, features };
     }
-
-    const content = fs.readFileSync(filePath, 'utf-8');
-    const geojson = JSON.parse(content);
-    const features = geojson.features || [];
-
-    const filtered = features.filter((f: any) => {
-      const geom = f.geometry;
-      if (!geom) return false;
-      return geometryIntersectsBounds(
-        geom.coordinates,
-        geom.type,
-        aoi.bounds
-      );
-    });
-
-    return {
-      count: filtered.length,
-      features: filtered.slice(0, 500), // Limit to 500 features for performance
-    };
-  } catch (error) {
-    console.error(`Error querying ${filename}:`, error);
-    return { count: 0, features: [] };
   }
+  return fileFallbackQuery(aoi as any, filename, 500);
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
