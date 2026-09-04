@@ -1,0 +1,28 @@
+{
+  "asset": { "version": "1.1", "tilesetVersion": "1.0.0 - Chennai Ledger LOD" },
+  "geometricError": 500,
+  "root": {
+    "boundingVolume": { "region": [1.396, 0.225, 1.404, 0.231, 0, 50] },
+    "geometricError": 200,
+    "refine": "REPLACE",
+    "content": { "uri": "tiles/0/central.b3dm" },
+    "children": [
+      {
+        "boundingVolume": { "region": [1.396, 0.225, 1.400, 0.229, 0, 30] },
+        "geometricError": 80,
+        "content": { "uri": "tiles/1/adyar.b3dm" }
+      },
+      {
+        "boundingVolume": { "region": [1.400, 0.229, 1.404, 0.231, 0, 30] },
+        "geometricError": 80,
+        "content": { "uri": "tiles/1/ennore.b3dm" }
+      },
+      {
+        "boundingVolume": { "region": [1.398, 0.227, 1.401, 0.229, 0, 20] },
+        "geometricError": 30,
+        "content": { "uri": "tiles/2/velachery.b3dm" }
+      }
+    ]
+  },
+  "extensions": { "FLOIN": { "basins": ["all","central","adyar","ennore","velachery","chembarambakkam"], "note": "Kempsey-style LOD 5.843m, s3://copernicus-dem-30m tiles, build_lod_tiles.py next" } }
+}

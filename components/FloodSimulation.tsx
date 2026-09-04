@@ -6,6 +6,14 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import RainParticleOverlay from "./RainParticleOverlay";
 import { useChennaiLive } from "@/hooks/useChennaiLive";
 import { wardForLngLat, wardDamage } from "@/app/lib/floodml-chennai";
+// @ts-ignore
+import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
+// @ts-ignore
+import { Line2 } from "three/examples/jsm/lines/Line2.js";
+// @ts-ignore
+import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
+// @ts-ignore
+import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
 
 const CHENNAI_BOUNDS = { xmin: 80.10, xmax: 80.35, ymin: 12.88, ymax: 13.25 };
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
@@ -141,23 +149,32 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
       raycaster.setFromCamera(mouse, ctx.camera);
       const hits=raycaster.intersectObjects([...ctx.buildingsGroup.children, ...ctx.hotspotsGroup.children, ctx.terrain]);
       if(hits.length>0){
-        const obj=hits[0].object as THREE.Mesh;
-        if(obj!==ctx.terrain && obj!==lastHovered){
-          if(lastHovered && (lastHovered.material as any).userData?.origEmissive!==undefined){
-            (lastHovered.material as THREE.MeshStandardMaterial).emissive.copy((lastHovered.material as any).userData.origEmissive);
-            (lastHovered.material as THREE.MeshStandardMaterial).emissiveIntensity=(lastHovered.material as any).userData.origIntensity||0;
+        const obj=hits[0].object as THREE.Mesh; const hitPoint=(hits[0] as any).point as THREE.Vector3;
+        const isBatched=(obj as any).userData?.isBatched;
+        if(obj!==ctx.terrain){
+          let name=(obj as any).userData?.name||"FEATURE";
+          if(isBatched && hitPoint && (obj as any).userData?.pickData){
+            const picks=(obj as any).userData.pickData as any[];
+            let best=picks[0], bd=Infinity;
+            for(const p of picks){ const [px,pz]=lngLatToXZ(p.x, p.z); const d=Math.hypot(px-hitPoint.x, pz-hitPoint.z); if(d<bd){ bd=d; best=p; } }
+            if(best) name=best.data?.name||name;
           }
-          if(obj.material){
-            (obj.material as any).userData.origEmissive=(obj.material as THREE.MeshStandardMaterial).emissive.clone();
-            (obj.material as any).userData.origIntensity=(obj.material as THREE.MeshStandardMaterial).emissiveIntensity||0;
-            (obj.material as THREE.MeshStandardMaterial).emissive=new THREE.Color(0xE6B422);
-            (obj.material as THREE.MeshStandardMaterial).emissiveIntensity=0.55;
-          }
-          lastHovered=obj as THREE.Mesh; hoveredRef.current=obj as THREE.Mesh;
+          if(obj!==lastHovered && !isBatched){
+            if(lastHovered && (lastHovered.material as any).userData?.origEmissive!==undefined){
+              (lastHovered.material as THREE.MeshStandardMaterial).emissive.copy((lastHovered.material as any).userData.origEmissive);
+              (lastHovered.material as THREE.MeshStandardMaterial).emissiveIntensity=(lastHovered.material as any).userData.origIntensity||0;
+            }
+            if(obj.material){
+              (obj.material as any).userData.origEmissive=(obj.material as THREE.MeshStandardMaterial).emissive.clone();
+              (obj.material as any).userData.origIntensity=(obj.material as THREE.MeshStandardMaterial).emissiveIntensity||0;
+              (obj.material as THREE.MeshStandardMaterial).emissive=new THREE.Color(0xE6B422);
+              (obj.material as THREE.MeshStandardMaterial).emissiveIntensity=0.55;
+            }
+            lastHovered=obj as THREE.Mesh; hoveredRef.current=obj as THREE.Mesh;
+          } else if(isBatched){ lastHovered=obj as THREE.Mesh; }
           canvas.style.cursor="pointer";
-          const name=(obj as any).userData?.name||"FEATURE";
           showTooltip(name, e.clientX-rect.left+12, e.clientY-rect.top-10);
-        } else if(obj===ctx.terrain){
+        } else {
           hideTooltip();
           if(lastHovered && (lastHovered.material as any).userData?.origEmissive){
             (lastHovered.material as THREE.MeshStandardMaterial).emissive.copy((lastHovered.material as any).userData.origEmissive);
@@ -211,9 +228,16 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
           (ctx.water.material as any).uniforms.rippleTime.value=0;
         }
         if(obj===ctx.terrain){
-          onSelectObject?.({ name:`Terrain Cell (${((pt.x/14+0.5)*(CHENNAI_BOUNDS.xmax-CHENNAI_BOUNDS.xmin)+CHENNAI_BOUNDS.xmin).toFixed(4)}°E, ${((pt.z/14+0.5)*(CHENNAI_BOUNDS.ymax-CHENNAI_BOUNDS.ymin)+CHENNAI_BOUNDS.ymin).toFixed(4)}°N)`, type:"Terrain Surface (DEM)", elevation:`${((pt.y+1.2)*5+2).toFixed(2)}m`, depth:`${d.toFixed(2)}m`, velocity:`${currentVelocity.toFixed(2)} m/s`, risk:d>0.8?"Critical":d>0.3?"Moderate":"Low", confidence:"High (SRTM 30m / D8 Modelled)" });
+          onSelectObject?.({ name:`Terrain Cell (${((pt.x/14+0.5)*(CHENNAI_BOUNDS.xmax-CHENNAI_BOUNDS.xmin)+CHENNAI_BOUNDS.xmin).toFixed(4)}degE, ${((pt.z/14+0.5)*(CHENNAI_BOUNDS.ymax-CHENNAI_BOUNDS.ymin)+CHENNAI_BOUNDS.ymin).toFixed(4)}degN)`, type:"Terrain Surface (DEM)", elevation:`${((pt.y+1.2)*5+2).toFixed(2)}m`, depth:`${d.toFixed(2)}m`, velocity:`${currentVelocity.toFixed(2)} m/s`, risk:d>0.8?"Critical":d>0.3?"Moderate":"Low", confidence:"High (SRTM 30m / D8 Modelled)" });
         } else if(obj.userData){
-          onSelectObject?.({ name:obj.userData.name||"Urban Feature", type:obj.userData.type||"Building Footprint", featureId:obj.userData.featureId||"OSM-Chennai", elevation:`${((pt.y+1.2)*5+2).toFixed(2)}m`, depth:`${d.toFixed(2)}m`, velocity:`${currentVelocity.toFixed(2)} m/s`, risk:d>0.8?"Critical / Evacuate":d>0.3?"Moderate Inundation":"Safe", confidence:"Observed OpenStreetMap / GCC 2015", levels:obj.userData.levels||2 });
+          let data=obj.userData;
+          if(data.isBatched && (hit as any).point){
+            const hp=(hit as any).point as THREE.Vector3;
+            let best=data.pickData?.[0]?.data, bd=Infinity;
+            for(const p of (data.pickData||[])){ const [px,pz]=lngLatToXZ(p.x, p.z); const d2=Math.hypot(px-hp.x, pz-hp.z); if(d2<bd){ bd=d2; best=p.data; } }
+            if(best) data=best;
+          }
+          onSelectObject?.({ name:data.name||"Urban Feature", type:data.type||"Building Footprint", featureId:data.featureId||"OSM-Chennai", elevation:`${((pt.y+1.2)*5+2).toFixed(2)}m`, depth:`${d.toFixed(2)}m`, velocity:`${currentVelocity.toFixed(2)} m/s`, risk:d>0.8?"Critical / Evacuate":d>0.3?"Moderate Inundation":"Safe", confidence:"Observed OpenStreetMap / GCC 2015", levels:data.levels||2, ward:data.ward, wardProb:data.wardProb });
         }
       }
     };
@@ -405,7 +429,20 @@ function generateTerrainForAOI(terrain: THREE.Mesh, aoi: any, viewMode: ViewMode
     if(aoi.id==="velachery") z-=Math.exp(-(dToAOI*dToAOI)/1.2)*0.45;
     if(aoi.id==="ennore") z+=Math.sin(y*2.2)*0.08;
     if(aoi.id==="chembarambakkam") z+=Math.cos(dx*0.9)*0.22;
+    // DSM -> DTM erosion (Korea): simple 3x3 blur for interior to remove tower spikes (WorldDEM tower clusters)
     pos.setZ(i,z); zVals.push(z); minZ=Math.min(minZ,z); maxZ=Math.max(maxZ,z);
+  }
+  // 1-pass erosion+blur (morphological) for DSM towers — if viewMode data_quality, skip
+  if(viewMode!=="data_quality"){
+    const seg2=Math.sqrt(pos.count);
+    const copy=zVals.slice();
+    for(let i=0;i<pos.count;i++){
+      const col=i % seg2, row=Math.floor(i/seg2);
+      if(col===0||row===0||col===seg2-1||row===seg2-1) continue;
+      const idx=i, idxL=idx-1, idxR=idx+1, idxU=idx-seg2, idxD=idx+seg2;
+      const avg=(copy[idx]*0.4 + copy[idxL]*0.15 + copy[idxR]*0.15 + copy[idxU]*0.15 + copy[idxD]*0.15);
+      if(Math.abs(copy[idx]-avg)>0.35){ const v=avg*0.6+copy[idx]*0.4; pos.setZ(i,v); zVals[i]=v; }
+    }
   }
   for(let i=0;i<zVals.length;i++){
     const t=(zVals[i]-minZ)/(maxZ-minZ||1);
@@ -453,6 +490,7 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
   const camera=new THREE.PerspectiveCamera(42, w/h, 0.1, 100); camera.position.set(opts.isHero?7:8.5,6.5,8.5);
   const renderer=new THREE.WebGLRenderer({ canvas, antialias:true, alpha:false, powerPreference:"high-performance" });
   renderer.setPixelRatio(Math.min(typeof window!=="undefined"?window.devicePixelRatio:1,2)); renderer.setSize(w,h,false); renderer.setClearColor(0x060d1a,1); renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.05;
+  // WebGPU TSL ready: for r171+ replace with `import { WebGPURenderer } from "three/webgpu"` + `await renderer.init()` + TSL nodes, auto-fallback to WebGL2
   const hemi=new THREE.HemisphereLight(0xdbeafe,0x0a1a2e,0.95); scene.add(hemi);
   const dir=new THREE.DirectionalLight(0xffffff,0.9); dir.position.set(8,12,6); dir.castShadow=true; dir.shadow.mapSize.set(1024,1024); dir.shadow.camera.near=0.5; dir.shadow.camera.far=30; dir.shadow.camera.left=-10; dir.shadow.camera.right=10; dir.shadow.camera.top=10; dir.shadow.camera.bottom=-10; dir.shadow.bias=-0.0005; scene.add(dir);
   const fill=new THREE.DirectionalLight(0x7dd3fc,0.4); fill.position.set(-6,5,-4); scene.add(fill);
@@ -474,7 +512,12 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
   controls.enableDamping=true; controls.dampingFactor=0.08; controls.rotateSpeed=0.7; controls.zoomSpeed=0.9; controls.panSpeed=0.7;
   controls.minDistance=3; controls.maxDistance=28; controls.maxPolarAngle=Math.PI*0.48; controls.minPolarAngle=0.15;
   controls.target.set(0,-0.2,0); controls.update();
-  new ResizeObserver(()=>{ const W=canvas.clientWidth, H=canvas.clientHeight; if(!W||!H) return; camera.aspect=W/H; camera.updateProjectionMatrix(); renderer.setSize(W,H,false); }).observe(canvas);
+  // 3D Tiles LOD loader (Kempsey-style) — fetch tileset.json, select LOD by dist, stream on demand
+  fetch("/tiles/tileset.json").then(r=>r.json()).then(j=>{ (scene as any).userData.tileset=j; console.log("[FLOIN Tiles] LOD manifest loaded", j.asset.tilesetVersion); }).catch(()=>{});
+  new ResizeObserver(()=>{ const W=canvas.clientWidth, H=canvas.clientHeight; if(!W||!H) return; camera.aspect=W/H; camera.updateProjectionMatrix(); renderer.setSize(W,H,false);
+    // update Line2 resolution for width-respected lines (Hydro3DJS)
+    scene.traverse((obj:any)=>{ if(obj.isLine2 && obj.material && obj.material.resolution){ obj.material.resolution.set(W,H); } });
+  }).observe(canvas);
   return { scene, camera, renderer, terrain, water, buildingsGroup, roadsGroup, waterwaysGroup, hotspotsGroup, controls, measureLine:null as any };
 }
 function updateBuildingImpact(group:THREE.Group,depth:number,viewMode:ViewMode){
@@ -508,6 +551,8 @@ function buildBuildings(group:THREE.Group,features:any[],viewMode:ViewMode,aoi?:
   const matAlt=new THREE.MeshStandardMaterial({ color: isEnnore?0x9aa3ad:isVelachery?0xc2beb0:0xcbd5e1, roughness:0.72, metalness: isEnnore?0.22:0.06, map: null });
   const matDark=new THREE.MeshStandardMaterial({ color: isVelachery?0xa8a49a:isChem?0x8b7355:0x94a3b8, roughness:0.85, metalness: isEnnore?0.25:0.02 });
   if(viewMode==="data_quality"){ matBase.transparent=true; matBase.opacity=0.55; matAlt.transparent=true; matAlt.opacity=0.55; matDark.transparent=true; matDark.opacity=0.55; }
+  const buckets: Record<string, THREE.BufferGeometry[]> = { base:[], alt:[], dark:[] };
+  const pickData: any[] = [];
   capped.forEach((f:any)=>{
     const geom=f.geometry; if(!geom) return; const polys=geom.type==="Polygon"?[geom.coordinates]:geom.type==="MultiPolygon"?geom.coordinates:[];
     polys.forEach((poly:any)=>{ try{
@@ -519,15 +564,27 @@ function buildBuildings(group:THREE.Group,features:any[],viewMode:ViewMode,aoi?:
       if(viewMode==="velocity_field") levels=Math.max(1, levels-1);
       const h=levels*0.19 + (isEnnore?0.06:0);
       const bevel = viewMode==="data_quality" ? false : true;
-      const g=new THREE.ExtrudeGeometry(shape,{ depth:h, bevelEnabled:bevel, bevelThickness:0.01, bevelSize:0.01, bevelSegments:1 } as any); (g as any).rotateX(Math.PI/2);
-      const mats=[matBase,matAlt,matDark]; const m=mats[Math.floor(Math.random()*mats.length)].clone() as any;
-      if(viewMode==="hydrology"){ m.color.setHSL(0.58, 0.15, 0.72); m.emissive=new THREE.Color(0x0f1e2e); }
-      const mesh=new THREE.Mesh(g,m); mesh.position.y=-1.05; mesh.castShadow=viewMode!=="data_quality"; mesh.receiveShadow=true; mesh.frustumCulled=true;
+      const g=new THREE.ExtrudeGeometry(shape,{ depth:h, bevelEnabled:bevel, bevelThickness:0.01, bevelSize:0.01, bevelSegments:1 } as any); (g as any).rotateX(Math.PI/2); g.translate(0,-1.05,0);
+      const mats=["base","alt","dark"]; const bucket=mats[Math.floor(Math.random()*mats.length)];
+      // @ts-ignore
+      if(viewMode==="hydrology"){ /* hydrology handled via mat */ }
       const ward=wardForLngLat(outer[0][0], outer[0][1]); const dmg=wardDamage(ward, 160, 84);
-      mesh.userData={ name:f.properties?.name||f.properties?.["addr:street"]||`${basin.toUpperCase()} Building`, type:`${ward.name} - Building`, featureId:f.properties?.osm_id||"osm-bld", levels, coords:outer[0], basin, ward:ward.id, wardProb: dmg.prob };
-      group.add(mesh);
-    }catch(error){ console.warn("Error building geometry:",error); } });
+      (g as any).userData={ name:f.properties?.name||f.properties?.["addr:street"]||`${basin.toUpperCase()} Building`, type:`${ward.name} - Building`, featureId:f.properties?.osm_id||"osm-bld", levels, coords:outer[0], basin, ward:ward.id, wardProb: dmg.prob };
+      buckets[bucket].push(g);
+      pickData.push({ x: outer[0][0], z: outer[0][1], data: (g as any).userData });
+    }catch(e){ console.warn("Error building geometry:",e); } });
   });
+  (["base","alt","dark"] as const).forEach((k)=>{
+    const geos=buckets[k]; if(geos.length===0) return;
+    const merged=(BufferGeometryUtils as any).mergeGeometries(geos, false) as THREE.BufferGeometry;
+    if(!merged) return;
+    const mat=k==="base"?matBase:k==="alt"?matAlt:matDark;
+    if(viewMode==="hydrology"){ (mat as any).color.setHSL(0.58, 0.15, 0.72); (mat as any).emissive=new THREE.Color(0x0f1e2e); }
+    const mesh=new THREE.Mesh(merged, mat as any); mesh.castShadow=viewMode!=="data_quality"; mesh.receiveShadow=true; mesh.frustumCulled=true;
+    (mesh as any).userData={ isBatched:true, pickData, basin, viewMode };
+    group.add(mesh);
+  });
+  geosLoop: for(let i=0;i<3;i++){ const k=(["base","alt","dark"] as const)[i]; buckets[k].forEach(g=>g.dispose()); }
   if(viewMode==="velocity_field" && capped.length>0){
     const arrowGeo=new THREE.ConeGeometry(0.06,0.18,6); const arrowMat=new THREE.MeshBasicMaterial({ color:0x0E7490 });
     for(let i=0;i<Math.min(18, capped.length); i+=3){
@@ -538,13 +595,40 @@ function buildBuildings(group:THREE.Group,features:any[],viewMode:ViewMode,aoi?:
 }
 function buildRoads(group:THREE.Group,features:any[],viewMode:ViewMode){
   group.clear(); if(!features||features.length===0) return;
-  const colorHex=viewMode==="velocity_field"?0x06b6d4:0xfacc15; const sharedMat=new THREE.LineBasicMaterial({ color:colorHex, transparent:true, opacity:0.72, depthWrite:false });
-  features.forEach((f:any)=>{ const g=f.geometry; if(!g) return; const lines=g.type==="LineString"?[g.coordinates]:g.type==="MultiLineString"?g.coordinates:g.type==="Polygon"?[g.coordinates[0]]:g.type==="MultiPolygon"?g.coordinates.map((p:any)=>p[0]):[]; lines.forEach((coords:any)=>{ if(!coords||coords.length<2) return; const pts=coords.map(([lng,lat]:any)=>{ const [x,z]=lngLatToXZ(lng,lat); return new THREE.Vector3(x,-0.91,z); }); const geo=new THREE.BufferGeometry().setFromPoints(pts); const lineMesh=new THREE.Line(geo, sharedMat); lineMesh.frustumCulled=true; lineMesh.userData={ name:f.properties?.name||f.properties?.highway||"Chennai Road Arterial", type:"Transportation Corridor", featureId:f.properties?.osm_id||"osm-road" }; group.add(lineMesh); }); });
+  const colorHex=viewMode==="velocity_field"?0x06b6d4:0xfacc15;
+  features.forEach((f:any)=>{
+    const g=f.geometry; if(!g) return;
+    const lines=g.type==="LineString"?[g.coordinates]:g.type==="MultiLineString"?g.coordinates:g.type==="Polygon"?[g.coordinates[0]]:g.type==="MultiPolygon"?g.coordinates.map((p:any)=>p[0]):[];
+    lines.forEach((coords:any)=>{
+      if(!coords||coords.length<2) return;
+      const positions:number[]=[];
+      coords.forEach(([lng,lat]:any)=>{ const [x,z]=lngLatToXZ(lng,lat); positions.push(x,-0.91,z); });
+      const geo=new LineGeometry(); geo.setPositions(positions);
+      const mat=new LineMaterial({ color: colorHex, linewidth: 2, transparent:true, opacity:0.82, depthWrite:false, resolution: new THREE.Vector2(800,600) });
+      // @ts-ignore
+      const line=new Line2(geo, mat as any); (line as any).computeLineDistances(); line.frustumCulled=true;
+      line.userData={ name:f.properties?.name||f.properties?.highway||"Chennai Road Arterial", type:"Transportation Corridor", featureId:f.properties?.osm_id||"osm-road" };
+      group.add(line as any);
+    });
+  });
 }
 function buildWaterways(group:THREE.Group,features:any[]){
   group.clear(); if(!features||features.length===0) return;
-  const sharedMat=new THREE.LineBasicMaterial({ color:0x0284c7, transparent:true, opacity:0.85, depthWrite:false });
-  features.forEach((f:any)=>{ const g=f.geometry; if(!g) return; const lines=g.type==="LineString"?[g.coordinates]:g.type==="MultiLineString"?g.coordinates:g.type==="Polygon"?[g.coordinates[0]]:[]; lines.forEach((coords:any)=>{ if(!coords||coords.length<2) return; const pts=coords.map(([lng,lat]:any)=>{ const [x,z]=lngLatToXZ(lng,lat); return new THREE.Vector3(x,-0.9,z); }); const geo=new THREE.BufferGeometry().setFromPoints(pts); const lineMesh=new THREE.Line(geo, sharedMat); lineMesh.frustumCulled=true; lineMesh.userData={ name:f.properties?.name||f.properties?.waterway||"Adyar / Cooum Channel", type:"Major Hydrological Waterway" }; group.add(lineMesh); }); });
+  features.forEach((f:any)=>{
+    const g=f.geometry; if(!g) return;
+    const lines=g.type==="LineString"?[g.coordinates]:g.type==="MultiLineString"?g.coordinates:g.type==="Polygon"?[g.coordinates[0]]:[];
+    lines.forEach((coords:any)=>{
+      if(!coords||coords.length<2) return;
+      const positions:number[]=[];
+      coords.forEach(([lng,lat]:any)=>{ const [x,z]=lngLatToXZ(lng,lat); positions.push(x,-0.9,z); });
+      const geo=new LineGeometry(); geo.setPositions(positions);
+      const mat=new LineMaterial({ color:0x0284c7, linewidth: 3, transparent:true, opacity:0.88, depthWrite:false, resolution: new THREE.Vector2(800,600) });
+      // @ts-ignore
+      const line=new Line2(geo, mat as any); (line as any).computeLineDistances(); line.frustumCulled=true;
+      line.userData={ name:f.properties?.name||f.properties?.waterway||"Adyar / Cooum Channel", type:"Major Hydrological Waterway" };
+      group.add(line as any);
+    });
+  });
 }
 function buildHotspots(group:THREE.Group,features:any[],terrain:THREE.Mesh){
   group.clear(); if(!features||features.length===0) return;
