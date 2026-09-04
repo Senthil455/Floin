@@ -714,7 +714,7 @@ function disposeScene(ctx:any){
   try{
     ctx.resizeObserver?.disconnect();
     ctx.terrain.geometry.dispose(); (ctx.terrain.material as any).dispose(); ctx.water.geometry.dispose(); (ctx.water.material as any).dispose();
-    ctx.buildingsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); ctx.roadsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); ctx.waterwaysGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); ctx.hotspotsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); if(ctx.wardsGroup) ctx.wardsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); if(ctx.soilGroup) ctx.soilGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); if(ctx.lulcGroup) ctx.lulcGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); });
+     ctx.buildingsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); ctx.roadsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); ctx.waterwaysGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); ctx.hotspotsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); if(ctx.wardsGroup) ctx.wardsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); if(ctx.soilGroup) ctx.soilGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); if(ctx.lulcGroup) ctx.lulcGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); if((ctx as any).unifiedGroup) (ctx as any).unifiedGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); (m.material as any)?.dispose?.(); });
     if(ctx.measureLine){ ctx.measureLine.geometry.dispose(); (ctx.measureLine.material as any).dispose(); }
     ctx.scene?.traverse((obj:any)=>{
       if(obj.geometry && obj.geometry !== ctx.terrain.geometry && obj.geometry !== ctx.water.geometry) obj.geometry.dispose();
@@ -724,7 +724,7 @@ function disposeScene(ctx:any){
       }
     });
     ctx.controls.dispose(); ctx.renderer.dispose();
-    ctx.buildingsGroup.clear(); ctx.roadsGroup.clear(); ctx.waterwaysGroup.clear(); ctx.hotspotsGroup.clear(); if(ctx.wardsGroup) ctx.wardsGroup.clear(); if(ctx.soilGroup) ctx.soilGroup.clear(); if(ctx.lulcGroup) ctx.lulcGroup.clear();
+     ctx.buildingsGroup.clear(); ctx.roadsGroup.clear(); ctx.waterwaysGroup.clear(); ctx.hotspotsGroup.clear(); if(ctx.wardsGroup) ctx.wardsGroup.clear(); if(ctx.soilGroup) ctx.soilGroup.clear(); if(ctx.lulcGroup) ctx.lulcGroup.clear(); if((ctx as any).unifiedGroup) (ctx as any).unifiedGroup.clear();
   }catch{}
 }
 function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:number; aoi?:any; viewMode:ViewMode }){
@@ -848,8 +848,8 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
     transparent:true, side:THREE.DoubleSide,
   });
   const water=new THREE.Mesh(wgeo, waterMat as any); water.rotation.x=-Math.PI/2; water.position.y=-0.88; scene.add(water);
-  const buildingsGroup=new THREE.Group(); const roadsGroup=new THREE.Group(); const waterwaysGroup=new THREE.Group(); const hotspotsGroup=new THREE.Group(); const wardsGroup=new THREE.Group(); const soilGroup=new THREE.Group(); const lulcGroup=new THREE.Group();
-  scene.add(buildingsGroup); scene.add(roadsGroup); scene.add(waterwaysGroup); scene.add(hotspotsGroup); scene.add(wardsGroup); scene.add(soilGroup); scene.add(lulcGroup);
+  const buildingsGroup=new THREE.Group(); const roadsGroup=new THREE.Group(); const waterwaysGroup=new THREE.Group(); const hotspotsGroup=new THREE.Group(); const wardsGroup=new THREE.Group(); const soilGroup=new THREE.Group(); const lulcGroup=new THREE.Group(); const unifiedGroup=new THREE.Group();
+  scene.add(buildingsGroup); scene.add(roadsGroup); scene.add(waterwaysGroup); scene.add(hotspotsGroup); scene.add(wardsGroup); scene.add(soilGroup); scene.add(lulcGroup); scene.add(unifiedGroup);
   const controls=new OrbitControls(camera, canvas);
   controls.enableDamping=true; controls.dampingFactor=0.08; controls.rotateSpeed=0.7; controls.zoomSpeed=0.9; controls.panSpeed=0.7;
   controls.minDistance=3; controls.maxDistance=28; controls.maxPolarAngle=Math.PI*0.48; controls.minPolarAngle=0.15;
@@ -861,7 +861,7 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
     scene.traverse((obj:any)=>{ if(obj.isLine2 && obj.material && obj.material.resolution){ obj.material.resolution.set(W,H); } });
   });
   resizeObserver.observe(canvas);
-  return { scene, camera, renderer, terrain, water, buildingsGroup, roadsGroup, waterwaysGroup, hotspotsGroup, wardsGroup, soilGroup, lulcGroup, controls, resizeObserver, measureLine:null as any };
+  return { scene, camera, renderer, terrain, water, buildingsGroup, roadsGroup, waterwaysGroup, hotspotsGroup, wardsGroup, soilGroup, lulcGroup, unifiedGroup, controls, resizeObserver, measureLine:null as any };
 }
 function updateBuildingImpact(group:THREE.Group,depth:number,viewMode:ViewMode){
   const threshold=0.35; const flooded=depth>threshold;

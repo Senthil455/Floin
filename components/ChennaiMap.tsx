@@ -377,7 +377,7 @@ export default function ChennaiMap({
             },
             pointToLayer: isPoint ? (f:any, latlng:any)=> L.circleMarker(latlng,{ radius:4.5, fillColor:"#E63946", color:"#fff", weight:1, fillOpacity:0.9 }) : undefined,
             onEachFeature:(f:any,ly:any)=>{
-              const p=f.properties||{}; const title=p.name||p.Name||p Ward_No||id;
+              const p=f.properties||{}; const title=p.name||(p as any).Name||(p as any).Ward_No||id;
               ly.bindTooltip(String(title).slice(0,40),{sticky:true});
               ly.on("click",(e:any)=>{ L.DomEvent.stopPropagation(e); onSelectFeature?.({ name:String(title), type:f.geometry?.type, properties:p }); });
             }
