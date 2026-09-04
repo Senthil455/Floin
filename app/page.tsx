@@ -343,6 +343,7 @@ export default function Page() {
                 <div style={{ border:"1px solid var(--rule)", background:"var(--surface)", padding:12 }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.1em", color:"var(--muted)" }}>BLDGS &gt;0.15m</div><div style={{ fontFamily:"var(--font-mono)", fontSize:18, fontWeight:700 }}>{economicLoss.affectedBuildings}</div><div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>footprints</div></div>
                 <div style={{ border:"1px solid var(--rule)", background:"var(--surface)", padding:12 }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.1em", color:"var(--muted)" }}>ROAD CLOSURE</div><div style={{ fontFamily:"var(--font-mono)", fontSize:18, fontWeight:700 }}>16.4 km</div><div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>impassable</div></div>
               </div>
+              <div style={{ marginTop:12 }}><UnifiedPredictionPanel aoi={selectedArea} rainfall={rainfall} cn={cn} duration={duration} /></div>
               <div style={{ marginTop:12 }}><FloodMLAnalytics rainfall={rainfall} cn={cn} /></div>
               <div style={{ marginTop:12, border:"1px solid var(--ink)", background:"var(--surface)", overflow:"hidden" }}>
                 <div style={{ padding:"8px 12px", borderBottom:"1px solid var(--rule)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>04.1 // ASSET INVENTORY — RIGHT-ALIGNED MONO</div>

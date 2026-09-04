@@ -17,13 +17,14 @@ function floodProb(precip: number, cn: number) {
   return Math.min(1, Q / 80);
 }
 
-export default function FloodMLAnalytics({ rainfall, cn }: { rainfall: number; cn: number }) {
+export default function FloodMLAnalytics({ rainfall, cn, contributions }: { rainfall: number; cn: number; contributions?: any[] }) {
   const rows = useMemo(() => CHENNAI_WARDS.map((w) => {
     const p = (w.precip + rainfall) / 2;
     const prob = floodProb(p, cn);
     const damage = prob * w.pop * 0.004 * (1 + p / 200);
     return { ...w, prob, damage, bubble: 8 + prob * 28, color: prob > 0.6 ? "var(--vermillion)" : prob > 0.3 ? "#E6B422" : "var(--hydro)" };
   }), [rainfall, cn]);
+  const topContribs = (contributions || []).slice(0, 8);
 
   return (
     <div style={{ border: "1px solid var(--ink)", background: "var(--surface)" }}>
@@ -68,8 +69,21 @@ export default function FloodMLAnalytics({ rainfall, cn }: { rainfall: number; c
           </tbody>
         </table>
       </div>
+      {topContribs.length>0 && (
+        <div style={{ borderTop:"1px solid var(--ink)", background:"var(--paper)", padding:"8px 10px" }}>
+          <div style={{ fontFamily:"var(--font-mono)", fontSize:9, fontWeight:700, letterSpacing:"0.08em" }}>EVERY FILE CONTRIBUTES — TOP 8 WEIGHTS (unified-prediction)</div>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginTop:6 }}>
+            {topContribs.map((c:any)=>(
+              <span key={c.id} title={`${c.note} value ${c.value} × weight ${c.weight} = ${c.contribution}`} style={{ border:"1px solid var(--rule-strong)", background: c.contribution>0.05?"var(--vermillion)": c.contribution<-0.03?"var(--hydro)":"var(--surface)", color: Math.abs(c.contribution)>0.04?"white":"var(--ink)", padding:"3px 6px", fontFamily:"var(--font-mono)", fontSize:9, fontWeight:600 }}>
+                {c.id.slice(0,18)} {c.contribution>0?"+":""}{c.contribution.toFixed(3)}
+              </span>
+            ))}
+          </div>
+          <div style={{ fontFamily:"var(--font-mono)", fontSize:8, color:"var(--muted)", marginTop:4 }}>{(contributions||[]).length} datasets weighted — see POST /api/predict for full provenance</div>
+        </div>
+      )}
       <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--muted)", padding: "6px 10px", borderTop: "1px solid var(--rule)", display: "flex", justifyContent: "space-between" }}>
-        <span>Bubble r=8+prob*28 · Heat intensity damage/800 · CN {cn} · P {rainfall}mm</span><span>Source: FloodML 200-city + Chennai 8-ward adapt</span>
+        <span>Bubble r=8+prob*28 · Heat intensity damage/800 · CN {cn} · P {rainfall}mm</span><span>Source: FloodML 200-city + Chennai 8-ward adapt + unified-prediction</span>
       </div>
     </div>
   );
