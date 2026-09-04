@@ -45,7 +45,7 @@ export default function CrisisCommandCenter({ selectedArea, rainfall }: { select
           </button>
         ))}
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 6, padding: 10, background: "var(--paper)" }} className="max-[700px]:!grid-cols-2">
+      <div className="kpi-grid" style={{ padding: 10, background: "var(--paper)" }}>
         <div style={{ border: "1px solid var(--rule)", background: "var(--surface)", padding: "8px 10px" }}>
           <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--muted)", letterSpacing: "0.08em" }}>PRECIP NOW</div>
           <div style={{ fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 700, color: current.precipitation > 20 ? "var(--vermillion)" : "var(--hydro)" }}>{current.precipitation?.toFixed ? current.precipitation.toFixed(1) : current.precipitation} mm</div>
@@ -67,7 +67,7 @@ export default function CrisisCommandCenter({ selectedArea, rainfall }: { select
           <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--muted)" }}>P {rainfall}mm</div>
         </div>
       </div>
-      <div style={{ borderTop: "1px solid var(--ink)", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }} className="max-[700px]:!grid-cols-1">
+      <div style={{ borderTop: "1px solid var(--ink)", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }} className="max-[700px]:grid-cols-1">
         <div style={{ padding: 10, borderRight: "1px solid var(--rule)" }}>
           <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", borderBottom: "1px solid var(--rule)", paddingBottom: 6 }}>{ROLES.find((r) => r.id === role)?.mono} — {ROLES.find((r) => r.id === role)?.label.toUpperCase()} VIEW</div>
           <div style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--muted2)", marginTop: 6 }}>

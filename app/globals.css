@@ -39,6 +39,8 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .hydro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .impact-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
 .help-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.webflood-grid { display: grid; grid-template-columns: 1fr 180px; gap: 0; }
+@media (max-width: 900px) { .webflood-grid { grid-template-columns: 1fr; } .webflood-grid > div { border-left: none !important; border-top: 1px solid var(--rule); } }
 @media (max-width: 1024px) { .twin-grid { grid-template-columns: 1fr; } .scenario-grid { grid-template-columns: 1fr; } }
 @media (max-width: 900px) { .hydro-grid { grid-template-columns: 1fr; } }
 @media (max-width: 800px) { .impact-grid { grid-template-columns: repeat(2,1fr); } }

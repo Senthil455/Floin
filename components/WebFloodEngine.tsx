@@ -80,9 +80,9 @@ export default function WebFloodEngine({ rainfall, cn, aoi, viewMode }: Props) {
         <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em" }}>WEBFLOOD · SHALLOW-WATER FBO — CHENNAI {aoi?.id?.toUpperCase()} · {viewMode}</span>
         <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--muted)" }}>128² · g9.81 · dt0.02 · n0.04</span>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 180px", gap: 0 }} className="max-[700px]:!grid-cols-1">
-        <div style={{ padding: 8, background: "#0F1110" }}><canvas ref={canvasRef} style={{ width: "100%", height: 240, imageRendering: "pixelated", border: "1px solid var(--ink)" }} /></div>
-        <div style={{ padding: 10, borderLeft: "1px solid var(--rule)", background: "var(--paper)", fontFamily: "var(--font-mono)", fontSize: 11 }}>
+      <div className="webflood-grid">
+        <div style={{ padding: 8, background: "#0F1110", minWidth:0 }}><canvas ref={canvasRef} style={{ width: "100%", height: 240, maxWidth:"100%", imageRendering: "pixelated", border: "1px solid var(--ink)", display:"block" }} /></div>
+        <div style={{ padding: 10, borderLeft: "1px solid var(--rule)", background: "var(--paper)", fontFamily: "var(--font-mono)", fontSize: 11, minWidth:0 }}>
           <div style={{ fontWeight: 700, fontSize: 10, letterSpacing: "0.08em", borderBottom: "1px solid var(--rule)", paddingBottom: 6 }}>STATS · SEMI-LAGRANGIAN</div>
           <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
             <div style={{ border: "1px solid var(--rule)", padding: "6px 8px", background: "var(--surface)" }}><div style={{ fontSize: 9, color: "var(--muted)" }}>MAX DEPTH</div><div style={{ fontWeight: 700, color: "var(--hydro)" }}>{stats.maxH.toFixed(3)} m</div></div>

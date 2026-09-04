@@ -145,7 +145,7 @@ export default function Page() {
         ))}
       </div>
       <div className="flex flex-1 min-h-0">
-        <aside className="hidden md:flex flex-col shrink-0" style={{ width: 220, borderRight:"1px solid var(--rule-strong)", background:"var(--paper)" }}>
+        <aside className="hidden md:flex flex-col shrink-0" style={{ width: 220, borderRight:"1px solid var(--rule-strong)", background:"var(--paper)", maxHeight:"calc(100vh - 40px)", position:"sticky", top:40, overflowY:"auto" }}>
           <div style={{ padding:"12px 12px 8px", borderBottom:"1px solid var(--rule)", fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:"0.14em", color:"var(--muted)", fontWeight:600 }}>INDEX</div>
           <nav style={{ padding: 8, display:"grid", gap:2 }}>
             {workspaces.map((w) => (
@@ -167,7 +167,7 @@ export default function Page() {
           </div>
         </aside>
 
-        <main className="flex-1 min-w-0" style={{ background:"var(--paper)", padding: 16 }}>
+        <main className="flex-1 min-w-0" style={{ background:"var(--paper)", padding: "12px 16px", overflowX:"clip" }}>
           {activeWorkspace === "digital_twin" && (
             <div>
               <div style={{ display:"flex", alignItems:"baseline", gap:12, borderBottom:"1px solid var(--ink)", paddingBottom:8, marginBottom:12 }}>
@@ -297,9 +297,9 @@ export default function Page() {
                 <div style={{ border:"1px solid var(--rule)", background:"var(--surface)", padding:12 }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.1em", color:"var(--muted)" }}>ROAD CLOSURE</div><div style={{ fontFamily:"var(--font-mono)", fontSize:18, fontWeight:700 }}>16.4 km</div><div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>impassable</div></div>
               </div>
               <div style={{ marginTop:12 }}><FloodMLAnalytics rainfall={rainfall} cn={cn} /></div>
-              <div style={{ marginTop:12, border:"1px solid var(--ink)", background:"var(--surface)" }}>
+              <div style={{ marginTop:12, border:"1px solid var(--ink)", background:"var(--surface)", overflow:"hidden" }}>
                 <div style={{ padding:"8px 12px", borderBottom:"1px solid var(--rule)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>04.1 // ASSET INVENTORY — RIGHT-ALIGNED MONO</div>
-                <table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--font-mono)", fontSize:11 }}>
+                <div className="table-wrap"><table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--font-mono)", fontSize:11 }}>
                   <thead><tr style={{ background:"var(--paper)", color:"var(--muted)", fontSize:10 }}><th style={{ textAlign:"left", padding:"6px 12px" }}>ASSET</th><th style={{ textAlign:"right", padding:"6px 12px" }}>INUND</th><th style={{ textAlign:"right", padding:"6px 12px" }}></th></tr></thead>
                   <tbody>
                     {CHENNAI_SEARCH_INDEX.map((a)=> (
@@ -310,7 +310,7 @@ export default function Page() {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table></div>
               </div>
             </div>
           )}
@@ -334,9 +334,9 @@ export default function Page() {
                     </button>
                   ))}
                 </div>
-                <div style={{ border:"1px solid var(--ink)", background:"var(--surface)", overflow:"auto" }}>
+                <div style={{ border:"1px solid var(--ink)", background:"var(--surface)", overflow:"hidden", minWidth:0 }}>
                   <div style={{ padding:"8px 12px", borderBottom:"1px solid var(--rule)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>03.1 // DELTA MATRIX</div>
-                  <table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--font-mono)", fontSize:11 }}>
+                  <div className="table-wrap"><table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--font-mono)", fontSize:11 }}>
                     <thead><tr style={{ background:"var(--paper)", borderBottom:"1px solid var(--rule-strong)", color:"var(--muted)", fontSize:10 }}><th style={{ textAlign:"left", padding:"8px 10px" }}>SCENARIO</th><th>P</th><th>CN</th><th>Q</th><th>DEPTH</th><th></th></tr></thead>
                     <tbody>
                       {scenarios.map((sc)=> (
@@ -346,7 +346,7 @@ export default function Page() {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                  </table></div>
                 </div>
               </div>
             </div>
@@ -390,8 +390,8 @@ export default function Page() {
       </div>
       </div>
 
-      <footer style={{ borderTop:"1px solid var(--rule-strong)", background:"var(--paper)", padding:"8px 16px", display:"flex", justifyContent:"space-between", fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", letterSpacing:"0.06em" }}>
-        <span>FLOIN · CHENNAI FLOOD LEDGER · REV 06D9C60 · 2026-09-04</span><span>OKLCH · IBM PLEX · ZERO RADIUS · RULES NOT SHADOWS</span>
+      <footer style={{ borderTop:"1px solid var(--rule-strong)", background:"var(--paper)", padding:"8px 12px", display:"flex", gap:8, flexWrap:"wrap", justifyContent:"space-between", fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", letterSpacing:"0.06em" }}>
+        <span style={{ whiteSpace:"nowrap" }}>FLOIN · CHENNAI FLOOD LEDGER · REV 06D9C60 · 2026-09-04</span><span style={{ whiteSpace:"nowrap" }}>OKLCH · IBM PLEX · ZERO RADIUS · RULES NOT SHADOWS</span>
       </footer>
 
       {showHelp && (

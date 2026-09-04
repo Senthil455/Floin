@@ -84,13 +84,13 @@ function WardBars({ rainfall, cn, selected, onSelect }: { rainfall: number; cn: 
           const isSel = selected === r.id;
           const col = r.prob > 0.6 ? "var(--vermillion)" : r.prob > 0.32 ? "#B45309" : "var(--hydro)";
           return (
-            <button key={r.id} onClick={() => onSelect(r.id)} style={{ textAlign: "left", display: "grid", gridTemplateColumns: "92px 1fr 64px 56px", gap: 8, alignItems: "center", padding: "6px 8px", border: "1px solid", borderColor: isSel ? "var(--ink)" : "var(--rule)", background: isSel ? "var(--surface)" : "var(--paper)", borderLeftWidth: isSel ? 2 : 1, borderLeftColor: isSel ? "var(--vermillion)" : "var(--rule)" }}>
-              <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.name}</span>
-              <span style={{ height: 8, background: "var(--rule)", position: "relative", overflow: "hidden" }}>
+            <button key={r.id} onClick={() => onSelect(r.id)} style={{ textAlign: "left", display: "grid", gridTemplateColumns: "92px 1fr 56px 56px", gap: 8, alignItems: "center", padding: "6px 8px", border: "1px solid", borderColor: isSel ? "var(--ink)" : "var(--rule)", background: isSel ? "var(--surface)" : "var(--paper)", borderLeftWidth: isSel ? 2 : 1, borderLeftColor: isSel ? "var(--vermillion)" : "var(--rule)", minWidth:0 }}>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth:0 }}>{r.name}</span>
+              <span style={{ height: 8, background: "var(--rule)", position: "relative", overflow: "hidden", minWidth:0 }}>
                 <span style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${pct}%`, background: col }} />
               </span>
-              <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, textAlign: "right", color: col }}>{r.prob.toFixed(2)}</span>
-              <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, textAlign: "right", color: "var(--muted)" }}>${r.dmg.toFixed(0)}k</span>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, textAlign: "right", color: col, whiteSpace:"nowrap" }}>{r.prob.toFixed(2)}</span>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, textAlign: "right", color: "var(--muted)", whiteSpace:"nowrap" }}>${r.dmg.toFixed(0)}k</span>
             </button>
           );
         })}
@@ -120,7 +120,7 @@ export default function AnalyticsSuite({ rainfall, cn, duration, currentHour, on
         <div style={{ padding: "8px 8px 0" }}>
           <Sparkline pts={pts} highlight={h} onHover={setHoverHour} accent={accent} />
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 6, padding: 8, borderTop: "1px solid var(--rule)", background: "var(--paper)" }}>
+        <div className="kpi-grid" style={{ padding: 8, borderTop: "1px solid var(--rule)", background: "var(--paper)" }}>
           {[
             { k: "HOUR", v: `${h}H`, sub: h === 3 ? "PEAK" : h < 3 ? "RISING" : "RECEDING", col: accent },
             { k: "DEPTH", v: `${(pts[h]?.depth ?? 0).toFixed(2)} m`, sub: (pts[h]?.depth ?? 0) > 0.8 ? "CRITICAL" : (pts[h]?.depth ?? 0) > 0.3 ? "MODERATE" : "LOW", col: accent },

@@ -18,9 +18,9 @@ export default function RegistryWorkspace() {
         <span style={{ fontFamily:"var(--font-display)", fontSize:18 }}>Dataset Provenance Audit</span>
         <span style={{ marginLeft:"auto", fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>EPSG:4326 · OKLCH</span>
       </div>
-      <div style={{ border:"1px solid var(--ink)", background:"var(--surface)" }}>
+      <div style={{ border:"1px solid var(--ink)", background:"var(--surface)", overflow:"hidden" }}>
         <div style={{ padding:"8px 12px", borderBottom:"1px solid var(--rule)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>07.1 // LEDGER TABLE — NO CARDS, ONLY RULES</div>
-        <table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--font-mono)", fontSize:11 }}>
+        <div className="table-wrap"><table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--font-mono)", fontSize:11 }}>
           <thead><tr style={{ background:"var(--paper)", color:"var(--muted)", fontSize:10, textAlign:"left" }}><th style={{ padding:"8px 12px", borderBottom:"1px solid var(--rule-strong)" }}>DATASET</th><th style={{ padding:"8px 12px", borderBottom:"1px solid var(--rule-strong)" }}>TYPE · COUNT</th><th style={{ padding:"8px 12px", borderBottom:"1px solid var(--rule-strong)", textAlign:"right" }}>SOURCE</th></tr></thead>
           <tbody>
             {DATASET_REGISTRY.map((ds)=> (
@@ -31,11 +31,11 @@ export default function RegistryWorkspace() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </div>
-      <div style={{ marginTop:12, border:"1px solid var(--ink)", background:"var(--surface)" }}>
+      <div style={{ marginTop:12, border:"1px solid var(--ink)", background:"var(--surface)", overflow:"hidden" }}>
         <div style={{ padding:"8px 12px", borderBottom:"1px solid var(--rule)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>07.2 // PROVENANCE & HONESTY — REAL / DERIVED / SIMULATED</div>
-        <table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--font-mono)", fontSize:10 }}>
+        <div className="table-wrap"><table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--font-mono)", fontSize:10 }}>
           <thead><tr style={{ background:"var(--paper)", color:"var(--muted)", fontSize:9 }}><th style={{ textAlign:"left", padding:"6px 12px", borderBottom:"1px solid var(--rule-strong)" }}>DATASET</th><th style={{ textAlign:"left", padding:"6px 12px", borderBottom:"1px solid var(--rule-strong)" }}>KIND</th><th style={{ textAlign:"left", padding:"6px 12px", borderBottom:"1px solid var(--rule-strong)" }}>HOW USED</th><th style={{ textAlign:"right", padding:"6px 12px", borderBottom:"1px solid var(--rule-strong)" }}>LICENSE</th></tr></thead>
           <tbody>
             {PROV.map((r)=>(
@@ -47,7 +47,7 @@ export default function RegistryWorkspace() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
         <div style={{ padding:"8px 12px", fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", borderTop:"1px solid var(--rule)", lineHeight:1.5 }}>Never present simulated hydrograph as observed. Every insight tag says <span style={{ color:"var(--hydro)", fontWeight:600 }}>derived</span> or <span style={{ color:"var(--muted)", fontWeight:600 }}>simulated</span>. Soil/LULC coarse (3–5 polys) is shown small and transparent — honest, not hidden.</div>
       </div>
     </div>

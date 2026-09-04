@@ -31,7 +31,7 @@ export default function FloodMLAnalytics({ rainfall, cn }: { rainfall: number; c
         <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em" }}>FLOODML · CHENNAI WARDS — BUBBLE & HEATMAP (Plotly移植)</span>
         <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--muted)" }}>RandomForest 98.7% → RF Chennai · pop×prob</span>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }} className="max-[800px]:!grid-cols-1">
+      <div className="hydro-grid" style={{ gap:0 }}>
         <div style={{ padding: 10, borderRight: "1px solid var(--rule)" }}>
           <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600, letterSpacing: "0.06em" }}>BUBBLE — FLOOD PROBABILITY</div>
           <div style={{ height: 220, position: "relative", border: "1px solid var(--rule)", background: "var(--paper)", marginTop: 6, overflow: "hidden" }}>
