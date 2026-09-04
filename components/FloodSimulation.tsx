@@ -719,7 +719,8 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
   const sunGeo=new THREE.SphereGeometry(0.38,16,16); const sunMat=new THREE.MeshBasicMaterial({ color:0xFFF4D6, transparent:true, opacity:0.92 }); const sun=new THREE.Mesh(sunGeo,sunMat); sun.position.set(6,9,-4); scene.add(sun); (scene as any).userData.sun=sun;
   scene.fog=new THREE.FogExp2(0xE8E0D0, 0.012);
   for(let i=0;i<3;i++){ const rayGeo=new THREE.ConeGeometry(0.9+ i*0.45, 12, 8, 1, true); const rayMat=new THREE.MeshBasicMaterial({ color:0xFFE8A0, transparent:true, opacity:0.035 - i*0.009, side:THREE.DoubleSide, depthWrite:false }); const ray=new THREE.Mesh(rayGeo, rayMat); ray.position.set(6,9,-4); ray.lookAt(0,0,0); ray.rotateX(Math.PI); (ray as any).userData.isRay=true; scene.add(ray); }
-  const aoiW=opts.aoi?.bounds?Math.abs(opts.aoi.bounds.xmax-opts.aoi.bounds.xmin):0.25; const seg=aoiW>0.15?180:140; const size=14;
+  const isVillageZoom = (opts.aoi?.bounds?Math.abs(opts.aoi.bounds.xmax-opts.aoi.bounds.xmin):0.25) < 0.06;
+  const aoiW=opts.aoi?.bounds?Math.abs(opts.aoi.bounds.xmax-opts.aoi.bounds.xmin):0.25; const seg=isVillageZoom?256: aoiW>0.15?200:160; const size=14;
   const geo=new THREE.PlaneGeometry(size,size,seg,seg); const satTex=createSatelliteDrapeTexture(); const tmat=new THREE.MeshStandardMaterial({ vertexColors:true, map: satTex, roughness:0.86, metalness:0.03 }); const terrain=new THREE.Mesh(geo,tmat); terrain.rotation.x=-Math.PI/2; terrain.position.y=-1.2; terrain.receiveShadow=true; scene.add(terrain);
   if(opts.aoi) generateTerrainForAOI(terrain,opts.aoi,opts.viewMode);
   const grid=new THREE.GridHelper(size,36,0x1e3a5a,0x0f1e2e); (grid as any).position.y=-1.19; (grid as any).material.opacity=0.11; (grid as any).material.transparent=true; (grid as any).material.depthWrite=false; scene.add(grid);
@@ -773,8 +774,8 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
     if(opts.aoi?.id==="central") makeLabel("ANNA SALAI", 1.2, 0.8, "#F8F6F1");
     if(opts.aoi?.id==="adyar") makeLabel("ADYAR RIVER", -0.8, -1.1, "#E8F0F2");
   } catch {}
-  const wSeg=opts.viewMode==="depth_heatmap"?96:64; const wgeo=new THREE.PlaneGeometry(13.4,13.4,wSeg,wSeg);
-  const floodMaskGeo=new THREE.PlaneGeometry(14,14,1,1); const floodMaskMat=new THREE.MeshBasicMaterial({ color: floodPalette==="rainbow"?0x0096FF:0x0E7490, transparent:true, opacity:0.0, depthWrite:false }); const floodMask=new THREE.Mesh(floodMaskGeo,floodMaskMat); floodMask.rotation.x=-Math.PI/2; floodMask.position.y=-0.86; floodMask.visible=false; scene.add(floodMask); (scene as any).userData.floodMask=floodMask;
+  const wSeg=isVillageZoom?128: opts.viewMode==="depth_heatmap"?96:64; const wgeo=new THREE.PlaneGeometry(13.4,13.4,wSeg,wSeg);
+  const floodMaskGeo=new THREE.PlaneGeometry(14,14,1,1); const floodMaskMat=new THREE.MeshBasicMaterial({ color:0x0E7490, transparent:true, opacity:0.0, depthWrite:false }); const floodMask=new THREE.Mesh(floodMaskGeo,floodMaskMat); floodMask.rotation.x=-Math.PI/2; floodMask.position.y=-0.86; floodMask.visible=false; scene.add(floodMask); (scene as any).userData.floodMask=floodMask;
   const waterMat=new THREE.ShaderMaterial({
     uniforms:{ time:{value:0}, depth:{value:opts.d??0.5}, opacity:{value:opts.viewMode==="depth_heatmap"?0.72:0.54}, palette:{value:0}, rippleCenter:{value:new THREE.Vector2(0.5,0.5)}, rippleTime:{value:10} },
     vertexShader:`uniform float time; uniform float rippleTime; uniform vec2 rippleCenter; varying vec2 vUv; varying float vWave; varying float vRipple; varying vec3 vNormal;
@@ -856,7 +857,8 @@ function updateBuildingImpact(group:THREE.Group,depth:number,viewMode:ViewMode){
 function buildBuildings(group:THREE.Group,features:any[],viewMode:ViewMode,aoi?:any, rainfall?:number, cn?:number){
   group.clear(); if(!features||features.length===0) return;
   const basin=aoi?.id||"all";
-  const cap = basin==="central"?520 : basin==="velachery"?240 : basin==="chembarambakkam"?140 : basin==="ennore"?320 : 480;
+  const isStreet = (aoi as any)?.__streetView === true;
+  const cap = isStreet ? 1800 : (viewMode==="street" as any ? 1800 : (basin==="central"?900 : basin==="velachery"?520 : basin==="chembarambakkam"?320 : basin==="ennore"?600 : 1100));
   const capped=features.length>cap?features.filter((_,i)=>i%Math.ceil(features.length/cap)===0).slice(0,cap):features;
   const isVelachery=basin==="velachery", isEnnore=basin==="ennore", isChem=basin==="chembarambakkam";
   const winTex=viewMode==="digital_twin"?createWindowTexture():null;

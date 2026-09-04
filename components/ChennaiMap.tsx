@@ -64,10 +64,12 @@ export default function ChennaiMap({
       const map = L.map(ref.current, { zoomControl: true }).setView([13.08, 80.25], 11);
       (ref.current as any)._leaflet_map = map;
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap • Chennai Flood Intelligence",
+      const initialTiles = MAP_TILES[mapStyle as string] || MAP_TILES.osm;
+      const tileLayer = L.tileLayer(initialTiles.url, {
+        attribution: `${initialTiles.attr} • Chennai Flood Intelligence • FloodMap.net parity`,
         maxZoom: 18,
       }).addTo(map);
+      (map as any)._tileLayer = tileLayer;
 
       const layers: Record<string, any> = {};
       (map as any)._floinLayers = layers;
@@ -265,6 +267,54 @@ export default function ChennaiMap({
       setTimeout(() => map.invalidateSize(), 250);
     })();
   }, []);
+
+  useEffect(()=>{
+    if(!mapRef.current || !(mapRef.current as any)._tileLayer) return;
+    (async()=>{
+      const L=(await import("leaflet")).default;
+      const map=mapRef.current;
+      const tiles=MAP_TILES[mapStyle as string]||MAP_TILES.osm;
+      try{ if((map as any)._tileLayer) map.removeLayer((map as any)._tileLayer); }catch{}
+      const nl=L.tileLayer(tiles.url,{ attribution:`${tiles.attr} • Chennai Flood Intelligence • FloodMap.net parity`, maxZoom:18 }).addTo(map);
+      (map as any)._tileLayer=nl;
+    })();
+  },[mapStyle]);
+
+  const floodLayerRef=useRef<any>(null);
+  useEffect(()=>{
+    if(!mapRef.current) return;
+    (async()=>{
+      const L=(await import("leaflet")).default;
+      const map=mapRef.current;
+      try{ if(floodLayerRef.current) { map.removeLayer(floodLayerRef.current); floodLayerRef.current=null; } }catch{}
+      if(floodLevel==null) return;
+      const b=selectedArea?.bounds || { xmin:80.10, xmax:80.35, ymin:12.88, ymax:13.25 };
+      try{
+        const r=await fetch("/api/location/terrain",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({aoi:{bounds:b}})}).then(x=>x.json());
+        const t=r?.terrain; if(!t?.elevations) return;
+        const g=L.layerGroup(); const cols=t.gridWidth, rows=t.gridHeight;
+        for(let row=0;row<rows;row++) for(let col=0;col<cols;col++){
+          const elev=t.elevations[row*cols+col];
+          if(elev==null||!isFinite(elev)) continue;
+          if(!includeSeaDepth && elev<0) continue;
+          if(elev < floodLevel){
+            const depth=floodLevel - elev;
+            const lng=b.xmin + (col/(cols-1))*(b.xmax-b.xmin);
+            const lat=b.ymin + (row/(rows-1))*(b.ymax-b.ymin);
+            const dLng=(b.xmax-b.xmin)/cols, dLat=(b.ymax-b.ymin)/rows;
+            let color="#0E7490";
+            if(floodPalette==="rainbow"){
+              const hue= 220 - Math.min(1, depth/6)*200;
+              color=`hsl(${hue},85%,50%)`;
+            }
+            const rect=L.rectangle([[lat-dLat/2,lng-dLng/2],[lat+dLat/2,lng+dLng/2]],{ stroke:false, fillColor:color, fillOpacity: 0.42 + Math.min(0.32, depth*0.05), interactive:false });
+            g.addLayer(rect);
+          }
+        }
+        g.addTo(map); floodLayerRef.current=g;
+      }catch{}
+    })();
+  },[floodLevel,floodPalette,includeSeaDepth,selectedArea?.bounds?.xmin,selectedArea?.bounds?.xmax,selectedArea?.bounds?.ymin,selectedArea?.bounds?.ymax]);
 
   // Update AOI rectangle on map
   useEffect(() => {

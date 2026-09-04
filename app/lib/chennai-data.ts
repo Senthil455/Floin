@@ -9,6 +9,14 @@ export const AREAS: Area[] = [
   { id: "ennore", name: "Ennore Industrial North", basin: "Kosasthalaiyar Basin", bounds: { xmin: 80.28, xmax: 80.33, ymin: 13.18, ymax: 13.24 }, center: [80.305, 13.21] },
   { id: "velachery", name: "Velachery & Pallikaranai Lowlands", basin: "Kovalam / Marsh Catchment", bounds: { xmin: 80.20, xmax: 80.24, ymin: 12.96, ymax: 13.00 }, center: [80.22, 12.98] },
   { id: "chembarambakkam", name: "Chembarambakkam Reservoir Headwaters", basin: "Upper Adyar Outflow", bounds: { xmin: 80.03, xmax: 80.08, ymin: 12.99, ymax: 13.04 }, center: [80.055, 13.015] },
+  { id: "tnagar", name: "T. Nagar / West Mambalam", basin: "Adyar Branch", bounds: { xmin: 80.215, xmax: 80.235, ymin: 13.03, ymax: 13.05 }, center: [80.225, 13.04] },
+  { id: "mylapore", name: "Mylapore / Mandaveli", basin: "Buckingham Canal", bounds: { xmin: 80.255, xmax: 80.275, ymin: 13.02, ymax: 13.045 }, center: [80.265, 13.032] },
+  { id: "perambur", name: "Perambur / Purasawalkam", basin: "Otteri Nullah", bounds: { xmin: 80.235, xmax: 80.265, ymin: 13.08, ymax: 13.11 }, center: [80.25, 13.095] },
+  { id: "ambattur", name: "Ambattur Industrial", basin: "Puzhal Drainage", bounds: { xmin: 80.13, xmax: 80.17, ymin: 13.09, ymax: 13.13 }, center: [80.15, 13.11] },
+  { id: "sholinganallur", name: "Sholinganallur / OMR", basin: "Okkiyam Madavu", bounds: { xmin: 80.22, xmax: 80.26, ymin: 12.88, ymax: 12.92 }, center: [80.24, 12.90] },
+  { id: "thiruvottiyur", name: "Thiruvottiyur Coast", basin: "Coastal North", bounds: { xmin: 80.285, xmax: 80.32, ymin: 13.14, ymax: 13.18 }, center: [80.302, 13.16] },
+  { id: "porur", name: "Porur / Ramapuram", basin: "Adyar Upper", bounds: { xmin: 80.15, xmax: 80.185, ymin: 13.015, ymax: 13.05 }, center: [80.167, 13.032] },
+  { id: "anna_nagar", name: "Anna Nagar / Mogappair", basin: "Cooum North", bounds: { xmin: 80.19, xmax: 80.22, ymin: 13.07, ymax: 13.10 }, center: [80.205, 13.085] },
 ];
 
 export const CHENNAI_SEARCH_INDEX = [
@@ -23,6 +31,14 @@ export const CHENNAI_SEARCH_INDEX = [
   { name: "Ennore Port & Creek Channel", type: "Coastal Outfall", basin: "Kosasthalaiyar", coords: [80.3245, 13.2312] as [number, number] },
   { name: "Nungambakkam IMD Station", type: "Rainfall Monitoring", basin: "Central Chennai", coords: [80.243, 13.063] as [number, number] },
   { name: "Meenambakkam IMD Station", type: "Rainfall Monitoring", basin: "Adyar Basin", coords: [80.181, 12.994] as [number, number] },
+  { name: "Adyar River Mouth", type: "River", basin: "Adyar Basin", coords: [80.256, 13.011] as [number, number] },
+  { name: "Cooum River Bend", type: "River", basin: "Cooum Basin", coords: [80.27, 13.075] as [number, number] },
+  { name: "Buckingham Canal North", type: "Canal", basin: "Buckingham Canal", coords: [80.285, 13.12] as [number, number] },
+  { name: "Pallikaranai Marsh Centre", type: "Wetland", basin: "Pallikaranai", coords: [80.218, 12.948] as [number, number] },
+  { name: "T. Nagar Pondy Bazaar", type: "Urban Street", basin: "Adyar Branch", coords: [80.234, 13.041] as [number, number] },
+  { name: "Mylapore Kapaleeshwarar", type: "Cultural Village", basin: "Buckingham Canal", coords: [80.269, 13.033] as [number, number] },
+  { name: "Ambattur OT", type: "Industrial Village", basin: "Puzhal Drainage", coords: [80.148, 13.114] as [number, number] },
+  { name: "Sholinganallur Junction", type: "OMR Village", basin: "Okkiyam Madavu", coords: [80.227, 12.901] as [number, number] },
 ];
 
 export const DATASET_REGISTRY = [
