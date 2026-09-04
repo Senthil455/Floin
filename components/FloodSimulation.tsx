@@ -330,9 +330,13 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
         const queryResponse=await fetch("/api/location/query",{ method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ aoi, requestId:reqId }), signal:abortControllerRef.current?.signal }).then(r=>r.json());
         if(requestIdRef.current!==reqId) return;
         const datasetsToFetch=["buildings","highway","waterway","natural_water","chennai2015_hotspots","chennai_wards_200","chennai_soil","chennai_lulc","chennai_drainage"];
-        const featuresResponse=await fetch("/api/location/features",{ method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ aoi, datasets:datasetsToFetch, requestId:reqId, limit:600 }), signal:abortControllerRef.current?.signal }).then(r=>r.json());
+        const featuresPromise=fetch("/api/location/features",{ method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ aoi, datasets:datasetsToFetch, requestId:reqId, limit:600 }), signal:abortControllerRef.current?.signal }).then(r=>r.json());
+        const terrainPromise=fetch("/api/location/terrain",{ method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ aoi, requestId:reqId }), signal:abortControllerRef.current?.signal }).then(r=>r.json()).catch(()=>null);
+        const featuresResponse=await featuresPromise;
         if(requestIdRef.current!==reqId) return;
-        const terrainStats=generateTerrainForAOI(ctx.terrain,aoi,viewMode);
+        const terrainResp=await terrainPromise;
+        const realDem = terrainResp?.terrain?.elevations && terrainResp?.terrain?.source?.includes("COP30") ? { gridWidth: terrainResp.terrain.gridWidth, gridHeight: terrainResp.terrain.gridHeight, elevations: terrainResp.terrain.elevations as number[], bounds: terrainResp.terrain.bounds, source: terrainResp.terrain.source } : null;
+        const terrainStats=generateTerrainForAOI(ctx.terrain,aoi,viewMode, realDem);
         const buildingFeatures=featuresResponse.features?.buildings?.features||[];
         const roadFeatures=featuresResponse.features?.highway?.features||[];
         const hotspotFeatures=featuresResponse.features?.chennai2015_hotspots?.features||[];
@@ -496,35 +500,62 @@ const BASIN_PROFILE: Record<string, { base:number; roughness:number; marsh:numbe
   velachery: { base: 3.1, roughness: 0.08, marsh: 3.0, hill: -0.40, urban: 0.4 },
   chembarambakkam: { base: 9.5, roughness: 0.55, marsh: 0, hill: 4.5, urban: 0.15 },
 };
-function generateTerrainForAOI(terrain: THREE.Mesh, aoi: any, viewMode: ViewMode) {
+function sampleRealDem(lng:number, lat:number, dem:{gridWidth:number,gridHeight:number,elevations:number[],bounds:{xmin:number,ymin:number,xmax:number,ymax:number}}): number | null {
+  const b=dem.bounds; if(lng<b.xmin||lng>b.xmax||lat<b.ymin||lat>b.ymax) return null;
+  const fx=((lng-b.xmin)/(b.xmax-b.xmin))*(dem.gridWidth-1);
+  const fy=((lat-b.ymin)/(b.ymax-b.ymin))*(dem.gridHeight-1);
+  const x0=Math.floor(fx), y0=Math.floor(fy), x1=Math.min(x0+1,dem.gridWidth-1), y1=Math.min(y0+1,dem.gridHeight-1);
+  const tx=fx-x0, ty=fy-y0;
+  const i00=y0*dem.gridWidth+x0, i10=y0*dem.gridWidth+x1, i01=y1*dem.gridWidth+x0, i11=y1*dem.gridWidth+x1;
+  const v00=dem.elevations[i00], v10=dem.elevations[i10], v01=dem.elevations[i01], v11=dem.elevations[i11];
+  if([v00,v10,v01,v11].some(v=>v==null||!isFinite(v))) return null;
+  return (v00*(1-tx)+v10*tx)*(1-ty)+(v01*(1-tx)+v11*tx)*ty;
+}
+function generateTerrainForAOI(terrain: THREE.Mesh, aoi: any, viewMode: ViewMode, realDem?: {gridWidth:number,gridHeight:number,elevations:number[],bounds:any,source:string} | null) {
   const geo: any = terrain.geometry; const pos: any = geo.attributes.position; const colors: number[]=[]; const color=new THREE.Color();
   let minZ=Infinity,maxZ=-Infinity; const zVals:number[]=[];
   const seedX=(aoi.center?aoi.center[0]:80.25)*3.7; const seedY=(aoi.center?aoi.center[1]:13.05)*3.7;
   const profile=BASIN_PROFILE[aoi.id] || BASIN_PROFILE.all;
   const [aoiCx,aoiCz]=lngLatToXZ(aoi.center?aoi.center[0]:80.25, aoi.center?aoi.center[1]:13.05,14);
   const viewScale = viewMode==="velocity_field"?0.22 : viewMode==="depth_heatmap"?0.18 : viewMode==="hydrology"?0.42 : profile.roughness;
+  const hasReal = !!realDem && realDem.elevations.length>100;
   for(let i=0;i<pos.count;i++){
     const x=pos.getX(i), y=pos.getY(i); const dx=x-aoiCx, dy=y-aoiCz; const dToAOI=Math.hypot(dx,dy); const dToCenter=Math.hypot(x,y);
-    let z=profile.base*0.18;
-    z+=Math.sin((x+seedX)*0.58)*0.62*viewScale*1.8 + Math.cos((y+seedY)*0.68)*0.52*viewScale*1.8;
-    z+=Math.sin((x+seedX)*1.35+(y+seedY)*0.92)*0.26*viewScale*2;
-    z+=Math.cos((x+seedX)*2.1-(y+seedY)*1.3)*0.12*viewScale;
-    z+=Math.sin((x+seedX)*0.22+(y+seedY)*0.18)*0.35*profile.roughness;
-    z+=Math.exp(-(dToAOI*dToAOI)/(3.0+profile.urban))*1.85;
-    if(viewMode==="hydrology") z+=Math.sin(dToAOI*4.2)*0.18;
-    if(viewMode==="velocity_field") z+=Math.sin(dx*2.5+dy*1.1)*0.12*Math.exp(-dToAOI/3);
-    if(viewMode==="depth_heatmap") z-=Math.exp(-(dToAOI*dToAOI)/2.2)*0.35;
-    if(viewMode==="data_quality") z+= ((Math.floor(x*2)%2)===0?0.06:-0.06)*0.15;
-    z+=Math.sin(dx*1.8+dy*1.2+seedX)*0.18*Math.exp(-dToAOI/4);
-    z+=profile.hill*Math.exp(-(dToAOI*dToAOI)/6);
-    z-=profile.marsh*Math.exp(-(dToAOI*dToAOI)/1.8);
-    z-=clamp((dToCenter-5)/6,0,1)*0.9;
-    z+=Math.sin(x*12+y*9+seedX)*0.015*profile.roughness*3;
-    if(aoi.id==="velachery") z-=Math.exp(-(dToAOI*dToAOI)/1.2)*0.45;
-    if(aoi.id==="ennore") z+=Math.sin(y*2.2)*0.08;
-    if(aoi.id==="chembarambakkam") z+=Math.cos(dx*0.9)*0.22;
-    z+=Math.sin(x*8.4 - y*6.2 + seedY*0.7)*0.022*profile.roughness;
-    z+=Math.cos(x*11.2 + y*4.8 - seedX*0.3)*0.012*profile.roughness;
+    const lng = CHENNAI_BOUNDS.xmin + (x/14+0.5)*(CHENNAI_BOUNDS.xmax-CHENNAI_BOUNDS.xmin);
+    const lat = CHENNAI_BOUNDS.ymin + (y/14+0.5)*(CHENNAI_BOUNDS.ymax-CHENNAI_BOUNDS.ymin);
+    let z: number;
+    const real = hasReal ? sampleRealDem(lng, lat, realDem!) : null;
+    if(real!=null){
+      z = (real*0.11 - 0.85);
+      z += profile.hill*Math.exp(-(dToAOI*dToAOI)/6)*0.12;
+      z -= profile.marsh*Math.exp(-(dToAOI*dToAOI)/1.8)*0.08;
+      if(viewMode==="hydrology") z+=Math.sin(dToAOI*4.2)*0.06;
+      if(viewMode==="velocity_field") z+=Math.sin(dx*2.5+dy*1.1)*0.05*Math.exp(-dToAOI/3);
+      if(viewMode==="depth_heatmap") z-=Math.exp(-(dToAOI*dToAOI)/2.2)*0.14;
+      if(viewMode==="data_quality") z+= ((Math.floor(x*2)%2)===0?0.02:-0.02);
+      z+=Math.sin(x*12+y*9+seedX)*0.008*profile.roughness;
+    } else {
+      z=profile.base*0.18;
+      z+=Math.sin((x+seedX)*0.58)*0.62*viewScale*1.8 + Math.cos((y+seedY)*0.68)*0.52*viewScale*1.8;
+      z+=Math.sin((x+seedX)*1.35+(y+seedY)*0.92)*0.26*viewScale*2;
+      z+=Math.cos((x+seedX)*2.1-(y+seedY)*1.3)*0.12*viewScale;
+      z+=Math.sin((x+seedX)*0.22+(y+seedY)*0.18)*0.35*profile.roughness;
+      z+=Math.exp(-(dToAOI*dToAOI)/(3.0+profile.urban))*1.85;
+      if(viewMode==="hydrology") z+=Math.sin(dToAOI*4.2)*0.18;
+      if(viewMode==="velocity_field") z+=Math.sin(dx*2.5+dy*1.1)*0.12*Math.exp(-dToAOI/3);
+      if(viewMode==="depth_heatmap") z-=Math.exp(-(dToAOI*dToAOI)/2.2)*0.35;
+      if(viewMode==="data_quality") z+= ((Math.floor(x*2)%2)===0?0.06:-0.06)*0.15;
+      z+=Math.sin(dx*1.8+dy*1.2+seedX)*0.18*Math.exp(-dToAOI/4);
+      z+=profile.hill*Math.exp(-(dToAOI*dToAOI)/6);
+      z-=profile.marsh*Math.exp(-(dToAOI*dToAOI)/1.8);
+      z-=clamp((dToCenter-5)/6,0,1)*0.9;
+      z+=Math.sin(x*12+y*9+seedX)*0.015*profile.roughness*3;
+      if(aoi.id==="velachery") z-=Math.exp(-(dToAOI*dToAOI)/1.2)*0.45;
+      if(aoi.id==="ennore") z+=Math.sin(y*2.2)*0.08;
+      if(aoi.id==="chembarambakkam") z+=Math.cos(dx*0.9)*0.22;
+      z+=Math.sin(x*8.4 - y*6.2 + seedY*0.7)*0.022*profile.roughness;
+      z+=Math.cos(x*11.2 + y*4.8 - seedX*0.3)*0.012*profile.roughness;
+    }
     // DSM -> DTM erosion (Korea): simple 3x3 blur for interior to remove tower spikes (WorldDEM tower clusters)
     pos.setZ(i,z); zVals.push(z); minZ=Math.min(minZ,z); maxZ=Math.max(maxZ,z);
   }
@@ -577,10 +608,12 @@ function generateTerrainForAOI(terrain: THREE.Mesh, aoi: any, viewMode: ViewMode
   } catch {}
   const basinLabel = aoi.id ? aoi.id.toUpperCase() : "BASIN";
   const segLabel = Math.sqrt(pos.count).toFixed(0);
-  return { min:Math.max(0.6,(minZ+1.2)*3.5+profile.base*0.4), max:Math.max(8.5,(maxZ+1.2)*7+profile.base*0.6), grid:`${(geo as any).attributes.position.count} cells • contours 5`, source:`SRTM DEM 30m / ${basinLabel} - ${viewMode} · ${segLabel}seg`, bounds:aoi.bounds, profile: profile.base };
+  const src = hasReal ? `${realDem!.source} · ${segLabel}seg — REAL` : `SRTM DEM 30m / ${basinLabel} - ${viewMode} · ${segLabel}seg — SYNTH`;
+  return { min:Math.max(0.6,(minZ+1.2)*3.5+profile.base*0.4), max:Math.max(8.5,(maxZ+1.2)*7+profile.base*0.6), grid:`${(geo as any).attributes.position.count} cells • contours 5`, source: src, bounds:aoi.bounds, profile: profile.base, real: hasReal };
 }
 function applyCachedResult(ctx:any,cached:any,aoi:any,viewMode:ViewMode){
-  generateTerrainForAOI(ctx.terrain,aoi,viewMode);
+  const dem = cached?.terrain?.real ? null : null;
+  generateTerrainForAOI(ctx.terrain,aoi,viewMode, null);
   const b=aoi.bounds||CHENNAI_BOUNDS; const [ax1,az1]=lngLatToXZ(b.xmin,b.ymin,14); const [ax2,az2]=lngLatToXZ(b.xmax,b.ymax,14); const w=Math.abs(ax2-ax1), h=Math.abs(az2-az1); const cx=(ax1+ax2)/2, cz=(az1+az2)/2;
   const scaleX=Math.max(0.18,(w/14)*0.95), scaleY=Math.max(0.18,(h/14)*0.95); ctx.water.scale.set(scaleX,scaleY,1); ctx.water.position.set(cx*0.22,-0.88,cz*0.22); (ctx.water.material as any).uniforms.opacity.value=viewMode==="depth_heatmap"?0.72:0.54;
   if(ctx.aoiMarker){ ctx.scene.remove(ctx.aoiMarker); ctx.aoiMarker.geometry.dispose(); }
