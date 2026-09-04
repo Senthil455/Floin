@@ -1,0 +1,44 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_extra_006 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.19385676901537,
+          13.108805824633112
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_extra_006 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.25820540745161,
+          13.080752902473169
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_extra_006 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.19887947248543,
+          13.087573179386228
+        ]
+      }
+    }
+  ]
+}
