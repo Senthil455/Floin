@@ -29,3 +29,15 @@ p { text-wrap: pretty; }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-thumb { background: var(--rule-strong); }
 ::-webkit-scrollbar-track { background: var(--paper); }
+.skeleton { background: linear-gradient(90deg, var(--paper) 25%, var(--rule) 50%, var(--paper) 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+@media print {
+  header, aside, footer, #sim-status, [style*="position:fixed"] { display:none !important; }
+  body { background: white !important; color: black !important; }
+  main { padding: 0 !important; }
+  .sim-canvas-wrap { border: 1px solid black !important; break-inside: avoid; }
+  table { break-inside: auto; }
+  a { text-decoration: none !important; }
+}
+.empty-state { border: 1px dashed var(--rule-strong); background: var(--paper); padding: 24px; text-align:center; font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.error-state { border: 1px solid var(--vermillion); background: #FFF1F1; padding: 12px; font-family: var(--font-mono); font-size: 11px; color: var(--vermillion); }
