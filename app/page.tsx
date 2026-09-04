@@ -265,7 +265,38 @@ export default function Page() {
             </div>
           )}
 
-          {activeWorkspace === "hydrology" && <HydrologyWorkspace S={S} Ia={Ia} Q={Q} rainfall={rainfall} cn={cn} />}
+          {activeWorkspace === "hydrology" && <div style={{ display:"grid", gap:12 }}><HydrologyWorkspace S={S} Ia={Ia} Q={Q} rainfall={rainfall} cn={cn} /><WebFloodEngine rainfall={rainfall} cn={cn} aoi={selectedArea} viewMode={viewMode} /><FloodMLAnalytics rainfall={rainfall} cn={cn} /></div>}
+          {activeWorkspace === "impact" && (
+            <div>
+              <div style={{ display:"flex", alignItems:"baseline", gap:12, borderBottom:"1px solid var(--ink)", paddingBottom:8, marginBottom:12 }}>
+                <span style={{ fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:"0.12em", fontWeight:600 }}>04 // IMPACT</span>
+                <span style={{ fontFamily:"var(--font-display)", fontSize:18 }}>Stage-Damage Ledger</span>
+                <span style={{ marginLeft:"auto", fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>FloodML · Lc 75+</span>
+              </div>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8 }} className="max-[800px]:!grid-cols-2">
+                <div style={{ border:"1px solid var(--ink)", background:"var(--surface)", padding:12, borderLeft:"2px solid var(--vermillion)" }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.1em", color:"var(--muted)" }}>LOSS</div><div style={{ fontFamily:"var(--font-mono)", fontSize:18, fontWeight:700, color:"var(--vermillion)" }}>₹{economicLoss.directLossCrores}Cr</div><div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>direct · stage-damage</div></div>
+                <div style={{ border:"1px solid var(--rule)", background:"var(--surface)", padding:12 }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.1em", color:"var(--muted)" }}>DISPLACED</div><div style={{ fontFamily:"var(--font-mono)", fontSize:18, fontWeight:700 }}>{economicLoss.displacedPop}</div><div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>residents</div></div>
+                <div style={{ border:"1px solid var(--rule)", background:"var(--surface)", padding:12 }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.1em", color:"var(--muted)" }}>BLDGS &gt;0.15m</div><div style={{ fontFamily:"var(--font-mono)", fontSize:18, fontWeight:700 }}>{economicLoss.affectedBuildings}</div><div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>footprints</div></div>
+                <div style={{ border:"1px solid var(--rule)", background:"var(--surface)", padding:12 }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.1em", color:"var(--muted)" }}>ROAD CLOSURE</div><div style={{ fontFamily:"var(--font-mono)", fontSize:18, fontWeight:700 }}>16.4 km</div><div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>impassable</div></div>
+              </div>
+              <div style={{ marginTop:12 }}><FloodMLAnalytics rainfall={rainfall} cn={cn} /></div>
+              <div style={{ marginTop:12, border:"1px solid var(--ink)", background:"var(--surface)" }}>
+                <div style={{ padding:"8px 12px", borderBottom:"1px solid var(--rule)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>04.1 // ASSET INVENTORY — RIGHT-ALIGNED MONO</div>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--font-mono)", fontSize:11 }}>
+                  <thead><tr style={{ background:"var(--paper)", color:"var(--muted)", fontSize:10 }}><th style={{ textAlign:"left", padding:"6px 12px" }}>ASSET</th><th style={{ textAlign:"right", padding:"6px 12px" }}>INUND</th><th style={{ textAlign:"right", padding:"6px 12px" }}></th></tr></thead>
+                  <tbody>
+                    {CHENNAI_SEARCH_INDEX.map((a)=> (
+                      <tr key={a.name} style={{ borderTop:"1px solid var(--rule)" }}>
+                        <td style={{ padding:"8px 12px" }}><div style={{ fontWeight:600, fontFamily:"var(--font-body)", fontSize:12 }}>{a.name}</div><div style={{ color:"var(--muted)", fontSize:10 }}>{a.type} · {a.basin}</div></td>
+                        <td style={{ padding:"8px 12px", textAlign:"right", color:"var(--vermillion)", fontWeight:600 }}>0.52m</td>
+                        <td style={{ padding:"8px 12px", textAlign:"right" }}><button onClick={()=>{ const d=aoiKm/111; setSelectedArea({ id:`asset-${a.name.slice(0,6)}`, name:a.name, basin:a.basin, bounds:{xmin:a.coords[0]-d,xmax:a.coords[0]+d,ymin:a.coords[1]-d,ymax:a.coords[1]+d}, center: a.coords as any}); setActiveWorkspace("digital_twin"); pushToast(a.name);}} style={{ padding:"4px 8px", border:"1px solid var(--ink)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>FOCUS →</button></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
           {activeWorkspace === "validation" && <ValidationWorkspace />}
           {activeWorkspace === "registry" && <RegistryWorkspace />}
 
@@ -300,37 +331,6 @@ export default function Page() {
                     </tbody>
                   </table>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {activeWorkspace === "impact" && (
-            <div>
-              <div style={{ display:"flex", alignItems:"baseline", gap:12, borderBottom:"1px solid var(--ink)", paddingBottom:8, marginBottom:12 }}>
-                <span style={{ fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:"0.12em", fontWeight:600 }}>04 // IMPACT</span>
-                <span style={{ fontFamily:"var(--font-display)", fontSize:18 }}>Stage-Damage Ledger</span>
-                <span style={{ marginLeft:"auto", fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>FloodML · Lc 75+</span>
-              </div>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8 }} className="max-[800px]:!grid-cols-2">
-                <div style={{ border:"1px solid var(--ink)", background:"var(--surface)", padding:12, borderLeft:"2px solid var(--vermillion)" }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.1em", color:"var(--muted)" }}>LOSS</div><div style={{ fontFamily:"var(--font-mono)", fontSize:18, fontWeight:700, color:"var(--vermillion)" }}>₹{economicLoss.directLossCrores}Cr</div><div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>direct · stage-damage</div></div>
-                <div style={{ border:"1px solid var(--rule)", background:"var(--surface)", padding:12 }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.1em", color:"var(--muted)" }}>DISPLACED</div><div style={{ fontFamily:"var(--font-mono)", fontSize:18, fontWeight:700 }}>{economicLoss.displacedPop}</div><div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>residents</div></div>
-                <div style={{ border:"1px solid var(--rule)", background:"var(--surface)", padding:12 }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.1em", color:"var(--muted)" }}>BLDGS &gt;0.15m</div><div style={{ fontFamily:"var(--font-mono)", fontSize:18, fontWeight:700 }}>{economicLoss.affectedBuildings}</div><div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>footprints</div></div>
-                <div style={{ border:"1px solid var(--rule)", background:"var(--surface)", padding:12 }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.1em", color:"var(--muted)" }}>ROAD CLOSURE</div><div style={{ fontFamily:"var(--font-mono)", fontSize:18, fontWeight:700 }}>16.4 km</div><div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>impassable</div></div>
-              </div>
-              <div style={{ marginTop:12, border:"1px solid var(--ink)", background:"var(--surface)" }}>
-                <div style={{ padding:"8px 12px", borderBottom:"1px solid var(--rule)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>04.1 // ASSET INVENTORY — RIGHT-ALIGNED MONO</div>
-                <table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--font-mono)", fontSize:11 }}>
-                  <thead><tr style={{ background:"var(--paper)", color:"var(--muted)", fontSize:10 }}><th style={{ textAlign:"left", padding:"6px 12px" }}>ASSET</th><th style={{ textAlign:"right", padding:"6px 12px" }}>INUND</th><th style={{ textAlign:"right", padding:"6px 12px" }}></th></tr></thead>
-                  <tbody>
-                    {CHENNAI_SEARCH_INDEX.map((a)=> (
-                      <tr key={a.name} style={{ borderTop:"1px solid var(--rule)" }}>
-                        <td style={{ padding:"8px 12px" }}><div style={{ fontWeight:600, fontFamily:"var(--font-body)", fontSize:12 }}>{a.name}</div><div style={{ color:"var(--muted)", fontSize:10 }}>{a.type} · {a.basin}</div></td>
-                        <td style={{ padding:"8px 12px", textAlign:"right", color:"var(--vermillion)", fontWeight:600 }}>0.52m</td>
-                        <td style={{ padding:"8px 12px", textAlign:"right" }}><button onClick={()=>{ const d=aoiKm/111; setSelectedArea({ id:`asset-${a.name.slice(0,6)}`, name:a.name, basin:a.basin, bounds:{xmin:a.coords[0]-d,xmax:a.coords[0]+d,ymin:a.coords[1]-d,ymax:a.coords[1]+d}, center: a.coords as any}); setActiveWorkspace("digital_twin"); pushToast(a.name);}} style={{ padding:"4px 8px", border:"1px solid var(--ink)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>FOCUS →</button></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
               </div>
             </div>
           )}
