@@ -73,7 +73,9 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
   useEffect(()=>{ if(externalT!==undefined) setT(externalT);},[externalT]);
   useEffect(()=>{ if(externalLayers){ if(externalLayers.buildings!==undefined) setShowBuildings(externalLayers.buildings); if(externalLayers.water!==undefined) setShowWater(externalLayers.water); if(externalLayers.roads!==undefined) setShowRoads(externalLayers.roads); if(externalLayers.hotspots!==undefined) setShowHotspots(externalLayers.hotspots); if(externalLayers.waterways!==undefined) setShowWaterways(externalLayers.waterways);} },[externalLayers]);
 
-  const { S, Ia, Q } = useMemo(()=>scs(P,CN),[P,CN]);
+  const live = useChennaiLive(P);
+  const blendedP = useMemo(()=> Math.round((P*0.6 + live.precipitation*0.4)*10)/10, [P, live.precipitation]);
+  const { S, Ia, Q } = useMemo(()=>scs(blendedP,CN),[blendedP,CN]);
   const currentTimeValue = useMemo(()=>{ if(timeSeries.length>0 && currentHour>=0 && currentHour<timeSeries.length) return timeSeries[currentHour]?.depth||0; return depthFrom(Q,t);},[timeSeries,currentHour,Q,t]);
   const currentVelocity = useMemo(()=>{ if(timeSeries.length>0 && currentHour>=0 && currentHour<timeSeries.length) return timeSeries[currentHour]?.velocity||0.2+currentTimeValue*0.5; return 0.2+currentTimeValue*0.5;},[timeSeries,currentHour,currentTimeValue]);
   const d = currentTimeValue;
