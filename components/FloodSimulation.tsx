@@ -419,6 +419,8 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
           <button onClick={()=>setShowWaterways(!showWaterways)} style={{ padding:"4px 8px", border:"1px solid", borderColor: showWaterways?"var(--ink)":"var(--rule-strong)", background: showWaterways?"var(--ink)":"var(--paper)", color: showWaterways?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>CANALS</button>
           <button onClick={()=>setShowWater(!showWater)} style={{ padding:"4px 8px", border:"1px solid", borderColor: showWater?"var(--ink)":"var(--rule-strong)", background: showWater?"var(--ink)":"var(--paper)", color: showWater?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>WATER</button>
           <button onClick={()=>setShowWards(!showWards)} style={{ padding:"4px 8px", border:"1px solid", borderColor: showWards?"var(--ink)":"var(--rule-strong)", background: showWards?"var(--ink)":"var(--paper)", color: showWards?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>WARDS 200</button>
+          <button onClick={()=>setShowSoil(!showSoil)} style={{ padding:"4px 8px", border:"1px solid", borderColor: showSoil?"var(--ink)":"var(--rule-strong)", background: showSoil?"var(--ink)":"var(--paper)", color: showSoil?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>SOIL NBSS</button>
+          <button onClick={()=>setShowLulc(!showLulc)} style={{ padding:"4px 8px", border:"1px solid", borderColor: showLulc?"var(--ink)":"var(--rule-strong)", background: showLulc?"var(--ink)":"var(--paper)", color: showLulc?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>LULC 2015</button>
           <button onClick={()=>setShowHotspots(!showHotspots)} style={{ padding:"4px 8px", border:"1px solid", borderColor: showHotspots?"var(--ink)":"var(--rule-strong)", background: showHotspots?"var(--vermillion)":"var(--paper)", color: showHotspots?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>2015 HOTSPOTS</button>
         </div>
         <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8 }} className="max-[600px]:!grid-cols-1">
@@ -821,6 +823,44 @@ function buildWards(group:THREE.Group,features:any[],terrain:THREE.Mesh){
         const spriteMat=new THREE.SpriteMaterial({ color: col, transparent:true, opacity:0 });
         const sprite=new THREE.Sprite(spriteMat); sprite.position.set(center.x, h+0.5, center.z); sprite.scale.set(0.01,0.01,1); group.add(sprite);
       }
+    });
+  });
+}
+function buildSoil(group:THREE.Group,features:any[],terrain:THREE.Mesh){
+  group.clear(); if(!features||features.length===0) return;
+  const soilColors: Record<string, number> = { "Alluvial":0x8FA98E, "Red laterite":0xB87D62, "Black cotton":0x4A4A4A };
+  features.forEach((f:any)=>{
+    const geom=f.geometry; if(!geom) return;
+    const polys=geom.type==="Polygon"?[geom.coordinates]:geom.type==="MultiPolygon"?geom.coordinates:[];
+    polys.forEach((poly:any)=>{
+      const outer=poly[0]; if(!outer||outer.length<3) return;
+      const shape=new THREE.Shape(); outer.forEach(([lng,lat]:any,i:number)=>{ const [x,z]=lngLatToXZ(lng,lat); if(i===0) shape.moveTo(x,z); else shape.lineTo(x,z); });
+      const g=new THREE.ShapeGeometry(shape); const pos=g.attributes.position as THREE.BufferAttribute;
+      for(let i=0;i<pos.count;i++){ const x=pos.getX(i), z=pos.getY(i); const h=getTerrainHeightAt(terrain,x,z); pos.setZ(i, h+0.02); }
+      g.computeVertexNormals();
+      const col=soilColors[f.properties?.soil_type]||0x8FA98E;
+      const mat=new THREE.MeshStandardMaterial({ color:col, transparent:true, opacity:0.22, side:THREE.DoubleSide, depthWrite:false });
+      const mesh=new THREE.Mesh(g, mat); mesh.rotation.x=-Math.PI/2; mesh.position.y=0.02; mesh.userData={ name:`Soil ${f.properties?.soil_type} - ${f.properties?.texture}`, type:"NBSS Soil 1:50k", soil:f.properties?.soil_type, cn:f.properties?.cn_factor };
+      group.add(mesh);
+    });
+  });
+}
+function buildLulc(group:THREE.Group,features:any[],terrain:THREE.Mesh){
+  group.clear(); if(!features||features.length===0) return;
+  const lulcColors: Record<string, number> = { "High-density residential":0x8B7355, "Industrial":0x6B6B6B, "Water bodies":0x0E7490, "Wetland marsh":0x4A7C59, "Vegetation":0x6B8E6B };
+  features.forEach((f:any)=>{
+    const geom=f.geometry; if(!geom) return;
+    const polys=geom.type==="Polygon"?[geom.coordinates]:geom.type==="MultiPolygon"?geom.coordinates:[];
+    polys.forEach((poly:any)=>{
+      const outer=poly[0]; if(!outer||outer.length<3) return;
+      const shape=new THREE.Shape(); outer.forEach(([lng,lat]:any,i:number)=>{ const [x,z]=lngLatToXZ(lng,lat); if(i===0) shape.moveTo(x,z); else shape.lineTo(x,z); });
+      const g=new THREE.ShapeGeometry(shape); const pos=g.attributes.position as THREE.BufferAttribute;
+      for(let i=0;i<pos.count;i++){ const x=pos.getX(i), z=pos.getY(i); const h=getTerrainHeightAt(terrain,x,z); pos.setZ(i, h+0.03); }
+      g.computeVertexNormals();
+      const col=lulcColors[f.properties?.lulc]||0x8B7355;
+      const mat=new THREE.MeshStandardMaterial({ color:col, transparent:true, opacity:0.18, side:THREE.DoubleSide, depthWrite:false });
+      const mesh=new THREE.Mesh(g, mat); mesh.rotation.x=-Math.PI/2; mesh.position.y=0.03; mesh.userData={ name:`LULC ${f.properties?.lulc}`, type:"Bhuvan LULC 2015-16", impervious:f.properties?.impervious, cn:f.properties?.cn };
+      group.add(mesh);
     });
   });
 }
