@@ -1,0 +1,44 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_volunteer_registry 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.2419061409713,
+          13.10019968925107
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_volunteer_registry 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.2448296543747,
+          13.108721115989557
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_volunteer_registry 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.24922731127984,
+          13.052323588710435
+        ]
+      }
+    }
+  ]
+}

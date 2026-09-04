@@ -1,0 +1,44 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_evac_shelter_capacities_detail 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.28648738453619,
+          13.077539682461255
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_evac_shelter_capacities_detail 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.24983397948442,
+          13.070355428947856
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_evac_shelter_capacities_detail 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.21038363432125,
+          13.067815058318923
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_street_flood_sensors_iot 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.19348167129867,
+          13.035293006070722
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_street_flood_sensors_iot 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.24918749236932,
+          13.024488667653385
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_street_flood_sensors_iot 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.20903578845152,
+          13.082135787533709
+        ]
+      }
+    }
+  ]
+}

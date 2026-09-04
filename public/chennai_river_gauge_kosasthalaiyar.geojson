@@ -1,0 +1,44 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_river_gauge_kosasthalaiyar 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.20950007129349,
+          13.068577222077057
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_river_gauge_kosasthalaiyar 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.19221498348323,
+          13.030141877831237
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_river_gauge_kosasthalaiyar 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.240766499232,
+          13.021458401779253
+        ]
+      }
+    }
+  ]
+}

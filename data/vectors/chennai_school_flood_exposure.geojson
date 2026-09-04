@@ -1,0 +1,44 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_school_flood_exposure 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.19445372756655,
+          13.082594704513243
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_school_flood_exposure 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.2669661716331,
+          13.076034110964569
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_school_flood_exposure 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.22833284565989,
+          13.048016312928935
+        ]
+      }
+    }
+  ]
+}

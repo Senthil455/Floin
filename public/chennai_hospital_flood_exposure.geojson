@@ -1,0 +1,44 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_hospital_flood_exposure 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.24553886497891,
+          13.075228439204768
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_hospital_flood_exposure 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.21370845377425,
+          13.088293453707795
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_hospital_flood_exposure 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.27825492204845,
+          13.057063504096957
+        ]
+      }
+    }
+  ]
+}
