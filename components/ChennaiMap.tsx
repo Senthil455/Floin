@@ -75,13 +75,13 @@ export default function ChennaiMap({
       });
 
       const colors = {
-        buildings: "#8b5cf6",
-        highway: "#facc15",
-        water: "#06b6d4",
-        rainfall: "#38bdf8",
-        hotspots: "#ef4444",
-        inundation: "#dc2626",
-        shelters: "#10b981",
+        buildings: "#111210",
+        highway: "#8B7355",
+        water: "#0E7490",
+        rainfall: "#111210",
+        hotspots: "#E63946",
+        inundation: "#991B1B",
+        shelters: "#1A7F3D",
       };
 
       const geoCache = new Map<string, any>();
@@ -232,11 +232,8 @@ export default function ChennaiMap({
         const b = selectedArea.bounds;
         if (!b) return;
         rectRef.current = L.rectangle(
-          [
-            [b.ymin, b.xmin],
-            [b.ymax, b.xmax],
-          ],
-          { color: "#06b6d4", weight: 2.5, fillOpacity: 0.12, dashArray: "6 4" }
+          [[b.ymin, b.xmin],[b.ymax, b.xmax]],
+          { color: "#111210", weight: 1.5, fillOpacity: 0.06, dashArray: "4 4", fillColor:"#E63946" }
         ).addTo(mapRef.current);
         rectRef.current.bindTooltip(selectedArea.name || "Selected AOI", { permanent: false });
         mapRef.current.fitBounds(
@@ -268,23 +265,23 @@ export default function ChennaiMap({
 
   return (
     <div>
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10, alignItems: "center" }}>
+      <div style={{ display:"flex", gap:4, flexWrap:"wrap", marginBottom:8, alignItems:"center", border:"1px solid var(--rule)", background:"var(--paper)", padding:4 }}>
+        <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.08em", color:"var(--muted)", padding:"4px 6px", fontWeight:600 }}>LAYERS</span>
         {["all", "buildings", "highway", "water", "hotspots", "rainfall", "shelters", "landmarks"].map((key) => (
           <button
             key={key}
             onClick={() => handleLayerToggle(key)}
-            className={`px-3 py-1 rounded-full text-xs transition capitalize ${
-              currentLayerFilter === key ? "bg-cyan-500 text-black font-bold" : "bg-[#0f1e2e] text-[#8aa0b8] border border-[#1e3a5a] hover:text-white"
-            }`}
+            style={{ padding:"4px 8px", border:"1px solid", borderColor: currentLayerFilter===key?"var(--ink)":"var(--rule-strong)", background: currentLayerFilter===key?"var(--ink)":"var(--surface)", color: currentLayerFilter===key?"var(--paper)":"var(--muted2)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.04em" }}
           >
-            {key === "highway" ? "Road Network" : key === "hotspots" ? "2015 Hotspots" : key === "water" ? "Waterways" : key === "shelters" ? "🏥 Hospitals / Relief" : key}
+            {key==="highway"?"ROADS":key==="hotspots"?"2015 HOTSPOTS":key==="water"?"WATER":key==="shelters"?"HOSPITALS":key.toUpperCase()}
           </button>
         ))}
-        <span ref={countRef} className="mono" style={{ marginLeft: "auto", fontSize: ".72rem", color: "#8aa0b8" }}>
-          Ready
-        </span>
+        <span ref={countRef} style={{ marginLeft:"auto", fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)", padding:"0 6px" }}>READY</span>
       </div>
-      <div ref={ref} style={{ height: 410, borderRadius: 14, overflow: "hidden", border: "1px solid #1e3a5a", background: "#08121f" }} />
+      <div ref={ref} style={{ height: 380, overflow:"hidden", border:"1px solid var(--ink)", background:"#F2F0EB" }} />
+      <div style={{ display:"flex", justifyContent:"space-between", fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", marginTop:4, letterSpacing:"0.06em" }}>
+        <span>LEAFLET · OSM · EPSG:4326</span><span>CLICK MAP TO RETARGET AOI</span>
+      </div>
     </div>
   );
 }

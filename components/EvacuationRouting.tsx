@@ -1,6 +1,5 @@
 "use client";
-import React, { useState, useMemo } from "react";
-
+import { useState, useMemo } from "react";
 export const CHENNAI_RELIEF_SHELTERS = [
   { id: "h1", name: "Rajiv Gandhi Govt General Hospital", lat: 13.0818, lng: 80.2778, type: "Tertiary Trauma Hospital", capacity: 1800, bedsAvailable: 340, dryAccess: true },
   { id: "h2", name: "Govt Stanley Medical College Hospital", lat: 13.1075, lng: 80.2872, type: "North Chennai Trauma Center", capacity: 1200, bedsAvailable: 210, dryAccess: true },
@@ -10,124 +9,70 @@ export const CHENNAI_RELIEF_SHELTERS = [
   { id: "s2", name: "Velachery Community Evacuation Center", lat: 12.9812, lng: 80.2215, type: "South Chennai Sump Shelter", capacity: 1500, bedsAvailable: 420, dryAccess: false },
   { id: "s3", name: "Anna University Relief & Food Logistics Hub", lat: 13.0125, lng: 80.2355, type: "High-Ground Logistics Center", capacity: 3000, bedsAvailable: 1950, dryAccess: true },
 ];
-
-interface EvacuationRoutingProps {
-  currentLocation?: { lat: number; lng: number; name: string };
-  floodDepth?: number;
-  onFocusShelter?: (shelter: any) => void;
-}
-
-export default function EvacuationRouting({
-  currentLocation,
-  floodDepth = 0.5,
-  onFocusShelter,
-}: EvacuationRoutingProps) {
-  const [selectedShelterId, setSelectedShelterId] = useState<string>("h1");
-
-  const startPt = useMemo(() => {
-    return currentLocation || { lat: 13.08, lng: 80.27, name: "Current Location" };
-  }, [currentLocation]);
-
+interface EvacuationRoutingProps { currentLocation?: { lat: number; lng: number; name: string }; floodDepth?: number; onFocusShelter?: (shelter: any) => void; }
+export default function EvacuationRouting({ currentLocation, floodDepth = 0.5, onFocusShelter }: EvacuationRoutingProps) {
+  const [selectedShelterId, setSelectedShelterId] = useState("h1");
+  const startPt = useMemo(() => currentLocation || { lat: 13.08, lng: 80.27, name: "Current Location" }, [currentLocation]);
   const nearestShelters = useMemo(() => {
     return CHENNAI_RELIEF_SHELTERS.map((s) => {
       const dLat = (s.lat - startPt.lat) * 111;
       const dLng = (s.lng - startPt.lng) * 111 * Math.cos((startPt.lat * Math.PI) / 180);
       const distanceKm = Math.hypot(dLat, dLng);
-      // If flood depth is high, detour factor increases
       const detourFactor = floodDepth > 0.8 ? 1.45 : floodDepth > 0.3 ? 1.2 : 1.05;
       const routeKm = distanceKm * detourFactor;
-      const estTimeMin = Math.round((routeKm / 18) * 60); // 18 km/h emergency speed
-      const routeStatus = floodDepth > 0.8 && !s.dryAccess ? "High Inundation Detour" : s.dryAccess ? "Clear High-Ground Corridor" : "Passable with Rescue Vehicle";
-      return {
-        ...s,
-        distanceKm: distanceKm.toFixed(2),
-        routeKm: routeKm.toFixed(2),
-        estTimeMin,
-        routeStatus,
-      };
+      const estTimeMin = Math.round((routeKm / 18) * 60);
+      const routeStatus = floodDepth > 0.8 && !s.dryAccess ? "DETOUR — INUNDATED" : s.dryAccess ? "CLEAR — HIGH GROUND" : "PASSABLE — RESCUE VEHICLE";
+      return { ...s, distanceKm: distanceKm.toFixed(2), routeKm: routeKm.toFixed(2), estTimeMin, routeStatus };
     }).sort((a, b) => +a.routeKm - +b.routeKm);
   }, [startPt, floodDepth]);
-
   const activeShelter = nearestShelters.find((s) => s.id === selectedShelterId) || nearestShelters[0];
-
   return (
-    <div className="bg-[#060e1c] border border-[#1e3a5a] rounded-2xl p-4 space-y-4">
-      <div className="flex justify-between items-center border-b border-[#1e3a5a]/60 pb-2.5">
-        <div>
-          <h3 className="font-mono font-bold text-sm text-cyan-300 flex items-center gap-2">
-            <span>🛡</span> EMERGENCY EVACUATION & SAFE CORRIDOR ROUTING
-          </h3>
-          <p className="text-[11px] text-[#8aa0b8] mt-0.5">
-            Real-time safe corridor routing avoiding inundated roads (&gt;0.3m depth) to Chennai hospitals & relief camps.
-          </p>
-        </div>
-        <span className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
-          ALGORITHM ACTIVE
-        </span>
+    <div style={{ border:"1px solid var(--ink)", background:"var(--surface)" }}>
+      <div style={{ height:28, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 10px", borderBottom:"1px solid var(--rule)", background:"var(--paper)" }}>
+        <span style={{ fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>05.1 // SAFE CORRIDOR</span>
+        <span style={{ fontFamily:"var(--font-mono)", fontSize:9, border:"1px solid var(--ink)", padding:"2px 6px", background:"var(--surface)", fontWeight:600 }}>DEPTH {floodDepth.toFixed(2)}m · 18 KM/H</span>
       </div>
-
-      {/* Active Route Telemetry Card */}
+      <div style={{ padding:10, borderBottom:"1px solid var(--rule)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)", lineHeight:1.5 }}>
+        Avoid inundated links &gt;0.30m. Detour factor 1.05–1.45 by depth. Beds right-aligned, mono, tabular.
+      </div>
       {activeShelter && (
-        <div className="p-3.5 rounded-xl bg-[#040a14] border border-cyan-500/40 space-y-2">
-          <div className="flex justify-between items-start">
-            <div>
-              <div className="text-xs font-bold text-white flex items-center gap-2">
-                <span>📍</span> Route to: <span className="text-cyan-300">{activeShelter.name}</span>
-              </div>
-              <div className="text-[10px] text-[#8aa0b8] mt-0.5">{activeShelter.type}</div>
-            </div>
-            <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${activeShelter.dryAccess ? "bg-emerald-500/20 text-emerald-300" : "bg-amber-500/20 text-amber-300"}`}>
-              {activeShelter.routeStatus}
-            </span>
+        <div style={{ margin:10, border:"1px solid var(--ink)", background:"var(--paper)", borderLeft:"2px solid var(--vermillion)" }}>
+          <div style={{ display:"flex", justifyContent:"space-between", gap:8, padding:"10px 12px", borderBottom:"1px solid var(--rule)" }}>
+            <div><div style={{ fontFamily:"var(--font-body)", fontSize:13, fontWeight:600 }}>{activeShelter.name}</div><div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>{activeShelter.type}</div></div>
+            <span style={{ fontFamily:"var(--font-mono)", fontSize:9, fontWeight:700, letterSpacing:"0.06em", border:"1px solid var(--rule-strong)", padding:"2px 6px", background: activeShelter.dryAccess?"var(--surface)":"#FFF1F1", color: activeShelter.dryAccess?"var(--signal)":"var(--vermillion)", height:"fit-content" }}>{activeShelter.routeStatus}</span>
           </div>
-
-          <div className="grid grid-cols-4 gap-2 text-center text-xs font-mono pt-2 border-t border-[#1e3a5a]/60">
-            <div>
-              <div className="text-[#8aa0b8] text-[9px]">Direct Dist</div>
-              <div className="font-bold text-white">{activeShelter.distanceKm} km</div>
-            </div>
-            <div>
-              <div className="text-[#8aa0b8] text-[9px]">Safe Detour</div>
-              <div className="font-bold text-cyan-300">{activeShelter.routeKm} km</div>
-            </div>
-            <div>
-              <div className="text-[#8aa0b8] text-[9px]">Travel Time</div>
-              <div className="font-bold text-amber-300">{activeShelter.estTimeMin} min</div>
-            </div>
-            <div>
-              <div className="text-[#8aa0b8] text-[9px]">Available Beds</div>
-              <div className="font-bold text-emerald-400">{activeShelter.bedsAvailable}</div>
-            </div>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", fontFamily:"var(--font-mono)", fontSize:11, textAlign:"center" }}>
+            {[
+              { k:"DIRECT", v:`${activeShelter.distanceKm} km` },
+              { k:"DETOUR", v:`${activeShelter.routeKm} km` },
+              { k:"TIME", v:`${activeShelter.estTimeMin} min` },
+              { k:"BEDS", v:`${activeShelter.bedsAvailable}` },
+            ].map((c)=> (
+              <div key={c.k} style={{ padding:"8px 6px", borderRight:"1px solid var(--rule)" }}>
+                <div style={{ fontSize:9, letterSpacing:"0.08em", color:"var(--muted)" }}>{c.k}</div>
+                <div style={{ fontWeight:700, marginTop:2 }}>{c.v}</div>
+              </div>
+            ))}
           </div>
         </div>
       )}
-
-      {/* Shelter List */}
-      <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
-        <div className="text-[10px] font-mono font-bold text-[#8aa0b8] mb-1">DESIGNATED RELIEF DESTINATIONS</div>
-        {nearestShelters.map((s) => (
-          <div
-            key={s.id}
-            onClick={() => {
-              setSelectedShelterId(s.id);
-              onFocusShelter?.(s);
-            }}
-            className={`p-2.5 rounded-xl border cursor-pointer transition flex items-center justify-between text-xs ${
-              selectedShelterId === s.id
-                ? "bg-[#12233a] border-cyan-500 text-white font-semibold"
-                : "bg-[#040a14] border-[#1e3a5a] text-[#8aa0b8] hover:border-cyan-500/40 hover:text-white"
-            }`}
-          >
-            <div>
-              <div className="font-bold truncate max-w-[280px]">{s.name}</div>
-              <div className="text-[10px] text-[#64748b]">{s.type} • {s.distanceKm} km</div>
-            </div>
-            <div className="text-right font-mono text-[11px]">
-              <div className="text-cyan-300 font-bold">{s.estTimeMin} min</div>
-              <div className="text-[9px] text-emerald-400">{s.bedsAvailable} beds</div>
-            </div>
-          </div>
-        ))}
+      <div style={{ padding:"0 10px 10px" }}>
+        <div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.08em", color:"var(--muted)", fontWeight:600, padding:"6px 0", borderBottom:"1px solid var(--rule)" }}>05.2 // DESTINATIONS — SORTED BY DETOUR</div>
+        <div style={{ maxHeight: 280, overflowY:"auto", border:"1px solid var(--rule)", background:"var(--paper)", marginTop:6 }}>
+          <table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--font-mono)", fontSize:11 }}>
+            <thead><tr style={{ background:"var(--paper)", color:"var(--muted)", fontSize:9 }}><th style={{ textAlign:"left", padding:"6px 10px", borderBottom:"1px solid var(--rule-strong)" }}>FACILITY</th><th style={{ textAlign:"right", padding:"6px 10px", borderBottom:"1px solid var(--rule-strong)" }}>KM</th><th style={{ textAlign:"right", padding:"6px 10px", borderBottom:"1px solid var(--rule-strong)" }}>MIN</th><th style={{ textAlign:"right", padding:"6px 10px", borderBottom:"1px solid var(--rule-strong)" }}>BEDS</th></tr></thead>
+            <tbody>
+              {nearestShelters.map((s)=> (
+                <tr key={s.id} onClick={()=>{setSelectedShelterId(s.id); onFocusShelter?.(s);}} style={{ cursor:"pointer", background: selectedShelterId===s.id?"var(--surface)":"transparent", borderLeft: selectedShelterId===s.id?"2px solid var(--vermillion)":"2px solid transparent", borderBottom:"1px solid var(--rule)" }}>
+                  <td style={{ padding:"8px 10px" }}><div style={{ fontWeight:600, fontFamily:"var(--font-body)", fontSize:12 }}>{s.name}</div><div style={{ color:"var(--muted)", fontSize:10 }}>{s.type} · {s.distanceKm} km</div></td>
+                  <td style={{ padding:"8px 10px", textAlign:"right", fontWeight:600 }}>{s.routeKm}</td>
+                  <td style={{ padding:"8px 10px", textAlign:"right" }}>{s.estTimeMin}</td>
+                  <td style={{ padding:"8px 10px", textAlign:"right", color: s.bedsAvailable>1000?"var(--signal)":"var(--ink)", fontWeight:700 }}>{s.bedsAvailable}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
