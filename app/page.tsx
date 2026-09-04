@@ -14,6 +14,7 @@ import FloodMLAnalytics from "@/components/FloodMLAnalytics";
 import WebFloodEngine from "@/components/WebFloodEngine";
 import AnalyticsSuite from "@/components/AnalyticsSuite";
 import InsightStrip from "@/components/InsightStrip";
+import UnifiedPredictionPanel from "@/components/UnifiedPredictionPanel";
 
 const ChennaiMap = dynamic(() => import("@/components/ChennaiMap"), {
   ssr: false,
