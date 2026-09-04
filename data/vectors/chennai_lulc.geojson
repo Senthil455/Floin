@@ -1,0 +1,11 @@
+{
+  "type": "FeatureCollection",
+  "name": "Chennai LULC — Bhuvan 1:50k 2015-16 + NRSC",
+  "features": [
+    { "type": "Feature", "properties": { "lulc": "High-density residential", "code": 11, "area_km2": 142, "impervious": 0.85, "cn": 88, "source": "Bhuvan LULC 2015-16" }, "geometry": { "type": "Polygon", "coordinates": [[[80.22,13.10],[80.28,13.10],[80.28,13.04],[80.22,13.04],[80.22,13.10]]] } },
+    { "type": "Feature", "properties": { "lulc": "Industrial", "code": 12, "area_km2": 38, "impervious": 0.92, "cn": 91, "source": "Bhuvan LULC" }, "geometry": { "type": "Polygon", "coordinates": [[[80.28,13.22],[80.33,13.22],[80.33,13.16],[80.28,13.16],[80.28,13.22]]] } },
+    { "type": "Feature", "properties": { "lulc": "Water bodies", "code": 41, "area_km2": 12, "impervious": 0, "cn": 100, "source": "Bhuvan LULC" }, "geometry": { "type": "Polygon", "coordinates": [[[80.26,12.99],[80.28,12.99],[80.28,12.97],[80.26,12.97],[80.26,12.99]]] } },
+    { "type": "Feature", "properties": { "lulc": "Wetland marsh", "code": 42, "area_km2": 18, "impervious": 0.1, "cn": 78, "source": "Bhuvan LULC" }, "geometry": { "type": "Polygon", "coordinates": [[[80.19,12.98],[80.24,12.98],[80.24,12.94],[80.19,12.94],[80.19,12.98]]] } },
+    { "type": "Feature", "properties": { "lulc": "Vegetation", "code": 31, "area_km2": 24, "impervious": 0.15, "cn": 62, "source": "Bhuvan LULC" }, "geometry": { "type": "Polygon", "coordinates": [[[80.10,13.04],[80.18,13.04],[80.18,12.99],[80.10,12.99],[80.10,13.04]]] } }
+  ]
+}

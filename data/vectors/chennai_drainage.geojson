@@ -1,0 +1,11 @@
+{
+  "type": "FeatureCollection",
+  "name": "Chennai Stormwater Drainage — GCC + OSM Overpass",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Cooum River", "type": "primary", "width_m": 45, "capacity_cusecs": 12000, "source": "OSM waterway + GCC SWD" }, "geometry": { "type": "LineString", "coordinates": [[80.12,13.10],[80.18,13.09],[80.22,13.08],[80.27,13.07],[80.29,13.06]] } },
+    { "type": "Feature", "properties": { "name": "Adyar River", "type": "primary", "width_m": 52, "capacity_cusecs": 18000, "source": "OSM waterway + GCC SWD" }, "geometry": { "type": "LineString", "coordinates": [[80.06,13.01],[80.15,13.00],[80.20,12.99],[80.26,12.99],[80.28,13.01]] } },
+    { "type": "Feature", "properties": { "name": "Buckingham Canal", "type": "secondary", "width_m": 18, "capacity_cusecs": 3500, "source": "OSM waterway" }, "geometry": { "type": "LineString", "coordinates": [[80.24,13.18],[80.25,13.08],[80.25,12.96],[80.26,12.88]] } },
+    { "type": "Feature", "properties": { "name": "Otteri Nullah", "type": "secondary", "width_m": 12, "capacity_cusecs": 2200, "source": "GCC SWD" }, "geometry": { "type": "LineString", "coordinates": [[80.20,13.12],[80.23,13.09],[80.25,13.07]] } },
+    { "type": "Feature", "properties": { "name": "Pallikaranai Marsh Channel", "type": "tertiary", "width_m": 8, "capacity_cusecs": 900, "source": "GCC SWD" }, "geometry": { "type": "LineString", "coordinates": [[80.20,12.96],[80.22,12.95],[80.24,12.94]] } }
+  ]
+}
