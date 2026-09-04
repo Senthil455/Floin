@@ -3,6 +3,11 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { ViewMode } from "@/components/FloodSimulation";
 import EvacuationRouting from "@/components/EvacuationRouting";
+import { AREAS, CHENNAI_SEARCH_INDEX, type Scenario } from "@/app/lib/chennai-data";
+import { useHydrology } from "@/hooks/useHydrology";
+import HydrologyWorkspace from "@/app/lib/workspaces/HydrologyWorkspace";
+import ValidationWorkspace from "@/app/lib/workspaces/ValidationWorkspace";
+import RegistryWorkspace from "@/app/lib/workspaces/RegistryWorkspace";
 
 const ChennaiMap = dynamic(() => import("@/components/ChennaiMap"), {
   ssr: false,
@@ -22,50 +27,7 @@ const FloodSimulation = dynamic(() => import("@/components/FloodSimulation"), {
   ),
 });
 
-type Scenario = {
-  id: string;
-  name: string;
-  P: number;
-  CN: number;
-  duration: number;
-  depth: string;
-  area: string;
-  buildings: number;
-  runoff: number;
-  category: "Historical 2015" | "Design Storm" | "Climate Extreme" | "Custom";
-};
-
 type Toast = { id: number; msg: string; action?: string };
-
-const AREAS = [
-  { id: "all", name: "All Chennai Catchment", basin: "Greater Chennai Basin", bounds: { xmin: 80.10, xmax: 80.35, ymin: 12.88, ymax: 13.25 }, center: [80.225, 13.065] as [number, number] },
-  { id: "central", name: "Central Chennai (Ripon/Egmore)", basin: "Cooum River Basin", bounds: { xmin: 80.24, xmax: 80.28, ymin: 13.05, ymax: 13.09 }, center: [80.26, 13.07] as [number, number] },
-  { id: "adyar", name: "Adyar River Basin (Saidapet)", basin: "Adyar Catchment", bounds: { xmin: 80.18, xmax: 80.28, ymin: 12.98, ymax: 13.03 }, center: [80.23, 13.01] as [number, number] },
-  { id: "ennore", name: "Ennore Industrial North", basin: "Kosasthalaiyar Basin", bounds: { xmin: 80.28, xmax: 80.33, ymin: 13.18, ymax: 13.24 }, center: [80.305, 13.21] as [number, number] },
-  { id: "velachery", name: "Velachery & Pallikaranai Lowlands", basin: "Kovalam / Marsh Catchment", bounds: { xmin: 80.20, xmax: 80.24, ymin: 12.96, ymax: 13.00 }, center: [80.22, 12.98] as [number, number] },
-  { id: "chembarambakkam", name: "Chembarambakkam Reservoir Headwaters", basin: "Upper Adyar Outflow", bounds: { xmin: 80.03, xmax: 80.08, ymin: 12.99, ymax: 13.04 }, center: [80.055, 13.015] as [number, number] },
-];
-
-const CHENNAI_SEARCH_INDEX = [
-  { name: "Ripon Building (GCC HQ)", type: "Command Center", basin: "Cooum Basin", coords: [80.2755, 13.0827] },
-  { name: "Tidel Park (OMR Tech Corridor)", type: "IT Infrastructure", basin: "Buckingham Canal", coords: [80.2483, 12.9893] },
-  { name: "Chennai Central Station", type: "Transit Terminal", basin: "Buckingham Canal", coords: [80.2754, 13.0823] },
-  { name: "Saidapet Adyar Crossing", type: "Historical Hotspot", basin: "Adyar Basin", coords: [80.2215, 13.0182] },
-  { name: "Anna Salai Arterial Corridor", type: "Road Network", basin: "Cooum Basin", coords: [80.258, 13.055] },
-  { name: "Chembarambakkam Reservoir Sluice", type: "Reservoir Outflow", basin: "Upper Adyar", coords: [80.0578, 13.0118] },
-  { name: "Poondi Reservoir (Sathyamurthy)", type: "Major Reservoir", basin: "Kosasthalaiyar", coords: [79.8601, 13.1912] },
-  { name: "Red Hills / Puzhal Lake", type: "Water Storage", basin: "Puzhal Basin", coords: [80.1745, 13.1856] },
-  { name: "Ennore Port & Creek Channel", type: "Coastal Outfall", basin: "Kosasthalaiyar", coords: [80.3245, 13.2312] },
-  { name: "Nungambakkam IMD Station", type: "Rainfall Monitoring", basin: "Central Chennai", coords: [80.243, 13.063] },
-  { name: "Meenambakkam IMD Station", type: "Rainfall Monitoring", basin: "Adyar Basin", coords: [80.181, 12.994] },
-];
-
-function calcScsRunoff(P: number, CN: number) {
-  const S = 25400 / CN - 254;
-  const Ia = 0.2 * S;
-  const Q = P <= Ia ? 0 : ((P - Ia) ** 2) / (P + 0.8 * S);
-  return { S, Ia, Q };
-}
 
 export default function Page() {
   const [activeWorkspace, setActiveWorkspace] = useState<
@@ -115,28 +77,13 @@ export default function Page() {
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3800);
   };
 
-  const { S, Ia, Q } = useMemo(() => calcScsRunoff(rainfall, cn), [rainfall, cn]);
+  const { S, Ia, Q, economicLoss } = useHydrology(rainfall, cn, duration);
 
   const searchResults = useMemo(() => {
     if (!search.trim()) return [];
     const q = search.toLowerCase();
     return CHENNAI_SEARCH_INDEX.filter((item) => item.name.toLowerCase().includes(q) || item.type.toLowerCase().includes(q) || item.basin.toLowerCase().includes(q));
   }, [search]);
-
-  // Stage-Damage Economic Loss Calculations (derived from FloodML algorithms)
-  const economicLoss = useMemo(() => {
-    const depthVal = Math.min(Q / 120, 1) * 2.2 * (0.3 + 0.7 * (duration / 100));
-    const affectedBuildings = Math.round(80 + (Q / 120) * 800);
-    // Stage-damage function: D = B * (depth^1.35) * avgDamagePerBuilding (in Lakhs INR)
-    const directLossCrores = (affectedBuildings * Math.pow(Math.max(0.1, depthVal), 1.35) * 4.8) / 100;
-    const displacedPop = Math.round(affectedBuildings * 4.2 * Math.min(1.0, depthVal / 0.8));
-    return {
-      directLossCrores: directLossCrores.toFixed(1),
-      displacedPop: displacedPop.toLocaleString(),
-      affectedBuildings,
-      depthVal: depthVal.toFixed(2),
-    };
-  }, [Q, duration]);
 
   // Timeline Auto-play Effect
   useEffect(() => {
@@ -624,54 +571,7 @@ export default function Page() {
             </div>
           )}
 
-          {/* WORKSPACE 2: HYDROLOGY & CATCHMENT ENGINE */}
-          {activeWorkspace === "hydrology" && (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h1 className="text-xl font-extrabold text-white">Hydrological Modelling & Basin Catchment Engine</h1>
-                <span className="text-xs text-cyan-300 font-mono">SCS-CN + D8 Hydrodynamics</span>
-              </div>
-
-              <div className="grid lg:grid-cols-2 gap-4">
-                {/* Mathematical Derivations */}
-                <div className="bg-[#060e1c] border border-[#1e3a5a] rounded-2xl p-5 space-y-4">
-                  <h3 className="font-mono font-bold text-sm text-cyan-300">SCS-CN Mathematical Formulation</h3>
-                  <div className="p-3.5 rounded-xl bg-[#040a14] border border-[#1e3a5a] font-mono text-xs space-y-2 text-[#cbd5e1]">
-                    <div><b>1. Maximum Potential Retention:</b> S = (25400 / CN) - 254 = <b>{S.toFixed(2)} mm</b></div>
-                    <div><b>2. Initial Abstraction:</b> Ia = 0.2 × S = <b>{Ia.toFixed(2)} mm</b></div>
-                    <div><b>3. Direct Surface Runoff:</b> Q = (P - Ia)² / (P + 0.8S) = <b className="text-cyan-300">{Q.toFixed(2)} mm</b></div>
-                  </div>
-                  <div className="text-xs text-[#8aa0b8] leading-relaxed">
-                    The USDA Soil Conservation Service (SCS) Curve Number model calculates excess precipitation from total rainfall P={rainfall}mm and urban imperviousness CN={cn}.
-                  </div>
-                </div>
-
-                {/* Chennai Major Reservoirs & Sluices */}
-                <div className="bg-[#060e1c] border border-[#1e3a5a] rounded-2xl p-5 space-y-3">
-                  <h3 className="font-mono font-bold text-sm text-cyan-300">Chennai Reservoir & Sluice Context</h3>
-                  <div className="space-y-2 text-xs">
-                    {[
-                      { name: "Chembarambakkam Reservoir", cap: "3,645 Mcft", status: "88% Full", basin: "Adyar Headwaters", outflow: "4,500 cusecs" },
-                      { name: "Poondi Reservoir (Sathyamurthy)", cap: "3,231 Mcft", status: "76% Full", basin: "Kosasthalaiyar", outflow: "1,200 cusecs" },
-                      { name: "Red Hills / Puzhal Lake", cap: "3,300 Mcft", status: "82% Full", basin: "Central Drainage", outflow: "Controlled" },
-                      { name: "Cholavaram Lake", cap: "1,081 Mcft", status: "64% Full", basin: "North Drainage", outflow: "Safe" },
-                    ].map((res) => (
-                      <div key={res.name} className="p-2.5 rounded-xl bg-[#040a14] border border-[#1e3a5a] flex justify-between items-center">
-                        <div>
-                          <div className="font-bold text-white">{res.name}</div>
-                          <div className="text-[10px] text-[#8aa0b8]">{res.basin} • Capacity: {res.cap}</div>
-                        </div>
-                        <div className="text-right font-mono">
-                          <div className="text-cyan-300 font-bold">{res.status}</div>
-                          <div className="text-[10px] text-amber-300">{res.outflow}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          {activeWorkspace === "hydrology" && <HydrologyWorkspace S={S} Ia={Ia} Q={Q} rainfall={rainfall} cn={cn} />}
 
           {/* WORKSPACE 3: SCENARIO LABORATORY */}
           {activeWorkspace === "scenarios" && (
@@ -867,69 +767,8 @@ export default function Page() {
             </div>
           )}
 
-          {/* WORKSPACE 6: HISTORICAL 2015 GROUND TRUTH */}
-          {activeWorkspace === "validation" && (
-            <div className="space-y-4">
-              <h1 className="text-xl font-extrabold text-white">2015 GCC Historical Flood Ground-Truth Validation</h1>
-              <div className="bg-[#060e1c] border border-[#1e3a5a] rounded-2xl p-5 space-y-4">
-                <p className="text-xs text-[#8aa0b8] leading-relaxed">
-                  During December 2015, Chennai experienced catastrophic precipitation exceeding 494mm within 24 hours. FLOIN validates simulation models against authoritative Greater Chennai Corporation (GCC) ground-truth datasets.
-                </p>
-                <div className="grid sm:grid-cols-4 gap-3 text-xs">
-                  <div className="p-3.5 rounded-xl bg-[#040a14] border border-[#1e3a5a]">
-                    <div className="text-[#8aa0b8]">GCC Flood Hotspots</div>
-                    <div className="text-lg font-bold text-white font-mono mt-1">327 Points</div>
-                    <div className="text-[10px] text-emerald-400 mt-1">100% Verified in System</div>
-                  </div>
-                  <div className="p-3.5 rounded-xl bg-[#040a14] border border-[#1e3a5a]">
-                    <div className="text-[#8aa0b8]">Flooded Street Segments</div>
-                    <div className="text-lg font-bold text-white font-mono mt-1">7,894 Segments</div>
-                    <div className="text-[10px] text-emerald-400 mt-1">GeoJSON Active Layer</div>
-                  </div>
-                  <div className="p-3.5 rounded-xl bg-[#040a14] border border-[#1e3a5a]">
-                    <div className="text-[#8aa0b8]">Nash-Sutcliffe (NSE)</div>
-                    <div className="text-lg font-bold text-cyan-300 font-mono mt-1">0.892</div>
-                    <div className="text-[10px] text-cyan-300 mt-1">High Accuracy Metric</div>
-                  </div>
-                  <div className="p-3.5 rounded-xl bg-[#040a14] border border-[#1e3a5a]">
-                    <div className="text-[#8aa0b8]">Peak Timing Error</div>
-                    <div className="text-lg font-bold text-emerald-300 font-mono mt-1">±15 mins</div>
-                    <div className="text-[10px] text-emerald-400 mt-1">Within Design Limits</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* WORKSPACE 7: DATASET PROVENANCE REGISTRY */}
-          {activeWorkspace === "registry" && (
-            <div className="space-y-4">
-              <h1 className="text-xl font-extrabold text-white">Dataset Registry & Provenance Audit</h1>
-              <div className="bg-[#060e1c] border border-[#1e3a5a] rounded-2xl p-4">
-                <div className="divide-y divide-[#1e3a5a]/60 text-xs">
-                  {[
-                    { id: "buildings", name: "Building Footprints", type: "Vector Polygon", count: "1,811", crs: "EPSG:4326", source: "OpenStreetMap / GCC Survey", confidence: "High" },
-                    { id: "highway", name: "Road Network", type: "Vector LineString", count: "64", crs: "EPSG:4326", source: "OpenStreetMap Highway", confidence: "High" },
-                    { id: "waterway", name: "Waterways & Canals", type: "Vector LineString", count: "12", crs: "EPSG:4326", source: "Chennai River Authority", confidence: "High" },
-                    { id: "hotspots", name: "2015 Flood Hotspots", type: "Vector Points", count: "327", crs: "EPSG:4326", source: "Greater Chennai Corporation (GCC)", confidence: "High (Observed)" },
-                    { id: "flooded_streets", name: "2015 Flooded Streets", type: "Vector LineString", count: "7,894", crs: "EPSG:4326", source: "GCC 2015 Disaster Assessment", confidence: "High (Observed)" },
-                    { id: "dem_cop30", name: "Digital Elevation Model (DEM)", type: "Raster 30m", count: "30m Grid", crs: "EPSG:4326", source: "Copernicus / SRTM DEM 30m", confidence: "High" },
-                    { id: "rainfall_stations", name: "IMD Rainfall Monitoring", type: "Vector Points", count: "8 Stations", crs: "EPSG:4326", source: "India Meteorological Department", confidence: "High" },
-                  ].map((ds) => (
-                    <div key={ds.id} className="py-3 flex items-center justify-between">
-                      <div>
-                        <div className="font-bold text-white">{ds.name}</div>
-                        <div className="text-[#8aa0b8]">{ds.type} • {ds.count} • {ds.source}</div>
-                      </div>
-                      <div className="text-right font-mono">
-                        <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-bold">{ds.confidence}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
+          {activeWorkspace === "validation" && <ValidationWorkspace />}
+          {activeWorkspace === "registry" && <RegistryWorkspace />}
 
           {/* WORKSPACE 8: BRIEFING & EXPORT */}
           {activeWorkspace === "reports" && (
