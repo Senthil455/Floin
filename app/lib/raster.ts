@@ -20,7 +20,7 @@ const RASTER_CANDIDATES: Record<string, { rel: string; source: string }> = {
 export function getRasterMeta(): Record<string, RasterMeta> {
   const out: Record<string, RasterMeta> = {};
   for (const [key, cfg] of Object.entries(RASTER_CANDIDATES)) {
-    const full = path.join(process.cwd(), cfg.rel);
+    const full = path.join(/*turbopackIgnore: true*/ process.cwd(), cfg.rel);
     try {
       const st = fs.statSync(full);
       out[key] = { exists: true, path: cfg.rel, sizeKB: Math.round(st.size / 102.4) / 10, mtime: st.mtime.toISOString(), source: cfg.source };
