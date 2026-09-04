@@ -20,8 +20,15 @@ public/waterway*.geojson
 public/rainfall_stations.geojson
 public/simulation-result.json
 
-# Generated
+# Generated (keep projects/scenarios persistence)
 data/processed/
+!data/processed/projects.json
+!data/processed/scenarios.json
+
+# Env — never commit secrets
+.env
+.env.local
+.env.production
 
 # OS
 .DS_Store
