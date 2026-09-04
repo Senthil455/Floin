@@ -1,8 +1,8 @@
-# API — 8 Routes (18 Datasets + FloodMap.net Bathtub)
+# API — 8 Routes (34 Datasets + FloodMap.net Bathtub)
 
 | # | Route | Method | Body | Resp |
 |---|---|---|---|---|
-|1|`/api/datasets`|GET|—|`{status,totalDatasets:18,datasets[{id,name,category,format,featureCount,status}],summary{byCategory:{terrain:1,vector:2,rainfall:2,analysis:2,reference:11}}}`|
+|1|`/api/datasets`|GET|—|`{status,totalDatasets:34,datasets[{id,name,category,format,featureCount,status}],summary{byCategory:{terrain:5,vector:2,rainfall:5,analysis:2,reference:20}}}`|
 |2|`/api/location/query`|POST|`{aoi{center,bounds},requestId}`|`{requestId,aoi,timestamp,datasets[{covers,featureCount}],summary}` `ST_Intersects` if `DATABASE_URL` else `file` bounds check|
 |3|`/api/location/features`|POST|`{aoi,datasets[],limit?,requestId}`|`{features:{id:{type:FeatureCollection,features,count,source:postgis/file}}}` limit 600|
 |4|`/api/location/terrain`|GET|—|`{demFilePresent,demSource,rasters{dem,flow_direction,flow_accumulation,watershed,streams},postgisConfigured,note}`|
