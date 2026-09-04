@@ -272,7 +272,7 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
         }
         const queryResponse=await fetch("/api/location/query",{ method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ aoi, requestId:reqId }), signal:abortControllerRef.current?.signal }).then(r=>r.json());
         if(requestIdRef.current!==reqId) return;
-        const datasetsToFetch=["buildings","highway","waterway","natural_water","chennai2015_hotspots"];
+        const datasetsToFetch=["buildings","highway","waterway","natural_water","chennai2015_hotspots","chennai_wards_200"];
         const featuresResponse=await fetch("/api/location/features",{ method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ aoi, datasets:datasetsToFetch, requestId:reqId, limit:600 }), signal:abortControllerRef.current?.signal }).then(r=>r.json());
         if(requestIdRef.current!==reqId) return;
         const terrainStats=generateTerrainForAOI(ctx.terrain,aoi,viewMode);
@@ -280,11 +280,13 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
         const roadFeatures=featuresResponse.features?.highway?.features||[];
         const hotspotFeatures=featuresResponse.features?.chennai2015_hotspots?.features||[];
         const waterwayFeatures=featuresResponse.features?.waterway?.features||[];
+        const wardFeatures=featuresResponse.features?.chennai_wards_200?.features||[];
         buildBuildings(ctx.buildingsGroup,buildingFeatures,viewMode,aoi);
         buildRoads(ctx.roadsGroup,roadFeatures,viewMode);
         buildWaterways(ctx.waterwaysGroup,waterwayFeatures);
         buildHotspots(ctx.hotspotsGroup,hotspotFeatures,ctx.terrain);
-        const counts={ buildings:buildingFeatures.length, roads:roadFeatures.length, waterways:waterwayFeatures.length, hotspots:hotspotFeatures.length };
+        buildWards(ctx.wardsGroup,wardFeatures,ctx.terrain);
+        const counts={ buildings:buildingFeatures.length, roads:roadFeatures.length, waterways:waterwayFeatures.length, hotspots:hotspotFeatures.length, wards:wardFeatures.length };
         if(requestIdRef.current!==reqId) return;
         const simResponse=await fetch("/api/simulate",{ method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ aoi, rainfall:P, cn:CN, duration:t, requestId:reqId }), signal:abortControllerRef.current?.signal }).then(r=>r.json());
         if(requestIdRef.current!==reqId) return;
@@ -323,7 +325,7 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
     return ()=>{ cancelAnimationFrame(raf); canvas.removeEventListener("mousemove", handleMouseMove); canvas.removeEventListener("mouseleave", handleMouseLeave); canvas.removeEventListener("click", handleCanvasClick); canvas.removeEventListener("dblclick", handleDblClick); if(abortControllerRef.current) abortControllerRef.current.abort(); };
   },[selectedArea?.id, selectedArea?.bounds?.xmin, selectedArea?.bounds?.xmax, P, CN, t, d, viewMode, measureMode, measurePts.length]);
 
-  useEffect(()=>{ if(!simCtxRef.current) return; const ctx=simCtxRef.current; if(ctx.buildingsGroup) ctx.buildingsGroup.visible=showBuildings; if(ctx.roadsGroup) ctx.roadsGroup.visible=showRoads; if(ctx.hotspotsGroup) ctx.hotspotsGroup.visible=showHotspots; if(ctx.waterwaysGroup) ctx.waterwaysGroup.visible=showWaterways; if(ctx.water) ctx.water.visible=showWater; },[showBuildings,showRoads,showHotspots,showWaterways,showWater]);
+  useEffect(()=>{ if(!simCtxRef.current) return; const ctx=simCtxRef.current; if(ctx.buildingsGroup) ctx.buildingsGroup.visible=showBuildings; if(ctx.roadsGroup) ctx.roadsGroup.visible=showRoads; if(ctx.hotspotsGroup) ctx.hotspotsGroup.visible=showHotspots; if(ctx.waterwaysGroup) ctx.waterwaysGroup.visible=showWaterways; if(ctx.wardsGroup) ctx.wardsGroup.visible=showWards; if(ctx.water) ctx.water.visible=showWater; },[showBuildings,showRoads,showHotspots,showWaterways,showWards,showWater]);
 
   return (
     <div className="sim-layout">
@@ -369,6 +371,7 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
           <button onClick={()=>setShowRoads(!showRoads)} style={{ padding:"4px 8px", border:"1px solid", borderColor: showRoads?"var(--ink)":"var(--rule-strong)", background: showRoads?"var(--ink)":"var(--paper)", color: showRoads?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>ROADS</button>
           <button onClick={()=>setShowWaterways(!showWaterways)} style={{ padding:"4px 8px", border:"1px solid", borderColor: showWaterways?"var(--ink)":"var(--rule-strong)", background: showWaterways?"var(--ink)":"var(--paper)", color: showWaterways?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>CANALS</button>
           <button onClick={()=>setShowWater(!showWater)} style={{ padding:"4px 8px", border:"1px solid", borderColor: showWater?"var(--ink)":"var(--rule-strong)", background: showWater?"var(--ink)":"var(--paper)", color: showWater?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>WATER</button>
+          <button onClick={()=>setShowWards(!showWards)} style={{ padding:"4px 8px", border:"1px solid", borderColor: showWards?"var(--ink)":"var(--rule-strong)", background: showWards?"var(--ink)":"var(--paper)", color: showWards?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>WARDS 200</button>
           <button onClick={()=>setShowHotspots(!showHotspots)} style={{ padding:"4px 8px", border:"1px solid", borderColor: showHotspots?"var(--ink)":"var(--rule-strong)", background: showHotspots?"var(--vermillion)":"var(--paper)", color: showHotspots?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>2015 HOTSPOTS</button>
         </div>
         <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8 }} className="max-[600px]:!grid-cols-1">
@@ -497,10 +500,10 @@ function getTerrainHeightAt(terrain:THREE.Mesh,x:number,z:number){
 function disposeScene(ctx:any){
   try{
     ctx.terrain.geometry.dispose(); (ctx.terrain.material as any).dispose(); ctx.water.geometry.dispose(); (ctx.water.material as any).dispose();
-    ctx.buildingsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); ctx.roadsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); ctx.waterwaysGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); ctx.hotspotsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); });
+    ctx.buildingsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); ctx.roadsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); ctx.waterwaysGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); ctx.hotspotsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); if(ctx.wardsGroup) ctx.wardsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); });
     if(ctx.measureLine){ ctx.measureLine.geometry.dispose(); (ctx.measureLine.material as any).dispose(); }
     ctx.controls.dispose(); ctx.renderer.dispose();
-    ctx.buildingsGroup.clear(); ctx.roadsGroup.clear(); ctx.waterwaysGroup.clear(); ctx.hotspotsGroup.clear();
+    ctx.buildingsGroup.clear(); ctx.roadsGroup.clear(); ctx.waterwaysGroup.clear(); ctx.hotspotsGroup.clear(); if(ctx.wardsGroup) ctx.wardsGroup.clear();
   }catch{}
 }
 function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:number; aoi?:any; viewMode:ViewMode }){
@@ -526,8 +529,8 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
     transparent:true, side:THREE.DoubleSide,
   });
   const water=new THREE.Mesh(wgeo, waterMat as any); water.rotation.x=-Math.PI/2; water.position.y=-0.88; scene.add(water);
-  const buildingsGroup=new THREE.Group(); const roadsGroup=new THREE.Group(); const waterwaysGroup=new THREE.Group(); const hotspotsGroup=new THREE.Group();
-  scene.add(buildingsGroup); scene.add(roadsGroup); scene.add(waterwaysGroup); scene.add(hotspotsGroup);
+  const buildingsGroup=new THREE.Group(); const roadsGroup=new THREE.Group(); const waterwaysGroup=new THREE.Group(); const hotspotsGroup=new THREE.Group(); const wardsGroup=new THREE.Group();
+  scene.add(buildingsGroup); scene.add(roadsGroup); scene.add(waterwaysGroup); scene.add(hotspotsGroup); scene.add(wardsGroup);
   const controls=new OrbitControls(camera, canvas);
   controls.enableDamping=true; controls.dampingFactor=0.08; controls.rotateSpeed=0.7; controls.zoomSpeed=0.9; controls.panSpeed=0.7;
   controls.minDistance=3; controls.maxDistance=28; controls.maxPolarAngle=Math.PI*0.48; controls.minPolarAngle=0.15;
@@ -538,7 +541,7 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
     // update Line2 resolution for width-respected lines (Hydro3DJS)
     scene.traverse((obj:any)=>{ if(obj.isLine2 && obj.material && obj.material.resolution){ obj.material.resolution.set(W,H); } });
   }).observe(canvas);
-  return { scene, camera, renderer, terrain, water, buildingsGroup, roadsGroup, waterwaysGroup, hotspotsGroup, controls, measureLine:null as any };
+  return { scene, camera, renderer, terrain, water, buildingsGroup, roadsGroup, waterwaysGroup, hotspotsGroup, wardsGroup, controls, measureLine:null as any };
 }
 function updateBuildingImpact(group:THREE.Group,depth:number,viewMode:ViewMode){
   const threshold=0.35; const flooded=depth>threshold;
@@ -654,4 +657,28 @@ function buildHotspots(group:THREE.Group,features:any[],terrain:THREE.Mesh){
   group.clear(); if(!features||features.length===0) return;
   const geo=new THREE.CylinderGeometry(0.08,0.08,0.6,12);
   features.forEach((f:any)=>{ const coords=f.geometry?.coordinates; if(!coords||!Array.isArray(coords)) return; const [x,z]=lngLatToXZ(coords[0],coords[1]); const mat=new THREE.MeshStandardMaterial({ color:0xf59e0b, emissive:0xd97706, emissiveIntensity:0.6, metalness:0.2, roughness:0.4 }); const pin=new THREE.Mesh(geo,mat); const terrainH=getTerrainHeightAt(terrain,x,z); pin.position.set(x,terrainH+0.3,z); pin.userData={ name:f.properties?.name||f.properties?.Location||"2015 GCC Flood Inundation Hotspot", type:"Historical Ground Truth Hotspot", coords }; group.add(pin); });
+}
+function buildWards(group:THREE.Group,features:any[],terrain:THREE.Mesh){
+  group.clear(); if(!features||features.length===0) return;
+  const zoneColors: Record<string, number> = { "I":0x8B7355,"II":0x6B8EAE,"III":0x8FA998,"IV":0xB8A082,"V":0x7A9CC6,"VI":0x9B8B6B,"VII":0x6B8E7A,"VIII":0x8B6B8E,"IX":0xA0826D,"X":0x7A8FA9,"XI":0x9B8E6B,"XII":0x6B8E8E,"XIII":0x8E6B7A,"XIV":0x7A9B8E,"XV":0x8B8E6B };
+  const capped=features.slice(0,60);
+  capped.forEach((f:any)=>{
+    const geom=f.geometry; if(!geom) return;
+    const polys=geom.type==="Polygon"?[geom.coordinates]:geom.type==="MultiPolygon"?geom.coordinates:[];
+    polys.forEach((poly:any)=>{
+      const outer=poly[0]; if(!outer||outer.length<3) return;
+      const pts=outer.map(([lng,lat]:any)=>{ const [x,z]=lngLatToXZ(lng,lat); const h=getTerrainHeightAt(terrain,x,z); return new THREE.Vector3(x, h+0.04, z); });
+      const geo=new THREE.BufferGeometry().setFromPoints(pts);
+      const zone=f.properties?.Zone_No||"I"; const col=zoneColors[zone]||0x8B7355;
+      const mat=new THREE.LineBasicMaterial({ color:col, transparent:true, opacity:0.55, depthWrite:false });
+      const line=new THREE.LineLoop(geo, mat); line.userData={ name:`Ward ${f.properties?.Ward_No||""} - ${f.properties?.Zone_Name||"Zone "+zone}`, type:`GCC Ward Boundary - Zone ${zone}`, wardNo:f.properties?.Ward_No, zone };
+      group.add(line);
+      if(pts.length>0){
+        const center=pts.reduce((a: THREE.Vector3,b: THREE.Vector3)=>a.clone().add(b), new THREE.Vector3()).divideScalar(pts.length);
+        const h=getTerrainHeightAt(terrain, center.x, center.z);
+        const spriteMat=new THREE.SpriteMaterial({ color: col, transparent:true, opacity:0 });
+        const sprite=new THREE.Sprite(spriteMat); sprite.position.set(center.x, h+0.5, center.z); sprite.scale.set(0.01,0.01,1); group.add(sprite);
+      }
+    });
+  });
 }
