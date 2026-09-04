@@ -1,22 +1,23 @@
 import fs from "fs";
 import path from "path";
 
-export async function tryPostGISQuery(sql: string, params: any[]): Promise<any[] | null> {
+let _pool: any = null;
+async function getPool(): Promise<any | null> {
+  if (_pool) return _pool;
   if (!process.env.DATABASE_URL) return null;
+  // @ts-ignore - pg optional
+  const pg: any = await (Function('return import("pg")')() as Promise<any>).catch(() => null);
+  if (!pg) return null;
+  const { Pool } = pg;
+  _pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 5, idleTimeoutMillis: 10000, connectionTimeoutMillis: 2000 });
+  return _pool;
+}
+export async function tryPostGISQuery(sql: string, params: any[]): Promise<any[] | null> {
+  const pool = await getPool(); if (!pool) return null;
   try {
-    // @ts-ignore - pg is optional peer, fallback to file if missing
-    const pg: any = await (Function('return import("pg")')() as Promise<any>).catch(() => null);
-    if (!pg) return null;
-    const { Pool } = pg;
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 2, idleTimeoutMillis: 3000, connectionTimeoutMillis: 2000 });
     const client = await pool.connect();
-    try {
-      const res = await client.query(sql, params);
-      return res.rows;
-    } finally {
-      client.release();
-      await pool.end().catch(() => {});
-    }
+    try { const res = await client.query(sql, params); return res.rows; }
+    finally { client.release(); }
   } catch (e) {
     console.warn("PostGIS unavailable, fallback to file", (e as Error).message?.slice(0, 80));
     return null;

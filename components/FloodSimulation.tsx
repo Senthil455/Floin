@@ -550,7 +550,7 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
   controls.minDistance=3; controls.maxDistance=28; controls.maxPolarAngle=Math.PI*0.48; controls.minPolarAngle=0.15;
   controls.target.set(0,-0.2,0); controls.update();
   // 3D Tiles LOD loader (Kempsey-style) — fetch tileset.json, select LOD by dist, stream on demand
-  fetch("/tiles/tileset.json").then(r=>r.json()).then(j=>{ (scene as any).userData.tileset=j; console.log("[FLOIN Tiles] LOD manifest loaded", j.asset.tilesetVersion); }).catch(()=>{});
+  fetch("/tiles/tileset.json").then(r=>{ if(!r.ok) throw new Error("tileset 404"); return r.json(); }).then(j=>{ (scene as any).userData.tileset=j; }).catch(()=>{});
   new ResizeObserver(()=>{ const W=canvas.clientWidth, H=canvas.clientHeight; if(!W||!H) return; camera.aspect=W/H; camera.updateProjectionMatrix(); renderer.setSize(W,H,false);
     // update Line2 resolution for width-respected lines (Hydro3DJS)
     scene.traverse((obj:any)=>{ if(obj.isLine2 && obj.material && obj.material.resolution){ obj.material.resolution.set(W,H); } });
