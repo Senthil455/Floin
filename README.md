@@ -178,4 +178,6 @@ All POST validate `xmin<xmax && ymin<ymax`, `400` for P, `98` for CN, `AbortSign
 
 ## 10. License & Credits
 
+**MIT** — see [`LICENSE`](./LICENSE). Copyright (c) 2026 FLOIN — Chennai Flood Intelligence Ledger.
+
 FLOIN Chennai Flood Intelligence — REV 06D9C60. Built on `Three.js r185`, `Leaflet 1.9`, `Copernicus DEM`, `Open-Meteo`, `OSM`, `GCC 2015`. See `data/tEAM fLOIN.pdf`.
