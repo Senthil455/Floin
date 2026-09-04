@@ -1,54 +1,125 @@
 "use client";
-import { DATASET_REGISTRY } from "@/app/lib/chennai-data";
-const PROV = [
-  { what:"Buildings 1,811", kind:"Real · OSM extract + GCC survey", use:"Extruded BatchedMesh · height = levels×0.19 · wardProb tint", license:"ODbL" },
-  { what:"DEM + d8 derivatives", kind:"Real · Copernicus GLO-30 30m (5.8 MB) + QGIS D8", use:"Terrain 72–140 seg · bilinear cache · hill/marsh per BASIN_PROFILE", license:"Copernicus" },
-  { what:"IMD stations 8", kind:"Real · India Met Dept", use:"Rainfall CN blending: blendedP = P×0.6 + live×0.4 · SCS-CN", license:"Public" },
-  { what:"Live Open-Meteo 13.08,80.27", kind:"Real · 30s poll · fallback to prop", use:"Blended into runoff, hydrograph, ward bars", license:"CC-BY" },
-  { what:"GCC 2015 hotspots 327", kind:"Real · observed inundation points", use:"Cylinder pins · emissive pulse · 2015 validation (NSE 0.892)", license:"GCC" },
-  { what:"Wards 200 + soil NBSS + LULC Bhuvan", kind:"Real · polygons (3–5 coarse, honest small)", use:"Choropleth fill when heat mode · CN lookup · transparency", license:"Gov open" },
-  { what:"SCS-CN derived Q/depth/damage", kind:"Derived · Q=(P−Ia)²/(P+0.8S) · prob=Q/80", use:"Depth, velocity, loss, ward bars, insights — labelled derived", license:"—" },
-  { what:"Hydrograph tanh·exp", kind:"Simulated · 7-point 0–6H model", use:"Sparkline + water uniform · clearly labelled simulated", license:"—" },
-];
-export default function RegistryWorkspace() {
+import { useEffect, useMemo, useState } from "react";
+
+type Ds = { id:string; name:string; category:string; format:string; geometryType?:string; featureCount?:number; filePath?:string; crs?:string; status?:string; };
+
+const CAT_META: Record<string,{label:string; col:string; icon:string}> = {
+  terrain:{label:"Terrain", col:"var(--hydro)", icon:"⛰"},
+  vector:{label:"Vector", col:"var(--ink)", icon:"◈"},
+  rainfall:{label:"Rainfall", col:"var(--vermillion)", icon:"☂"},
+  analysis:{label:"Analysis", col:"var(--brass)", icon:"◆"},
+  reference:{label:"Reference", col:"var(--muted2)", icon:"◎"},
+};
+
+export default function RegistryWorkspace(){
+  const [datasets,setDatasets]=useState<Ds[]>([]);
+  const [meta,setMeta]=useState<any>(null);
+  const [q,setQ]=useState("");
+  const [cat,setCat]=useState("all");
+  const [format,setFormat]=useState("all");
+  const [page,setPage]=useState(0);
+  const PAGE=24;
+
+  useEffect(()=>{
+    fetch("/api/datasets").then(r=>r.json()).then(j=>{
+      setDatasets(j.datasets||[]);
+      setMeta({ total:j.total, byCategory:j.byCategory, totalFeatures:j.totalFeatures, totalSizeKB:j.totalSizeKB, publicFiles:j.publicFiles });
+    }).catch(()=>{});
+  },[]);
+
+  const filtered=useMemo(()=>{
+    const l=q.toLowerCase();
+    return datasets.filter(d=>{
+      if(cat!=="all" && d.category!==cat) return false;
+      if(format!=="all" && d.format!==format) return false;
+      if(!l) return true;
+      return d.name.toLowerCase().includes(l) || d.id.toLowerCase().includes(l) || (d.geometryType||"").toLowerCase().includes(l);
+    });
+  },[datasets,q,cat,format]);
+
+  const paged=useMemo(()=> filtered.slice(0,(page+1)*PAGE),[filtered,page]);
+  const cats=useMemo(()=>{ const m:Record<string,number>={}; datasets.forEach(d=>m[d.category]=(m[d.category]||0)+1); return m;},[datasets]);
+
   return (
     <div>
-      <div style={{ display:"flex", alignItems:"baseline", gap:12, borderBottom:"1px solid var(--ink)", paddingBottom:8, marginBottom:12 }}>
-        <span style={{ fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:"0.12em", fontWeight:600 }}>07 // REGISTRY</span>
-        <span style={{ fontFamily:"var(--font-display)", fontSize:18 }}>Dataset Provenance Audit</span>
-        <span style={{ marginLeft:"auto", fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>EPSG:4326 · OKLCH</span>
+      <div style={{ display:"flex", alignItems:"baseline", gap:12, borderBottom:"1px solid var(--ink)", paddingBottom:8, marginBottom:12, flexWrap:"wrap" }}>
+        <span style={{ fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:"0.12em", fontWeight:600 }}>07 // DATA ATLAS</span>
+        <span style={{ fontFamily:"var(--font-display)", fontSize:18 }}>Chennai Flood Corpus — {meta?.total||datasets.length} Datasets</span>
+        <span style={{ marginLeft:"auto", fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)", border:"1px solid var(--rule-strong)", padding:"2px 8px", background:"var(--paper)" }}>{meta?.publicFiles||0} public files · {meta?.totalFeatures?.toLocaleString()||""} features · {meta?.totalSizeKB?Math.round(meta.totalSizeKB/1024)+" MB":""}</span>
       </div>
-      <div style={{ border:"1px solid var(--ink)", background:"var(--surface)", overflow:"hidden" }}>
-        <div style={{ padding:"8px 12px", borderBottom:"1px solid var(--rule)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>07.1 // LEDGER TABLE — NO CARDS, ONLY RULES</div>
-        <div className="table-wrap"><table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--font-mono)", fontSize:11 }}>
-          <thead><tr style={{ background:"var(--paper)", color:"var(--muted)", fontSize:10, textAlign:"left" }}><th style={{ padding:"8px 12px", borderBottom:"1px solid var(--rule-strong)" }}>DATASET</th><th style={{ padding:"8px 12px", borderBottom:"1px solid var(--rule-strong)" }}>TYPE · COUNT</th><th style={{ padding:"8px 12px", borderBottom:"1px solid var(--rule-strong)", textAlign:"right" }}>SOURCE</th></tr></thead>
-          <tbody>
-            {DATASET_REGISTRY.map((ds)=> (
-              <tr key={ds.id} style={{ borderBottom:"1px solid var(--rule)" }}>
-                <td style={{ padding:"8px 12px", fontWeight:600, fontFamily:"var(--font-body)", fontSize:12 }}>{ds.name}</td>
-                <td style={{ padding:"8px 12px", color:"var(--muted)" }}>{ds.type} · {ds.count} · {ds.crs}</td>
-                <td style={{ padding:"8px 12px", textAlign:"right" }}><span style={{ border:"1px solid var(--rule-strong)", padding:"2px 6px", background:"var(--paper)", fontSize:10, color:"var(--signal)", fontWeight:600 }}>{ds.confidence}</span><div style={{ color:"var(--muted)", fontSize:10, marginTop:2 }}>{ds.source}</div></td>
-              </tr>
-            ))}
-          </tbody>
-        </table></div>
+
+      <div className="kpi-grid" style={{ marginBottom:12 }}>
+        {[
+          {k:"TOTAL", v: String(meta?.total||datasets.length), sub:"GeoJSON+CSV+TIFF", col:"var(--ink)"},
+          {k:"FEATURES", v: (meta?.totalFeatures||0).toLocaleString(), sub:"points+lines+polys", col:"var(--hydro)"},
+          {k:"SIZE", v: meta?.totalSizeKB?`${Math.round(meta.totalSizeKB/1024)} MB`:"—", sub:"public folder", col:"var(--brass)"},
+          {k:"TERRAIN", v: String(cats.terrain||0), sub:"DEM·ETOPO·GMTED", col:"var(--hydro)"},
+        ].map(s=>(
+          <div key={s.k} style={{ border:"1px solid var(--rule)", background:"var(--surface)", padding:"10px 12px", borderLeft:`3px solid ${s.col}` }}>
+            <div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.1em", color:"var(--muted)" }}>{s.k}</div>
+            <div style={{ fontFamily:"var(--font-mono)", fontSize:18, fontWeight:700 }}>{s.v}</div>
+            <div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>{s.sub}</div>
+          </div>
+        ))}
       </div>
+      <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:8, alignItems:"center" }}>
+        {Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([c,n])=>(
+          <span key={c} style={{ fontFamily:"var(--font-mono)", fontSize:9, padding:"3px 8px", border:"1px solid var(--rule)", background:"var(--paper)", color:"var(--muted)" }}>{CAT_META[c]?.icon||""} {c.toUpperCase()} {n}</span>
+        ))}
+        <span style={{ marginLeft:"auto", fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)" }}>FloodMap.net parity SRTM/GMTED/ETOPO1+TNM+Mapzen + ISRO/NRSC + GCC 2015</span>
+      </div>
+
+      <div style={{ border:"1px solid var(--ink)", background:"var(--surface)", padding:8, display:"flex", gap:6, flexWrap:"wrap", alignItems:"center", marginBottom:10, position:"sticky", top:0, zIndex:5 }}>
+        <input value={q} onChange={e=>{setQ(e.target.value); setPage(0);}} placeholder="SEARCH 300+ DATASETS — flood, ward, rain, soil, metro…" style={{ flex:"1 1 240px", height:32, border:"1px solid var(--ink)", background:"var(--paper)", padding:"0 10px", fontFamily:"var(--font-mono)", fontSize:11, outline:"none" }} />
+        <div style={{ display:"flex", gap:4, flexWrap:"wrap" }}>
+          {["all","terrain","vector","rainfall","analysis","reference"].map(c=>(
+            <button key={c} onClick={()=>{setCat(c); setPage(0);}} style={{ padding:"6px 10px", border:"1px solid", borderColor:cat===c?"var(--ink)":"var(--rule-strong)", background:cat===c?"var(--ink)":"var(--paper)", color:cat===c?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>{c.toUpperCase()}</button>
+          ))}
+        </div>
+        <select value={format} onChange={e=>{setFormat(e.target.value); setPage(0);}} style={{ height:32, border:"1px solid var(--rule-strong)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, padding:"0 6px" }}>
+          <option value="all">ALL FORMATS</option><option value="geojson">GeoJSON</option><option value="csv">CSV</option><option value="tiff">TIFF</option><option value="json">JSON</option>
+        </select>
+        <span style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)", marginLeft:"auto" }}>{filtered.length} / {datasets.length} matched · page {page+1}</span>
+      </div>
+
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))", gap:8 }}>
+        {paged.map(d=>{
+          const cm=CAT_META[d.category]||CAT_META.reference;
+          return (
+            <div key={d.id} style={{ border:"1px solid var(--ink)", background:"var(--paper)", display:"flex", flexDirection:"column", minHeight:112 }}>
+              <div style={{ height:26, display:"flex", alignItems:"center", gap:6, padding:"0 8px", borderBottom:"1px solid var(--rule)", background:"var(--surface)", fontFamily:"var(--font-mono)", fontSize:9, fontWeight:700 }}>
+                <span style={{ width:22, height:22, display:"grid", placeItems:"center", background:cm.col, color:"var(--paper)", fontSize:11 }}>{cm.icon}</span>
+                <span style={{ color:cm.col }}>{d.category.toUpperCase()}</span>
+                <span style={{ marginLeft:"auto", border:"1px solid var(--rule-strong)", padding:"1px 5px", background:"var(--paper)", color:"var(--muted)", fontSize:8 }}>{d.format.toUpperCase()} · {d.geometryType||"—"}</span>
+              </div>
+              <div style={{ padding:"8px 10px", flex:1 }}>
+                <div style={{ fontFamily:"var(--font-body)", fontSize:12, fontWeight:600, lineHeight:1.25, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>{d.name}</div>
+                <div style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", marginTop:3 }}>{d.id}</div>
+                <div style={{ display:"flex", gap:6, marginTop:6, flexWrap:"wrap" }}>
+                  <span style={{ fontFamily:"var(--font-mono)", fontSize:10, fontWeight:700, border:"1px solid var(--ink)", padding:"2px 6px", background:"var(--surface)" }}>{d.featureCount!=null?`${d.featureCount.toLocaleString()} feats`:"—"}</span>
+                  <span style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", border:"1px solid var(--rule)", padding:"2px 6px", background:"var(--paper)" }}>{d.crs||"EPSG:4326"}</span>
+                  <span style={{ fontFamily:"var(--font-mono)", fontSize:8, color:"var(--signal)", border:"1px solid var(--signal)", padding:"2px 5px", background:"#E8F5E9" }}>{d.status||"discovered"}</span>
+                </div>
+              </div>
+              <div style={{ display:"flex", gap:4, padding:"6px 8px", borderTop:"1px solid var(--rule)", background:"var(--surface)" }}>
+                <a href={`/${d.id}.${d.format||'geojson'}`} target="_blank" rel="noreferrer" style={{ flex:1, textAlign:"center", padding:"4px 0", border:"1px solid var(--ink)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:9, fontWeight:700, textDecoration:"none", color:"var(--ink)" }}>VIEW</a>
+                <a href={`/${d.id}.${d.format||'geojson'}`} download style={{ flex:1, textAlign:"center", padding:"4px 0", background:"var(--ink)", color:"var(--paper)", border:"1px solid var(--ink)", fontFamily:"var(--font-mono)", fontSize:9, fontWeight:700, textDecoration:"none" }}>DL</a>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {paged.length < filtered.length && (
+        <div style={{ display:"grid", placeItems:"center", marginTop:12 }}>
+          <button onClick={()=>setPage(p=>p+1)} style={{ padding:"8px 16px", border:"1px solid var(--ink)", background:"var(--ink)", color:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:11, fontWeight:700 }}>LOAD MORE — {filtered.length - paged.length} remaining</button>
+        </div>
+      )}
+      {filtered.length===0 && <div className="empty-state" style={{ marginTop:12 }}>No datasets match "{q}" in {cat}</div>}
+
       <div style={{ marginTop:12, border:"1px solid var(--ink)", background:"var(--surface)", overflow:"hidden" }}>
-        <div style={{ padding:"8px 12px", borderBottom:"1px solid var(--rule)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>07.2 // PROVENANCE & HONESTY — REAL / DERIVED / SIMULATED</div>
-        <div className="table-wrap"><table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--font-mono)", fontSize:10 }}>
-          <thead><tr style={{ background:"var(--paper)", color:"var(--muted)", fontSize:9 }}><th style={{ textAlign:"left", padding:"6px 12px", borderBottom:"1px solid var(--rule-strong)" }}>DATASET</th><th style={{ textAlign:"left", padding:"6px 12px", borderBottom:"1px solid var(--rule-strong)" }}>KIND</th><th style={{ textAlign:"left", padding:"6px 12px", borderBottom:"1px solid var(--rule-strong)" }}>HOW USED</th><th style={{ textAlign:"right", padding:"6px 12px", borderBottom:"1px solid var(--rule-strong)" }}>LICENSE</th></tr></thead>
-          <tbody>
-            {PROV.map((r)=>(
-              <tr key={r.what} style={{ borderBottom:"1px solid var(--rule)" }}>
-                <td style={{ padding:"6px 12px", fontWeight:600 }}>{r.what}</td>
-                <td style={{ padding:"6px 12px", color: r.kind.startsWith("Real")?"var(--signal)": r.kind.startsWith("Derived")?"var(--hydro)":"var(--muted)" }}>{r.kind}</td>
-                <td style={{ padding:"6px 12px", color:"var(--muted2)" }}>{r.use}</td>
-                <td style={{ padding:"6px 12px", textAlign:"right", color:"var(--muted)" }}>{r.license}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table></div>
-        <div style={{ padding:"8px 12px", fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", borderTop:"1px solid var(--rule)", lineHeight:1.5 }}>Never present simulated hydrograph as observed. Every insight tag says <span style={{ color:"var(--hydro)", fontWeight:600 }}>derived</span> or <span style={{ color:"var(--muted)", fontWeight:600 }}>simulated</span>. Soil/LULC coarse (3–5 polys) is shown small and transparent — honest, not hidden.</div>
+        <div style={{ padding:"8px 12px", borderBottom:"1px solid var(--rule)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>ATTRIBUTION — FLOODMAP.NET PARITY + CHENNAI CORPUS</div>
+        <div style={{ padding:"10px 12px", fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", lineHeight:1.5 }}>All 300+ public GeoJSON in <code>public/</code> are discoverable via <code>/api/datasets</code> (auto-scan + hardcoded registry). Sources: Mapzen/TNM/SRTM/GMTED/ETOPO1 (FloodMap.net footer) → COP30 DSM 30 m (primary), Mapzen Terrarium RGB, GMTED 250 m, ETOPO1 bathymetry stored in <code>data/datasets/floodmap-net/</code> with bathy CSV. Chennai corpus: GCC 2015, IMD, OSM, NRSC, ISRO, WRD, TNSDMA, CMDA, TANGEDCO etc. Click VIEW to preview on Leaflet, DL for QGIS.</div>
       </div>
     </div>
   );
