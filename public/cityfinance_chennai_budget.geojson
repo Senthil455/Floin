@@ -1,0 +1,55 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "CityFinance Tamil Nadu Chennai Budget 2022-23 (10,907/sqkm)",
+        "source": "https://www.cityfinance.in/municipal-data/city/chennai",
+        "provenance": "Gap from OpenCity Datajam Jan 2024 — now added"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80.18,
+              12.98
+            ],
+            [
+              80.28,
+              12.98
+            ],
+            [
+              80.28,
+              13.08
+            ],
+            [
+              80.18,
+              13.08
+            ],
+            [
+              80.18,
+              12.98
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "CityFinance Tamil Nadu Chennai Budget 2022-23 (10,907/sqkm) (2)",
+        "source": "https://www.cityfinance.in/municipal-data/city/chennai",
+        "provenance": "Gap from OpenCity Datajam Jan 2024 — now added"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.22,
+          13.03
+        ]
+      }
+    }
+  ]
+}
