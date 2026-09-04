@@ -1,0 +1,55 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "GCC Flood Hazard Zones — High/Moderate/Low 38 MiB KML (OpenCity)",
+        "source": "https://data.opencity.in/dataset/022dd080-e927-40d7-897d-adf3ee98ad69/resource/e61afe07-0f52-4be9-bdf3-5eb0f62b2ed6",
+        "note": "Missing gap — now added (KML->GeoJSON stub, replace with real download)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80.18,
+              12.98
+            ],
+            [
+              80.28,
+              12.98
+            ],
+            [
+              80.28,
+              13.08
+            ],
+            [
+              80.18,
+              13.08
+            ],
+            [
+              80.18,
+              12.98
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "GCC Flood Hazard Zones — High/Moderate/Low 38 MiB KML (OpenCity) (2)",
+        "source": "https://data.opencity.in/dataset/022dd080-e927-40d7-897d-adf3ee98ad69/resource/e61afe07-0f52-4be9-bdf3-5eb0f62b2ed6",
+        "note": "Missing gap — now added (KML->GeoJSON stub, replace with real download)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.22,
+          13.03
+        ]
+      }
+    }
+  ]
+}

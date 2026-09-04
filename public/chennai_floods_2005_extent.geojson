@@ -1,0 +1,55 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Chennai Flood Extent 2005 — GCC SDSS KML",
+        "source": "https://data.opencity.in/dataset/bdae9914-f0e6-46e1-ad26-ed4ad4f5251a",
+        "note": "Missing gap — now added (KML->GeoJSON stub, replace with real download)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80.18,
+              12.98
+            ],
+            [
+              80.28,
+              12.98
+            ],
+            [
+              80.28,
+              13.08
+            ],
+            [
+              80.18,
+              13.08
+            ],
+            [
+              80.18,
+              12.98
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Chennai Flood Extent 2005 — GCC SDSS KML (2)",
+        "source": "https://data.opencity.in/dataset/bdae9914-f0e6-46e1-ad26-ed4ad4f5251a",
+        "note": "Missing gap — now added (KML->GeoJSON stub, replace with real download)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.22,
+          13.03
+        ]
+      }
+    }
+  ]
+}

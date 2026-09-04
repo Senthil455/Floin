@@ -1,0 +1,55 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Flows 5-yr Return Period — GCC Hazard",
+        "source": "https://data.opencity.in/dataset/022dd080-e927-40d7-897d-adf3ee98ad69/resource/4d8579d9-9331-4c9b-95be-1489160376ee",
+        "note": "Missing gap — now added (KML->GeoJSON stub, replace with real download)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80.18,
+              12.98
+            ],
+            [
+              80.28,
+              12.98
+            ],
+            [
+              80.28,
+              13.08
+            ],
+            [
+              80.18,
+              13.08
+            ],
+            [
+              80.18,
+              12.98
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Flows 5-yr Return Period — GCC Hazard (2)",
+        "source": "https://data.opencity.in/dataset/022dd080-e927-40d7-897d-adf3ee98ad69/resource/4d8579d9-9331-4c9b-95be-1489160376ee",
+        "note": "Missing gap — now added (KML->GeoJSON stub, replace with real download)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.22,
+          13.03
+        ]
+      }
+    }
+  ]
+}

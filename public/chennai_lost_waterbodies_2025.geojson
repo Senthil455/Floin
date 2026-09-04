@@ -1,0 +1,55 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lost Water Bodies Counterfactual — ScienceDirect 2025 Pallikaranai",
+        "source": "https://www.sciencedirect.com/science/article/pii/S2212095525001701",
+        "note": "Missing gap — now added (KML->GeoJSON stub, replace with real download)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80.18,
+              12.98
+            ],
+            [
+              80.28,
+              12.98
+            ],
+            [
+              80.28,
+              13.08
+            ],
+            [
+              80.18,
+              13.08
+            ],
+            [
+              80.18,
+              12.98
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lost Water Bodies Counterfactual — ScienceDirect 2025 Pallikaranai (2)",
+        "source": "https://www.sciencedirect.com/science/article/pii/S2212095525001701",
+        "note": "Missing gap — now added (KML->GeoJSON stub, replace with real download)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.22,
+          13.03
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Flows 100-yr Return Period — GCC",
+        "source": "https://data.opencity.in/dataset/022dd080-e927-40d7-897d-adf3ee98ad69/resource/e34a8f9d-251c-401d-8642-bd231625a081",
+        "note": "Missing gap — now added (KML->GeoJSON stub, replace with real download)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80.18,
+              12.98
+            ],
+            [
+              80.28,
+              12.98
+            ],
+            [
+              80.28,
+              13.08
+            ],
+            [
+              80.18,
+              13.08
+            ],
+            [
+              80.18,
+              12.98
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Flows 100-yr Return Period — GCC (2)",
+        "source": "https://data.opencity.in/dataset/022dd080-e927-40d7-897d-adf3ee98ad69/resource/e34a8f9d-251c-401d-8642-bd231625a081",
+        "note": "Missing gap — now added (KML->GeoJSON stub, replace with real download)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.22,
+          13.03
+        ]
+      }
+    }
+  ]
+}
