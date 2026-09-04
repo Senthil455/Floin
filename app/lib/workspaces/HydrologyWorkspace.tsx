@@ -16,7 +16,7 @@ export default function HydrologyWorkspace({ S, Ia, Q, rainfall, cn }: { S: numb
         <span style={{ fontFamily:"var(--font-display)", fontSize:18 }}>SCS-CN Basin Ledger</span>
         <span style={{ marginLeft:"auto", fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>SCS-CN + D8 · 30m</span>
       </div>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }} className="max-[900px]:!grid-cols-1">
+      <div className="hydro-grid">
         <div style={{ border:"1px solid var(--ink)", background:"var(--surface)" }}>
           <div style={{ padding:"8px 12px", borderBottom:"1px solid var(--rule)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>02.1 // SCS-CN FORMULATION</div>
           <div style={{ padding:12, display:"grid", gap:8, fontFamily:"var(--font-mono)", fontSize:11 }}>

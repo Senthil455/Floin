@@ -103,13 +103,13 @@ export default function Page() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--paper)", color: "var(--ink)" }}>
-      <header className="sticky top-0 z-40 flex items-center gap-0" style={{ height: 40, borderBottom: "1px solid var(--rule-strong)", background: "var(--paper)" }}>
-        <div className="flex items-center gap-3 px-4 shrink-0" style={{ borderRight: "1px solid var(--rule)", height: "100%" }}>
-          <div className="w-[18px] h-[18px] grid place-items-center" style={{ background: "var(--ink)", color: "var(--paper)", fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600 }}>◈</div>
-          <span style={{ fontFamily: "var(--font-display)", fontSize: 16, letterSpacing: "-0.02em", lineHeight: 1 }}>FLOIN</span>
-          <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.12em", border: "1px solid var(--rule-strong)", padding: "2px 6px", background: "var(--surface)" }}>LEDGER · CHENNAI</span>
+      <header className="sticky top-0 z-40 flex items-center gap-0" style={{ minHeight: 40, borderBottom: "1px solid var(--rule-strong)", background: "var(--paper)", flexWrap:"wrap" }}>
+        <div className="flex items-center gap-3 px-3 md:px-4 shrink-0" style={{ borderRight: "1px solid var(--rule)", height: 40 }}>
+          <div className="w-[18px] h-[18px] grid place-items-center shrink-0" style={{ background: "var(--ink)", color: "var(--paper)", fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600 }}>◈</div>
+          <span style={{ fontFamily: "var(--font-display)", fontSize: 16, letterSpacing: "-0.02em", lineHeight: 1, whiteSpace:"nowrap" }}>FLOIN</span>
+          <span className="hidden sm:inline" style={{ fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.12em", border: "1px solid var(--rule-strong)", padding: "2px 6px", background: "var(--surface)", whiteSpace:"nowrap" }}>LEDGER · CHENNAI</span>
         </div>
-        <div className="hidden lg:flex items-center gap-2 px-4 text-[11px]" style={{ fontFamily: "var(--font-mono)" }}>
+        <div className="hidden lg:flex items-center gap-2 px-4 text-[11px] shrink-0" style={{ fontFamily: "var(--font-mono)" }}>
           <span style={{ color: "var(--muted)" }}>BASIN</span><span style={{ fontWeight: 600 }}>{selectedArea.basin}</span>
           <span style={{ width: 1, height: 12, background: "var(--rule-strong)" }} />
           <span style={{ color: "var(--muted)" }}>P</span><span style={{ fontWeight: 600 }}>{rainfall}mm</span>
@@ -118,23 +118,23 @@ export default function Page() {
           <span style={{ width: 1, height: 12, background: "var(--rule-strong)" }} />
           <span style={{ color: "var(--muted)" }}>EPSG:4326</span>
         </div>
-        <div className="relative hidden md:block ml-4 flex-1 max-w-[320px]">
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="SEARCH LANDMARK / RESERVOIR / IMD…" style={{ width: "100%", height: 28, border: "1px solid var(--rule-strong)", background: "var(--surface)", padding: "0 10px", fontFamily: "var(--font-mono)", fontSize: 11, outline: "none" }} />
+        <div className="relative hidden md:block ml-2 md:ml-4 flex-1 max-w-[320px] min-w-[180px]">
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="SEARCH LANDMARK / RESERVOIR / IMD…" aria-label="Search landmarks" style={{ width: "100%", height: 28, border: "1px solid var(--rule-strong)", background: "var(--surface)", padding: "0 10px", fontFamily: "var(--font-mono)", fontSize: 11, outline: "none" }} />
           {searchResults.length > 0 && (
-            <div style={{ position: "absolute", top: 32, left: 0, right: 0, background: "var(--surface)", border: "1px solid var(--ink)", zIndex: 50 }}>
+            <div style={{ position: "absolute", top: 32, left: 0, right: 0, background: "var(--surface)", border: "1px solid var(--ink)", zIndex: 50, maxHeight: 260, overflowY:"auto" }}>
               {searchResults.map((it) => (
-                <button key={it.name} onClick={() => { const d=aoiKm/111; setSelectedArea({ id:`search-${it.name.slice(0,8)}`, name: it.name, basin: it.basin, bounds:{xmin:it.coords[0]-d,xmax:it.coords[0]+d,ymin:it.coords[1]-d,ymax:it.coords[1]+d}, center: it.coords as any}); setSearch(""); pushToast(it.name); }} style={{ display:"flex", justifyContent:"space-between", width:"100%", padding:"8px 10px", fontFamily:"var(--font-mono)", fontSize:11, borderBottom:"1px solid var(--rule)", textAlign:"left" }}>
-                  <span style={{ fontWeight:600 }}>{it.name}</span><span style={{ color:"var(--muted)", fontSize:10 }}>{it.type}</span>
+                <button key={it.name} onClick={() => { const d=aoiKm/111; setSelectedArea({ id:`search-${it.name.slice(0,8)}`, name: it.name, basin: it.basin, bounds:{xmin:it.coords[0]-d,xmax:it.coords[0]+d,ymin:it.coords[1]-d,ymax:it.coords[1]+d}, center: it.coords as any}); setSearch(""); pushToast(it.name); }} style={{ display:"flex", justifyContent:"space-between", gap:8, width:"100%", padding:"8px 10px", fontFamily:"var(--font-mono)", fontSize:11, borderBottom:"1px solid var(--rule)", textAlign:"left" }}>
+                  <span style={{ fontWeight:600, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{it.name}</span><span style={{ color:"var(--muted)", fontSize:10, shrink:0 }}>{it.type}</span>
                 </button>
               ))}
             </div>
           )}
         </div>
-        <div className="ml-auto flex items-center gap-2 px-3 shrink-0">
-          <button onClick={()=>setShowHelp(!showHelp)} title="Keyboard help (?)" style={{ height:28, width:28, display:"grid", placeItems:"center", border:"1px solid var(--rule-strong)", background:"var(--surface)", fontFamily:"var(--font-mono)", fontSize:12, fontWeight:600 }}>?</button>
-          <button onClick={() => setRainOverlayEnabled(!rainOverlayEnabled)} style={{ height: 28, padding:"0 10px", border:`1px solid ${rainOverlayEnabled?"var(--ink)":"var(--rule-strong)"}`, background: rainOverlayEnabled?"var(--ink)":"var(--surface)", color: rainOverlayEnabled?"var(--paper)":"var(--muted2)", fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:"0.08em", fontWeight:600 }}>STORM {rainOverlayEnabled?"ON":"OFF"}</button>
-          <button onClick={handleExportReport} style={{ height:28, padding:"0 12px", border:"1px solid var(--ink)", background:"var(--surface)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>BRIEF</button>
-          <button onClick={handleExportGeoJSON} style={{ height:28, padding:"0 12px", background:"var(--ink)", color:"var(--paper)", border:"1px solid var(--ink)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>EXPORT GEOJSON</button>
+        <div className="header-actions px-2 md:px-3 py-1">
+          <button onClick={()=>setShowHelp(!showHelp)} title="Keyboard help (?)" aria-label="Help" style={{ height:28, width:28, display:"grid", placeItems:"center", border:"1px solid var(--rule-strong)", background:"var(--surface)", fontFamily:"var(--font-mono)", fontSize:12, fontWeight:600, flexShrink:0 }}>?</button>
+          <button onClick={() => setRainOverlayEnabled(!rainOverlayEnabled)} aria-pressed={rainOverlayEnabled} style={{ height: 28, padding:"0 10px", border:`1px solid ${rainOverlayEnabled?"var(--ink)":"var(--rule-strong)"}`, background: rainOverlayEnabled?"var(--ink)":"var(--surface)", color: rainOverlayEnabled?"var(--paper)":"var(--muted2)", fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:"0.08em", fontWeight:600, whiteSpace:"nowrap" }}>STORM {rainOverlayEnabled?"ON":"OFF"}</button>
+          <button onClick={handleExportReport} style={{ height:28, padding:"0 10px", border:"1px solid var(--ink)", background:"var(--surface)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em", whiteSpace:"nowrap" }} className="hidden sm:inline-flex items-center justify-center">BRIEF</button>
+          <button onClick={handleExportGeoJSON} style={{ height:28, padding:"0 10px", background:"var(--ink)", color:"var(--paper)", border:"1px solid var(--ink)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em", whiteSpace:"nowrap" }}>EXPORT</button>
         </div>
       </header>
 
@@ -195,7 +195,7 @@ export default function Page() {
                 ))}
               </div>
 
-              <div style={{ display:"grid", gridTemplateColumns:"1.55fr 0.85fr", gap:12, alignItems:"start" }} className="max-[1024px]:!grid-cols-1">
+              <div className="twin-grid">
                 <div style={{ display:"grid", gap:12 }}>
                   <div style={{ border:"1px solid var(--ink)", background:"var(--surface)" }}>
                     <div style={{ height:28, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 10px", borderBottom:"1px solid var(--rule)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>
@@ -261,7 +261,7 @@ export default function Page() {
                 <button onClick={()=>{setCurrentHour(3); pushToast("PEAK 3H");}} style={{ height:28, padding:"0 10px", border:"1px solid var(--vermillion)", color:"var(--vermillion)", background:"var(--surface)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:700 }}>PEAK 3H</button>
               </div>
 
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr 1fr", gap:8, marginTop:12 }} className="max-[640px]:!grid-cols-2">
+              <div className="kpi-grid" style={{ marginTop:12 }}>
                 {[
                   { k:"P / CN", v:`${rainfall}mm / ${cn}`, sub:`S ${S.toFixed(1)} · Ia ${Ia.toFixed(1)}` },
                   { k:"RUNOFF Q", v:`${Q.toFixed(1)} mm`, sub:"SCS-CN", accent:"var(--hydro)" },
@@ -290,7 +290,7 @@ export default function Page() {
                 <span style={{ fontFamily:"var(--font-display)", fontSize:18 }}>Stage-Damage Ledger</span>
                 <span style={{ marginLeft:"auto", fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>FloodML · Lc 75+</span>
               </div>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8 }} className="max-[800px]:!grid-cols-2">
+              <div className="impact-grid">
                 <div style={{ border:"1px solid var(--ink)", background:"var(--surface)", padding:12, borderLeft:"2px solid var(--vermillion)" }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.1em", color:"var(--muted)" }}>LOSS</div><div style={{ fontFamily:"var(--font-mono)", fontSize:18, fontWeight:700, color:"var(--vermillion)" }}>₹{economicLoss.directLossCrores}Cr</div><div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>direct · stage-damage</div></div>
                 <div style={{ border:"1px solid var(--rule)", background:"var(--surface)", padding:12 }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.1em", color:"var(--muted)" }}>DISPLACED</div><div style={{ fontFamily:"var(--font-mono)", fontSize:18, fontWeight:700 }}>{economicLoss.displacedPop}</div><div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>residents</div></div>
                 <div style={{ border:"1px solid var(--rule)", background:"var(--surface)", padding:12 }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.1em", color:"var(--muted)" }}>BLDGS &gt;0.15m</div><div style={{ fontFamily:"var(--font-mono)", fontSize:18, fontWeight:700 }}>{economicLoss.affectedBuildings}</div><div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>footprints</div></div>
@@ -324,7 +324,7 @@ export default function Page() {
                 <span style={{ fontFamily:"var(--font-display)", fontSize:18 }}>Laboratory Matrix</span>
                 <button onClick={()=>{ const sc:Scenario={ id:`sc-${Date.now()}`, name:`Scenario ${scenarios.length+1}`, P:rainfall, CN:cn, duration, depth:`${(Math.min(Q/120,1)*2.2*(0.3+0.7*duration/100)).toFixed(2)}m`, area:"14.2%", buildings: Math.round(80+(Q/120)*700), runoff:+Q.toFixed(1), category:"Custom"}; setScenarios([...scenarios, sc]); pushToast(sc.name);}} style={{ marginLeft:"auto", height:28, padding:"0 12px", background:"var(--ink)", color:"var(--paper)", border:"1px solid var(--ink)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:700 }}>+ SAVE CURRENT</button>
               </div>
-              <div style={{ display:"grid", gridTemplateColumns:"280px 1fr", gap:12 }} className="max-[900px]:!grid-cols-1">
+              <div className="scenario-grid">
                 <div style={{ display:"grid", gap:6, alignContent:"start" }}>
                   {scenarios.map((sc)=> (
                     <button key={sc.id} onClick={()=>{setActiveScenarioId(sc.id); setRainfall(sc.P); setCn(sc.CN); setDuration(sc.duration); pushToast(sc.name);}} style={{ textAlign:"left", padding:"10px 12px", border:"1px solid", borderColor: activeScenarioId===sc.id?"var(--ink)":"var(--rule)", background: activeScenarioId===sc.id?"var(--surface)":"var(--paper)", borderLeftWidth:2, borderLeftColor: activeScenarioId===sc.id?"var(--vermillion)":"transparent" }}>
@@ -372,7 +372,7 @@ export default function Page() {
                 <span style={{ fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:"0.12em", fontWeight:600 }}>08 // EXPORT</span>
                 <span style={{ fontFamily:"var(--font-display)", fontSize:18 }}>Ledger & Spatial Package</span>
               </div>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }} className="max-[700px]:!grid-cols-1">
+              <div className="hydro-grid">
                 <div style={{ border:"1px solid var(--ink)", background:"var(--surface)", padding:16 }}>
                   <div style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:"0.1em", fontWeight:600 }}>08.1 // EXECUTIVE BRIEF</div>
                   <div style={{ fontFamily:"var(--font-body)", fontSize:13, marginTop:6, color:"var(--muted2)" }}>Printable ledger with hydrology, AOI, loss, and matrix. Ink on paper, 1px rules.</div>
@@ -401,7 +401,7 @@ export default function Page() {
               <span style={{ fontFamily:"var(--font-mono)", fontSize:11, fontWeight:700, letterSpacing:"0.08em" }}>SHORTCUTS — PRESS ? TO TOGGLE · ESC TO CLOSE</span>
               <button onClick={()=>setShowHelp(false)} style={{ border:"1px solid var(--ink)", background:"var(--paper)", padding:"4px 8px", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>✕</button>
             </div>
-            <div style={{ padding:14, display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, fontFamily:"var(--font-mono)", fontSize:11 }} className="max-[600px]:!grid-cols-1">
+            <div className="help-grid" style={{ padding:14, fontFamily:"var(--font-mono)", fontSize:11 }}>
               <div><div style={{ fontWeight:700, borderBottom:"1px solid var(--rule)", paddingBottom:4 }}>3D VIEW</div><div style={{ marginTop:6, display:"grid", gap:4, color:"var(--muted2)" }}><div><span className="kbd">DRAG</span> orbit · <span className="kbd">WHEEL</span> zoom · <span className="kbd">SHIFT+DRAG</span> pan</div><div><span className="kbd">DBL-CLICK</span> focus terrain · <span className="kbd">M</span> measure · <span className="kbd">R</span> reset · <span className="kbd">F</span> AOI</div><div><span className="kbd">⛶ FULL</span> fullscreen · <span className="kbd">◰ PNG</span> screenshot</div></div></div>
               <div><div style={{ fontWeight:700, borderBottom:"1px solid var(--rule)", paddingBottom:4 }}>TIME & DATA</div><div style={{ marginTop:6, display:"grid", gap:4, color:"var(--muted2)" }}><div><span className="kbd">SPACE</span> +1H · <span className="kbd">←</span><span className="kbd">→</span> scrub · 6H hydrograph linked to water</div><div><span className="kbd">CLICK</span> building/terrain → inspector · water ripple</div><div>Ward bars ↔ 3D fly · Hydrograph ↔ velocity</div></div></div>
             </div>

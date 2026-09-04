@@ -293,22 +293,25 @@ export default function ChennaiMap({
   };
 
   return (
-    <div>
+    <div style={{ minWidth:0 }}>
       <div style={{ display:"flex", gap:4, flexWrap:"wrap", marginBottom:8, alignItems:"center", border:"1px solid var(--rule)", background:"var(--paper)", padding:4 }}>
-        <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.08em", color:"var(--muted)", padding:"4px 6px", fontWeight:600 }}>LAYERS</span>
+        <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.08em", color:"var(--muted)", padding:"4px 6px", fontWeight:600, flexShrink:0 }}>LAYERS</span>
+        <div style={{ display:"flex", gap:4, flexWrap:"wrap", flex:1, minWidth:0 }}>
         {["all", "buildings", "highway", "water", "hotspots", "rainfall", "shelters", "landmarks", "wards"].map((key) => (
           <button
             key={key}
             onClick={() => handleLayerToggle(key)}
-            style={{ padding:"4px 8px", border:"1px solid", borderColor: currentLayerFilter===key?"var(--ink)":"var(--rule-strong)", background: currentLayerFilter===key?"var(--ink)":"var(--surface)", color: currentLayerFilter===key?"var(--paper)":"var(--muted2)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.04em" }}
+            aria-pressed={currentLayerFilter===key}
+            style={{ padding:"4px 8px", border:"1px solid", borderColor: currentLayerFilter===key?"var(--ink)":"var(--rule-strong)", background: currentLayerFilter===key?"var(--ink)":"var(--surface)", color: currentLayerFilter===key?"var(--paper)":"var(--muted2)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.04em", whiteSpace:"nowrap" }}
           >
             {key==="highway"?"ROADS":key==="hotspots"?"2015 HOTSPOTS":key==="water"?"WATER":key==="shelters"?"HOSPITALS":key.toUpperCase()}
           </button>
         ))}
-        <span ref={countRef} style={{ marginLeft:"auto", fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)", padding:"0 6px" }}>READY</span>
+        </div>
+        <span ref={countRef} style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)", padding:"0 6px", whiteSpace:"nowrap", flexShrink:0 }}>READY</span>
       </div>
-      <div ref={ref} style={{ height: 380, overflow:"hidden", border:"1px solid var(--ink)", background:"#F2F0EB" }} />
-      <div style={{ display:"flex", justifyContent:"space-between", fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", marginTop:4, letterSpacing:"0.06em" }}>
+      <div ref={ref} style={{ height: 380, minHeight: 280, overflow:"hidden", border:"1px solid var(--ink)", background:"#F2F0EB" }} />
+      <div style={{ display:"flex", justifyContent:"space-between", gap:8, flexWrap:"wrap", fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", marginTop:4, letterSpacing:"0.06em" }}>
         <span>LEAFLET · OSM · EPSG:4326</span><span>CLICK MAP TO RETARGET AOI</span>
       </div>
     </div>

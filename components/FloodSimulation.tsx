@@ -396,47 +396,52 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
     <div className="sim-layout">
       <div ref={wrapRef} className="sim-canvas-wrap" style={{ position:"relative", background:"#0F1110", overflow:"hidden", border:"1px solid var(--ink)" }}>
         <RainParticleOverlay rainfall={P} enabled={rainOverlayEnabled} windAngle={18} />
-        <div ref={tooltipRef} style={{ position:"absolute", pointerEvents:"none", background:"var(--ink)", color:"var(--paper)", border:"1px solid var(--ink)", padding:"4px 8px", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, opacity:0, transition:"opacity 120ms", zIndex:7, whiteSpace:"nowrap" }} />
-        <div id="sim-status" style={{ position:"absolute", top:8, left:8, zIndex:6, background:"var(--paper)", border:"1px solid var(--ink)", padding:"4px 8px", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.06em" }}>{loading?"COMPUTING…":"INSTRUMENT LIVE"}</div>
-        <div style={{ position:"absolute", top:8, left:140, zIndex:6, display:"flex", gap:2, background:"var(--paper)", border:"1px solid var(--ink)", padding:2 }}>
-          {(["3d","top","street","aoi"] as const).map((v)=> (
-            <button key={v} onClick={()=>setCameraPreset(v)} style={{ padding:"3px 8px", border:"1px solid", borderColor: cameraView===v?"var(--ink)":"var(--rule)", background: cameraView===v?"var(--ink)":"var(--paper)", color: cameraView===v?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>{v==="3d"?"3D":v==="top"?"NADIR":v.toUpperCase()}</button>
-          ))}
-        </div>
-        <div style={{ position:"absolute", top:8, right:8, zIndex:6, display:"flex", gap:2 }}>
-          <button onClick={toggleFullscreen} title="Fullscreen (F)" style={{ padding:"4px 8px", border:"1px solid var(--ink)", background: isFullscreen?"var(--ink)":"var(--paper)", color: isFullscreen?"var(--paper)":"var(--ink)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>{isFullscreen?"✕ EXIT":"⛶ FULL"}</button>
-          <button onClick={doScreenshot} title="Screenshot PNG" style={{ padding:"4px 8px", border:"1px solid var(--ink)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>◰ PNG</button>
-          <button onClick={()=>{ setMeasureMode(v=>!v); setMeasurePts([]); if(simCtxRef.current?.measureLine){ simCtxRef.current.scene.remove(simCtxRef.current.measureLine); simCtxRef.current.measureLine=null; } }} style={{ padding:"4px 8px", border:"1px solid", borderColor: measureMode?"var(--vermillion)":"var(--ink)", background: measureMode?"var(--vermillion)":"var(--paper)", color: measureMode?"var(--paper)":"var(--ink)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>{measureMode?"✕ MEASURE":"◫ MEASURE"}</button>
-          <button onClick={()=>{ if(simCtxRef.current){ simCtxRef.current.controls.reset(); setCameraPreset("3d"); } }} style={{ padding:"4px 8px", border:"1px solid var(--ink)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>RESET</button>
-        </div>
-        <canvas ref={simRef} id="sim" aria-label="Chennai 3D Digital Twin Simulation Canvas" style={{ width:"100%", height: isFullscreen? "72vh" : 440, display:"block", cursor:"grab" }} />
-        <div style={{ position:"absolute", bottom:8, left:8, zIndex:6, display:"flex", gap:6, pointerEvents:"none" }}>
-          <div style={{ background:"var(--paper)", border:"1px solid var(--ink)", padding:"6px 8px", pointerEvents:"auto", minWidth: 168 }}>
-            <div style={{ fontFamily:"var(--font-mono)", fontSize:8, fontWeight:700, letterSpacing:"0.08em", display:"flex", justifyContent:"space-between" }}><span>DEPTH LEGEND</span><span style={{ color: accentForDepth(d) }}>{d.toFixed(2)} m</span></div>
-            <div className="legend-bar" style={{ marginTop: 6, opacity: viewMode==="data_quality"?0.35:1 }} />
-            <div style={{ display:"flex", justifyContent:"space-between", fontFamily:"var(--font-mono)", fontSize:8, color:"var(--muted)", marginTop: 3 }}><span>0.0</span><span>0.3 LOW</span><span>0.8</span><span>1.6</span><span>2.2 m</span></div>
-            <div style={{ fontFamily:"var(--font-mono)", fontSize:7, color:"var(--muted)", marginTop:4, borderTop:"1px solid var(--rule)", paddingTop:4 }}>{viewMode==="infrastructure_impact"?"IMPACT: green→amber→red by ward prob":viewMode==="velocity_field"?"VELOCITY: arrow field + hue":"SCS-CN + DEM bilinear · ward choropleth"}</div>
-          </div>
-          {measurePts.length===2 && (
-            <div style={{ width:172, border:"1px solid var(--ink)", background:"var(--paper)", padding:6, pointerEvents:"auto" }}>
-              <div style={{ fontFamily:"var(--font-mono)", fontSize:8, fontWeight:700, letterSpacing:"0.06em", borderBottom:"1px solid var(--rule)", paddingBottom:4, display:"flex", justifyContent:"space-between" }}><span>CROSS-SECTION A—A′</span><button onClick={()=>{ setMeasurePts([]); if(simCtxRef.current?.measureLine){ simCtxRef.current.scene.remove(simCtxRef.current.measureLine); simCtxRef.current.measureLine=null; } }} style={{ border:"1px solid var(--rule)", padding:"0 4px", fontSize:8 }}>✕</button></div>
-              <CrossSectionChart pts={measurePts} terrain={simCtxRef.current?.terrain} depth={d} />
-              <div style={{ fontFamily:"var(--font-mono)", fontSize:7, color:"var(--muted)", marginTop:4 }}>WARD {wardForLngLat(selectedArea.center[0], selectedArea.center[1]).name} · M to measure</div>
+        <div ref={tooltipRef} style={{ position:"absolute", pointerEvents:"none", background:"var(--ink)", color:"var(--paper)", border:"1px solid var(--ink)", padding:"4px 8px", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, opacity:0, transition:"opacity 120ms", zIndex:7, whiteSpace:"nowrap", maxWidth: 220, overflow:"hidden", textOverflow:"ellipsis" }} />
+        <div className="sim-topbar">
+          <div style={{ display:"flex", gap:6, flexWrap:"wrap", alignItems:"flex-start" }}>
+            <div id="sim-status" style={{ background:"var(--paper)", border:"1px solid var(--ink)", padding:"4px 8px", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.06em", whiteSpace:"nowrap" }}>{loading?"COMPUTING…":"INSTRUMENT LIVE"}</div>
+            <div style={{ display:"flex", gap:2, background:"var(--paper)", border:"1px solid var(--ink)", padding:2, flexWrap:"wrap" }}>
+              {(["3d","top","street","aoi"] as const).map((v)=> (
+                <button key={v} onClick={()=>setCameraPreset(v)} aria-pressed={cameraView===v} style={{ padding:"3px 8px", border:"1px solid", borderColor: cameraView===v?"var(--ink)":"var(--rule)", background: cameraView===v?"var(--ink)":"var(--paper)", color: cameraView===v?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, whiteSpace:"nowrap" }}>{v==="3d"?"3D":v==="top"?"NADIR":v.toUpperCase()}</button>
+              ))}
             </div>
-          )}
+          </div>
+          <div style={{ display:"flex", gap:4, flexWrap:"wrap", justifyContent:"flex-end" }}>
+            <button onClick={toggleFullscreen} title="Fullscreen (F)" aria-pressed={isFullscreen} style={{ padding:"4px 8px", border:"1px solid var(--ink)", background: isFullscreen?"var(--ink)":"var(--paper)", color: isFullscreen?"var(--paper)":"var(--ink)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, whiteSpace:"nowrap" }}>{isFullscreen?"✕ EXIT":"⛶ FULL"}</button>
+            <button onClick={doScreenshot} title="Screenshot PNG" style={{ padding:"4px 8px", border:"1px solid var(--ink)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, whiteSpace:"nowrap" }}>◰ PNG</button>
+            <button onClick={()=>{ setMeasureMode(v=>!v); setMeasurePts([]); if(simCtxRef.current?.measureLine){ simCtxRef.current.scene.remove(simCtxRef.current.measureLine); simCtxRef.current.measureLine=null; } }} aria-pressed={measureMode} style={{ padding:"4px 8px", border:"1px solid", borderColor: measureMode?"var(--vermillion)":"var(--ink)", background: measureMode?"var(--vermillion)":"var(--paper)", color: measureMode?"var(--paper)":"var(--ink)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, whiteSpace:"nowrap" }}>{measureMode?"✕ MEASURE":"◫ MEASURE"}</button>
+            <button onClick={()=>{ if(simCtxRef.current){ simCtxRef.current.controls.reset(); setCameraPreset("3d"); } }} style={{ padding:"4px 8px", border:"1px solid var(--ink)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, whiteSpace:"nowrap" }}>RESET</button>
+          </div>
         </div>
-        {debug && measurePts.length !== 2 && (
-          <div style={{ position:"absolute", bottom:8, left: 184, background:"var(--paper)", border:"1px solid var(--ink)", padding:"6px 10px", fontFamily:"var(--font-mono)", fontSize:9, lineHeight:1.4, maxWidth:"38%", zIndex:6 }}>
-            <div style={{ fontWeight:700, display:"flex", gap:6 }}><span>{(selectedArea?.name || debug.aoi?.id || "").toUpperCase()}</span><span style={{ color:"var(--muted)" }}>[{viewMode.toUpperCase()}]</span></div>
-            <div style={{ color:"var(--muted2)", marginTop:2 }}>{debug.location} · DEM {debug.terrain?.min?.toFixed(2)}–{debug.terrain?.max?.toFixed(2)}m · {debug.counts?.buildings||0} bldgs · {debug.counts?.roads||0} roads</div>
+        <canvas ref={simRef} id="sim" aria-label="Chennai 3D Digital Twin Simulation Canvas" style={{ width:"100%", height: isFullscreen? "72vh" : 440, display:"block", cursor:"grab", touchAction:"none" }} />
+        <div className="sim-bottombar">
+          <div style={{ display:"flex", gap:8, flexWrap:"wrap", alignItems:"flex-end", flex:1, minWidth:0 }}>
+            <div style={{ background:"var(--paper)", border:"1px solid var(--ink)", padding:"6px 8px", minWidth: 168, maxWidth: 200, flexShrink:0 }}>
+              <div style={{ fontFamily:"var(--font-mono)", fontSize:8, fontWeight:700, letterSpacing:"0.08em", display:"flex", justifyContent:"space-between", gap:8 }}><span>DEPTH LEGEND</span><span style={{ color: accentForDepth(d), whiteSpace:"nowrap" }}>{d.toFixed(2)} m</span></div>
+              <div className="legend-bar" style={{ marginTop: 6, opacity: viewMode==="data_quality"?0.35:1 }} />
+              <div style={{ display:"flex", justifyContent:"space-between", fontFamily:"var(--font-mono)", fontSize:8, color:"var(--muted)", marginTop: 3 }}><span>0.0</span><span>0.3 LOW</span><span>0.8</span><span>1.6</span><span>2.2 m</span></div>
+              <div style={{ fontFamily:"var(--font-mono)", fontSize:7, color:"var(--muted)", marginTop:4, borderTop:"1px solid var(--rule)", paddingTop:4 }}>{viewMode==="infrastructure_impact"?"IMPACT: green→amber→red by ward prob":viewMode==="velocity_field"?"VELOCITY: arrow field + hue":"SCS-CN + DEM bilinear · ward choropleth"}</div>
+            </div>
+            {measurePts.length===2 && (
+              <div style={{ width:172, border:"1px solid var(--ink)", background:"var(--paper)", padding:6, flexShrink:0 }}>
+                <div style={{ fontFamily:"var(--font-mono)", fontSize:8, fontWeight:700, letterSpacing:"0.06em", borderBottom:"1px solid var(--rule)", paddingBottom:4, display:"flex", justifyContent:"space-between" }}><span>CROSS-SECTION A—A′</span><button onClick={()=>{ setMeasurePts([]); if(simCtxRef.current?.measureLine){ simCtxRef.current.scene.remove(simCtxRef.current.measureLine); simCtxRef.current.measureLine=null; } }} aria-label="Clear measure" style={{ border:"1px solid var(--rule)", padding:"0 4px", fontSize:8 }}>✕</button></div>
+                <CrossSectionChart pts={measurePts} terrain={simCtxRef.current?.terrain} depth={d} />
+                <div style={{ fontFamily:"var(--font-mono)", fontSize:7, color:"var(--muted)", marginTop:4 }}>WARD {wardForLngLat(selectedArea.center[0], selectedArea.center[1]).name} · M to measure</div>
+              </div>
+            )}
+            {debug && measurePts.length !== 2 && (
+              <div style={{ background:"var(--paper)", border:"1px solid var(--ink)", padding:"6px 10px", fontFamily:"var(--font-mono)", fontSize:9, lineHeight:1.4, flex:1, minWidth: 140, maxWidth: 420, overflow:"hidden" }}>
+                <div style={{ fontWeight:700, display:"flex", gap:6, flexWrap:"wrap" }}><span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{(selectedArea?.name || debug.aoi?.id || "").toUpperCase()}</span><span style={{ color:"var(--muted)", whiteSpace:"nowrap" }}>[{viewMode.toUpperCase()}]</span></div>
+                <div style={{ color:"var(--muted2)", marginTop:2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{debug.location} · DEM {debug.terrain?.min?.toFixed(2)}–{debug.terrain?.max?.toFixed(2)}m · {debug.counts?.buildings||0} bldgs · {debug.counts?.roads||0} roads</div>
+              </div>
+            )}
           </div>
-        )}
-        <div style={{ position:"absolute", bottom:8, right:8, background:"var(--paper)", border:"1px solid var(--ink)", padding:"6px 10px", fontFamily:"var(--font-mono)", fontSize:9, lineHeight:1.4, zIndex:6, minWidth:110 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:6, fontWeight:700 }}>
-            <span style={{ width:14, height:14, border:"1px solid var(--ink)", display:"grid", placeItems:"center", fontSize:8, transform:`rotate(${compassDeg}deg)` }}>↑</span>
-            N {compassDeg.toFixed(0)}° · {scaleLabel}
-          </div>
-          <div style={{ color:"var(--muted)", fontSize:9, marginTop:4, borderTop:"1px solid var(--rule)", paddingTop:4 }}>DRAG ORBIT · WHEEL ZOOM · SHIFT+DRAG PAN</div>
+          <div style={{ background:"var(--paper)", border:"1px solid var(--ink)", padding:"6px 10px", fontFamily:"var(--font-mono)", fontSize:9, lineHeight:1.4, flexShrink:0, minWidth:110 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:6, fontWeight:700 }}>
+              <span style={{ width:14, height:14, border:"1px solid var(--ink)", display:"grid", placeItems:"center", fontSize:8, flexShrink:0, transform:`rotate(${compassDeg}deg)` }}>↑</span>
+              N {compassDeg.toFixed(0)}° · {scaleLabel}
+            </div>
+            <div style={{ color:"var(--muted)", fontSize:9, marginTop:4, borderTop:"1px solid var(--rule)", paddingTop:4 }}>DRAG ORBIT · WHEEL ZOOM · SHIFT+DRAG PAN</div>
           <div style={{ display:"flex", gap:6, marginTop:6 }}>
             <span><span style={{ display:"inline-block", width:12, height:6, background:"var(--hydro)", verticalAlign:"middle", marginRight:4 }} />&lt;0.3</span>
             <span><span style={{ display:"inline-block", width:12, height:6, background:"#E6B422", verticalAlign:"middle", marginRight:4 }} />0.3-0.8</span>
