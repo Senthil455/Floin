@@ -69,6 +69,7 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
   const [showRoads, setShowRoads] = useState(true);
   const [showHotspots, setShowHotspots] = useState(true);
   const [showWaterways, setShowWaterways] = useState(true);
+  const [showWards, setShowWards] = useState(true);
   const [debug, setDebug] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [timeSeries, setTimeSeries] = useState<any[]>([]);

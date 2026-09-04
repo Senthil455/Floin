@@ -167,6 +167,16 @@ const DATASET_REGISTRY: Record<string, Partial<Dataset>> = {
     geometryType: 'Point',
     attributes: ['area', 'severity', 'duration_hours'],
   },
+  chennai_wards_200: {
+    id: 'chennai_wards_200',
+    name: 'GCC Ward Boundaries (200 Wards)',
+    category: 'reference',
+    format: 'geojson',
+    crs: 'EPSG:4326',
+    bounds: { xmin: 80.10, xmax: 80.35, ymin: 12.88, ymax: 13.25 },
+    geometryType: 'Polygon',
+    attributes: ['Ward_No', 'Zone_No', 'Zone_Name', 'AREA', 'PERIMETER'],
+  },
 };
 
 // Try to load and count features from GeoJSON files
