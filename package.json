@@ -4,7 +4,17 @@
   "license": "MIT",
   "private": false,
   "type": "module",
-  "files": ["app","components","hooks","public","data/vectors","data/rasters/rasters_COP30","scripts","next.config.mjs","tailwind.config.js"],
+  "files": [
+    "app",
+    "components",
+    "hooks",
+    "public",
+    "data/vectors",
+    "data/rasters/rasters_COP30",
+    "scripts",
+    "next.config.mjs",
+    "tailwind.config.js"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -16,6 +26,7 @@
     "geotiff": "^3.0.5",
     "leaflet": "^1.9.4",
     "next": "^16.3.3",
+    "pngjs": "^7.0.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "three": "^0.185.1"
