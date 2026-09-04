@@ -104,12 +104,13 @@ function cacheSet(k: string, v: any) { if (cache.size >= MAX_CACHE) { const firs
 
 interface FloodSimulationProps {
   selectedArea?: any; rainfall?: number; cn?: number; duration?: number; viewMode?: ViewMode; currentHour?: number; isPlaying?: boolean; rainOverlayEnabled?: boolean;
+  floodLevel?: number | null; floodPalette?: "classic" | "rainbow";
   onTimeChange?: (h: number) => void;
   layers?: { terrain?: boolean; water?: boolean; depth?: boolean; buildings?: boolean; roads?: boolean; hotspots?: boolean; waterways?: boolean; };
   onSelectObject?: (obj: any) => void; onStatsChange?: (stats: any) => void;
 }
 
-export default function FloodSimulation({ selectedArea, rainfall: externalP, cn: externalCN, duration: externalT, viewMode = "digital_twin", currentHour = 0, isPlaying = false, rainOverlayEnabled = true, onTimeChange, layers: externalLayers, onSelectObject, onStatsChange }: FloodSimulationProps) {
+export default function FloodSimulation({ selectedArea, rainfall: externalP, cn: externalCN, duration: externalT, viewMode = "digital_twin", currentHour = 0, isPlaying = false, rainOverlayEnabled = true, floodLevel=null, floodPalette="classic", onTimeChange, layers: externalLayers, onSelectObject, onStatsChange }: FloodSimulationProps) {
   const simRef = useRef<HTMLCanvasElement>(null);
   const simCtxRef = useRef<any>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -163,10 +164,22 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
     interactionStateRef.current = { measureMode, measurePts };
     const ctx = simCtxRef.current;
     if (ctx?.water) {
-      ctx.water.position.y = -0.88 + Math.min(d * 0.18, 0.3);
-      (ctx.water.material as any).uniforms.depth.value = d;
+      if(floodLevel!=null){
+        const fy = floodLevel*0.11 -0.85 +0.02;
+        ctx.water.position.y = fy;
+        (ctx.water.material as any).uniforms.depth.value = Math.max(0,(floodLevel-4))*0.22;
+        (ctx.water.material as any).uniforms.opacity.value = 0.62;
+        if(ctx.floodMask) ctx.floodMask.visible=true;
+      } else {
+        ctx.water.position.y = -0.88 + Math.min(d * 0.18, 0.3);
+        (ctx.water.material as any).uniforms.depth.value = d;
+        (ctx.water.material as any).uniforms.opacity.value = viewMode==="depth_heatmap"?0.72:0.54;
+        if(ctx.floodMask) ctx.floodMask.visible=false;
+      }
+      const pal = floodPalette==="rainbow" ? 1.0 : 0.0;
+      if((ctx.water.material as any).uniforms.palette) (ctx.water.material as any).uniforms.palette.value = pal;
     }
-  },[d,currentVelocity,measureMode,measurePts]);
+  },[d,currentVelocity,measureMode,measurePts,floodLevel,floodPalette,viewMode]);
 
   const setCameraPreset = (view: "3d"|"top"|"street"|"aoi") => {
     setCameraView(view);
@@ -761,8 +774,9 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
     if(opts.aoi?.id==="adyar") makeLabel("ADYAR RIVER", -0.8, -1.1, "#E8F0F2");
   } catch {}
   const wSeg=opts.viewMode==="depth_heatmap"?96:64; const wgeo=new THREE.PlaneGeometry(13.4,13.4,wSeg,wSeg);
+  const floodMaskGeo=new THREE.PlaneGeometry(14,14,1,1); const floodMaskMat=new THREE.MeshBasicMaterial({ color: floodPalette==="rainbow"?0x0096FF:0x0E7490, transparent:true, opacity:0.0, depthWrite:false }); const floodMask=new THREE.Mesh(floodMaskGeo,floodMaskMat); floodMask.rotation.x=-Math.PI/2; floodMask.position.y=-0.86; floodMask.visible=false; scene.add(floodMask); (scene as any).userData.floodMask=floodMask;
   const waterMat=new THREE.ShaderMaterial({
-    uniforms:{ time:{value:0}, depth:{value:opts.d??0.5}, opacity:{value:opts.viewMode==="depth_heatmap"?0.72:0.54}, rippleCenter:{value:new THREE.Vector2(0.5,0.5)}, rippleTime:{value:10} },
+    uniforms:{ time:{value:0}, depth:{value:opts.d??0.5}, opacity:{value:opts.viewMode==="depth_heatmap"?0.72:0.54}, palette:{value:0}, rippleCenter:{value:new THREE.Vector2(0.5,0.5)}, rippleTime:{value:10} },
     vertexShader:`uniform float time; uniform float rippleTime; uniform vec2 rippleCenter; varying vec2 vUv; varying float vWave; varying float vRipple; varying vec3 vNormal;
       float gerstner(vec2 p, float f, float amp, vec2 dir, float t){ float k=f; float c=cos(dot(dir,p)*k + t); return amp*c; }
       void main(){
@@ -782,10 +796,11 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
         vNormal=normalize(vec3(-ddx, 1.0, -ddy));
         gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);
       }`,
-    fragmentShader:`uniform float depth; uniform float opacity; varying vec2 vUv; varying float vWave; varying float vRipple; varying vec3 vNormal;
+    fragmentShader:`uniform float depth; uniform float opacity; uniform float palette; varying vec2 vUv; varying float vWave; varying float vRipple; varying vec3 vNormal;
       void main(){
         float d=clamp(depth/2.5,0.0,1.0);
-        vec3 shallow=vec3(0.06,0.65,0.91); vec3 mid=vec3(0.96,0.62,0.07); vec3 deep=vec3(0.94,0.27,0.27);
+        vec3 shallow, mid, deep;
+        if(palette>0.5){ shallow=vec3(0.05,0.2,0.9); mid=vec3(0.15,0.9,0.45); deep=vec3(0.9,0.05,0.05); } else { shallow=vec3(0.06,0.65,0.91); mid=vec3(0.96,0.62,0.07); deep=vec3(0.94,0.27,0.27); }
         vec3 col=mix(shallow,mid,smoothstep(0.0,0.45,d)); col=mix(col,deep,smoothstep(0.45,0.95,d));
         float c1=sin(vUv.x*32.0+vWave*45.0)*cos(vUv.y*32.0-vWave*35.0);
         float c2=cos(vUv.x*24.0-vWave*20.0)*sin(vUv.y*24.0+vWave*25.0);

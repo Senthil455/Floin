@@ -35,6 +35,11 @@ export default function Page() {
   const [rainfall, setRainfall] = useState(160);
   const [cn, setCn] = useState(84);
   const [duration, setDuration] = useState(60);
+  const [floodLevel, setFloodLevel] = useState(6.5);
+  const [floodMode, setFloodMode] = useState<"scs" | "bathtub">("bathtub");
+  const [mapStyle, setMapStyle] = useState<"osm" | "topo" | "imagery" | "imageryClarity" | "dark">("osm");
+  const [floodPalette, setFloodPalette] = useState<"classic" | "rainbow">("classic");
+  const [includeSeaDepth, setIncludeSeaDepth] = useState(false);
   const [currentHour, setCurrentHour] = useState(2);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState<1 | 2 | 4>(1);
@@ -173,10 +178,34 @@ export default function Page() {
         <main className="flex-1 min-w-0" style={{ background:"var(--paper)", padding: "12px 16px", overflowX:"clip" }}>
           {activeWorkspace === "digital_twin" && (
             <div>
-              <div style={{ display:"flex", alignItems:"baseline", gap:12, borderBottom:"1px solid var(--ink)", paddingBottom:8, marginBottom:12 }}>
+              <div style={{ display:"flex", alignItems:"baseline", gap:12, borderBottom:"1px solid var(--ink)", paddingBottom:8, marginBottom:12, flexWrap:"wrap" }}>
                 <span style={{ fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:"0.12em", fontWeight:600 }}>01 // DIGITAL TWIN</span>
                 <span style={{ fontFamily:"var(--font-display)", fontSize:18 }}>{selectedArea.name}</span>
                 <span style={{ marginLeft:"auto", fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>SHADER {viewMode.toUpperCase()} · {selectedArea.center[1].toFixed(3)}°N {selectedArea.center[0].toFixed(3)}°E</span>
+              </div>
+              <div style={{ border:"1px solid var(--ink)", background:"var(--surface)", padding:"6px 8px", display:"flex", gap:8, flexWrap:"wrap", alignItems:"center", marginBottom:10 }}>
+                <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.08em", color:"var(--muted)", fontWeight:600, whiteSpace:"nowrap" }}>FLOODMAP.NET MODE</span>
+                <div style={{ display:"flex", border:"1px solid var(--rule-strong)", padding:2, gap:2 }}>
+                  <button onClick={()=>setFloodMode("bathtub")} style={{ padding:"4px 8px", border:"1px solid", borderColor: floodMode==="bathtub"?"var(--ink)":"var(--rule)", background: floodMode==="bathtub"?"var(--ink)":"var(--paper)", color: floodMode==="bathtub"?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>BATHTUB (FloodMap)</button>
+                  <button onClick={()=>setFloodMode("scs")} style={{ padding:"4px 8px", border:"1px solid", borderColor: floodMode==="scs"?"var(--ink)":"var(--rule)", background: floodMode==="scs"?"var(--ink)":"var(--paper)", color: floodMode==="scs"?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>SCS-CN HYDRO</button>
+                </div>
+                {floodMode==="bathtub" && (
+                  <>
+                    <span style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>Elevation / Water Level (-/+):</span>
+                    <button onClick={()=>setFloodLevel(v=>Math.max(includeSeaDepth?-10:0, +(v-0.5).toFixed(1)))} style={{ width:28, height:28, border:"1px solid var(--ink)", background:"var(--paper)", fontWeight:700 }}>-</button>
+                    <input type="number" value={floodLevel} onChange={e=>setFloodLevel(parseFloat(e.target.value)||0)} step={0.1} style={{ width:72, height:28, border:"1px solid var(--ink)", textAlign:"center", fontFamily:"var(--font-mono)", fontSize:12, fontWeight:700 }} />
+                    <span style={{ fontFamily:"var(--font-mono)", fontSize:10 }}>meter</span>
+                    <button onClick={()=>setFloodLevel(v=>Math.min(18, +(v+0.5).toFixed(1)))} style={{ width:28, height:28, border:"1px solid var(--ink)", background:"var(--paper)", fontWeight:700 }}>+</button>
+                    <button onClick={()=>pushToast(`FLOOD LEVEL SET ${floodLevel.toFixed(1)} m — blue = below threshold`)} style={{ height:28, padding:"0 10px", background:"var(--ink)", color:"var(--paper)", border:"1px solid var(--ink)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:700 }}>Set</button>
+                    <label style={{ display:"flex", gap:4, alignItems:"center", fontFamily:"var(--font-mono)", fontSize:10, cursor:"pointer" }}><input type="checkbox" checked={includeSeaDepth} onChange={e=>setIncludeSeaDepth(e.target.checked)} /> Sea Depth</label>
+                    <span style={{ width:1, height:18, background:"var(--rule-strong)" }} />
+                    <span style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)" }}>Palette</span>
+                    <button onClick={()=>setFloodPalette("rainbow")} style={{ padding:"3px 6px", border:"1px solid", borderColor: floodPalette==="rainbow"?"var(--ink)":"var(--rule)", background: floodPalette==="rainbow"?"var(--ink)":"var(--paper)", color: floodPalette==="rainbow"?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:9, fontWeight:600 }}>Rainbow</button>
+                    <button onClick={()=>setFloodPalette("classic")} style={{ padding:"3px 6px", border:"1px solid", borderColor: floodPalette==="classic"?"var(--ink)":"var(--rule)", background: floodPalette==="classic"?"var(--ink)":"var(--paper)", color: floodPalette==="classic"?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:9, fontWeight:600 }}>Classic</button>
+                    <span style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", borderLeft:"1px solid var(--rule)", paddingLeft:8 }}>FloodMap.net bathtub: blue = below {floodLevel.toFixed(1)} m — click map to set level at that elevation</span>
+                  </>
+                )}
+                {floodMode==="scs" && <span style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)" }}>SCS-CN: P {rainfall} mm · Q {Q.toFixed(1)} mm drives 3D water depth (Gerstner) — not bathtub</span>}
               </div>
 
               <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:10, border:"1px solid var(--rule)", background:"var(--surface)", padding:6 }}>
@@ -205,7 +234,7 @@ export default function Page() {
                       <span>03 // WEBGL DIGITAL TWIN — LEFT</span><span style={{ color:"var(--muted)" }}>{selectedArea.name}</span>
                     </div>
                     <div style={{ padding:8, background:"#0F1110" }}>
-                      <FloodSimulation selectedArea={selectedArea} rainfall={rainfall} cn={cn} duration={duration} viewMode={viewMode} currentHour={currentHour} isPlaying={isPlaying} rainOverlayEnabled={rainOverlayEnabled} onTimeChange={setCurrentHour} onSelectObject={(o:any)=>{setInspectedFeature(o); pushToast(o.name);}} />
+                      <FloodSimulation selectedArea={selectedArea} rainfall={rainfall} cn={cn} duration={duration} viewMode={viewMode} currentHour={currentHour} isPlaying={isPlaying} rainOverlayEnabled={rainOverlayEnabled} floodLevel={floodMode==="bathtub"?floodLevel:null} floodPalette={floodPalette} onTimeChange={setCurrentHour} onSelectObject={(o:any)=>{setInspectedFeature(o); pushToast(o.name);}} />
                     </div>
                     <div style={{ display:"flex", gap:12, padding:"6px 10px", borderTop:"1px solid var(--rule)", fontFamily:"var(--font-mono)", fontSize:10 }}>
                       <span><span style={{ display:"inline-block", width:14, height:6, background:"var(--hydro)", verticalAlign:"middle", marginRight:4 }} />&lt;0.3 LOW</span>
@@ -222,7 +251,22 @@ export default function Page() {
                     <div style={{ height:28, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 10px", borderBottom:"1px solid var(--rule)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>
                       <span>02 // GEOSPATIAL CONTROL — RIGHT</span><span style={{ color:"var(--hydro)", fontWeight:700 }}>CLICK TO RETARGET</span>
                     </div>
-                    <div style={{ padding:8 }}><ChennaiMap selectedArea={selectedArea} aoiSizeKm={aoiKm} rainfall={rainfall} cn={cn} onMapClick={handleMapClick} onSelectArea={setSelectedArea} onSelectFeature={(f:any)=>{setInspectedFeature(f); pushToast(f.name);}} /></div>
+                    <div style={{ padding:8 }}>
+                      <div style={{ display:"flex", gap:4, flexWrap:"wrap", marginBottom:6, alignItems:"center" }}>
+                        <span style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)" }}>Map Style:</span>
+                        {(["osm","topo","imagery","imageryClarity","dark"] as const).map(s=>(
+                          <button key={s} onClick={()=>setMapStyle(s)} style={{ padding:"2px 6px", border:"1px solid", borderColor: mapStyle===s?"var(--ink)":"var(--rule)", background: mapStyle===s?"var(--ink)":"var(--paper)", color: mapStyle===s?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:9, fontWeight:600 }}>{s==="imageryClarity"?"Imagery Clarity":s.toUpperCase()}</button>
+                        ))}
+                        <span style={{ marginLeft:"auto", fontFamily:"var(--font-mono)", fontSize:8, color:"var(--muted)" }}>{mapStyle} · FloodMap.net parity</span>
+                      </div>
+                      <ChennaiMap selectedArea={selectedArea} aoiSizeKm={aoiKm} rainfall={rainfall} cn={cn} floodLevel={floodMode==="bathtub"?floodLevel:null} floodPalette={floodPalette} mapStyle={mapStyle} includeSeaDepth={includeSeaDepth} onMapClick={async (lat,lng)=>{
+                        try{
+                          const r=await fetch("/api/location/terrain",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({aoi:{bounds:{xmin:lng-0.001,xmax:lng+0.001,ymin:lat-0.001,ymax:lat+0.001}}})}).then(x=>x.json());
+                          const elev=parseFloat(r?.statistics?.meanElevation); if(isFinite(elev)){ setFloodLevel(Math.round(elev*10)/10); pushToast(`CLICK ELEV ${elev.toFixed(1)} m → water level set`); }
+                        }catch{}
+                        handleMapClick(lat,lng);
+                      }} onSelectArea={setSelectedArea} onSelectFeature={(f:any)=>{setInspectedFeature(f); pushToast(f.name);}} />
+                    </div>
                   </div>
 
                   <div style={{ border:"1px solid var(--ink)", background:"var(--surface)" }}>

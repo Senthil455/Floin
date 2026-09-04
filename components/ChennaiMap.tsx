@@ -15,6 +15,13 @@ const CHENNAI_CRITICAL_INFRASTRUCTURE = [
   { name: "Velachery Lowland Intersection", lat: 12.9785, lng: 80.2185, type: "Urban Marsh Area", basin: "Pallikaranai Marsh", risk: "Critical" },
 ];
 
+const MAP_TILES: Record<string, { url: string; attr: string }> = {
+  osm: { url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", attr: "© OpenStreetMap" },
+  topo: { url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", attr: "© OpenTopoMap" },
+  imagery: { url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", attr: "© Esri Imagery" },
+  imageryClarity: { url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", attr: "© Esri Clarity" },
+  dark: { url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", attr: "© CARTO Dark" },
+};
 export default function ChennaiMap({
   selectedArea,
   onSelectArea,
@@ -24,6 +31,10 @@ export default function ChennaiMap({
   activeLayer = "all",
   rainfall,
   cn,
+  floodLevel=null,
+  floodPalette="classic",
+  mapStyle="osm",
+  includeSeaDepth=false,
 }: {
   selectedArea?: any;
   onSelectArea?: (a: any) => void;
@@ -33,6 +44,10 @@ export default function ChennaiMap({
   activeLayer?: string;
   rainfall?: number;
   cn?: number;
+  floodLevel?: number | null;
+  floodPalette?: "classic" | "rainbow";
+  mapStyle?: string;
+  includeSeaDepth?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const countRef = useRef<HTMLSpanElement>(null);
