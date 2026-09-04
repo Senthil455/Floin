@@ -279,7 +279,7 @@ export default function FloodSimulation({
             location: `${(aoi.center ? aoi.center[1] : 13.08).toFixed(4)}degN, ${(aoi.center ? aoi.center[0] : 80.27).toFixed(4)}degE`,
           });
           setLoading(false);
-          if (statusEl) statusEl.textContent = `Digital Twin Active • Req #${reqId}`;
+          if (statusEl) statusEl.textContent = `Digital Twin Active - Req #${reqId}`;
           return;
         }
 
@@ -368,12 +368,12 @@ export default function FloodSimulation({
         });
 
         setLoading(false);
-        if (statusEl) statusEl.textContent = `Digital Twin Active • Req #${reqId}`;
+        if (statusEl) statusEl.textContent = `Digital Twin Active - Req #${reqId}`;
       } catch (error) {
         if (error instanceof Error && error.name === "AbortError") return;
         console.error("Digital Twin load error:", error);
         setLoading(false);
-        if (statusEl) statusEl.textContent = `Digital Twin Ready • Req #${reqId}`;
+        if (statusEl) statusEl.textContent = `Digital Twin Ready - Req #${reqId}`;
       }
     })();
 
@@ -458,10 +458,10 @@ export default function FloodSimulation({
               <span style={{ color: "#38bdf8" }}>[{viewMode.toUpperCase()}]</span>
             </div>
             <div style={{ color: "#e6eef8", marginTop: 2 }}>
-              Coordinates: {debug.location} • DEM: {debug.terrain?.min?.toFixed(2)}m to {debug.terrain?.max?.toFixed(2)}m (SRTM COP30)
+              Coordinates: {debug.location} - DEM: {debug.terrain?.min?.toFixed(2)}m to {debug.terrain?.max?.toFixed(2)}m (SRTM COP30)
             </div>
             <div style={{ color: "#8aa0b8", marginTop: 2 }}>
-              Loaded Assets: {debug.counts?.buildings || 0} building footprints • {debug.counts?.roads || 0} roads • {debug.counts?.hotspots || 0} GCC 2015 hotspots
+              Loaded Assets: {debug.counts?.buildings || 0} building footprints - {debug.counts?.roads || 0} roads - {debug.counts?.hotspots || 0} GCC 2015 hotspots
             </div>
           </div>
         )}
@@ -471,7 +471,7 @@ export default function FloodSimulation({
           <div style={{ fontWeight: 700, color: "#e6eef8" }}>
             {selectedArea?.center ? `${selectedArea.center[1].toFixed(3)}degN, ${selectedArea.center[0].toFixed(3)}degE` : "Chennai South Basin"}
           </div>
-          <div style={{ color: "#8aa0b8", fontSize: ".62rem" }}>EPSG:4326 • SCS-CN Modelled Depth</div>
+          <div style={{ color: "#8aa0b8", fontSize: ".62rem" }}>EPSG:4326 - SCS-CN Modelled Depth</div>
           <div style={{ display: "flex", gap: 6, marginTop: 6, alignItems: "center" }}>
             <span style={{ width: 22, height: 4, background: "#0ea5e9", borderRadius: 2 }} /> <span style={{ color: "#8aa0b8" }}>&lt;0.3m Low</span>
             <span style={{ width: 22, height: 4, background: "#f59e0b", borderRadius: 2 }} /> <span style={{ color: "#8aa0b8" }}>0.3-0.8m Med</span>
@@ -513,7 +513,7 @@ export default function FloodSimulation({
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
             <span style={{ fontSize: ".72rem", color: "#8aa0b8", fontWeight: 700 }}>6-HOUR FLOOD HYDROGRAPH</span>
             <span style={{ fontSize: ".72rem", color: "#22d3ee", fontFamily: "JetBrains Mono" }}>
-              {timeSeries[currentHour] ? `Hour ${currentHour}: ${timeSeries[currentHour].depth?.toFixed(2)}m depth • ${timeSeries[currentHour].velocity?.toFixed(2)}m/s flow` : `t = ${t} min`}
+              {timeSeries[currentHour] ? `Hour ${currentHour}: ${timeSeries[currentHour].depth?.toFixed(2)}m depth - ${timeSeries[currentHour].velocity?.toFixed(2)}m/s flow` : `t = ${t} min`}
             </span>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
