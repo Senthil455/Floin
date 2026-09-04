@@ -121,6 +121,12 @@ export default function Page() {
         </div>
       </header>
 
+      <div className="flex flex-1 min-h-0 flex-col">
+      <div className="md:hidden flex gap-1 overflow-x-auto px-2 py-2" style={{ borderBottom:"1px solid var(--rule)", background:"var(--paper)" }}>
+        {workspaces.map((w)=> (
+          <button key={w.id} onClick={()=>setActiveWorkspace(w.id)} style={{ whiteSpace:"nowrap", padding:"6px 10px", border:"1px solid", borderColor: activeWorkspace===w.id?"var(--ink)":"var(--rule)", background: activeWorkspace===w.id?"var(--ink)":"var(--surface)", color: activeWorkspace===w.id?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>{w.mono} {w.label.toUpperCase()}</button>
+        ))}
+      </div>
       <div className="flex flex-1 min-h-0">
         <aside className="hidden md:flex flex-col shrink-0" style={{ width: 220, borderRight:"1px solid var(--rule-strong)", background:"var(--paper)" }}>
           <div style={{ padding:"12px 12px 8px", borderBottom:"1px solid var(--rule)", fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:"0.14em", color:"var(--muted)", fontWeight:600 }}>INDEX</div>
@@ -358,6 +364,7 @@ export default function Page() {
             </div>
           )}
         </main>
+      </div>
       </div>
 
       <footer style={{ borderTop:"1px solid var(--rule-strong)", background:"var(--paper)", padding:"8px 16px", display:"flex", justifyContent:"space-between", fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", letterSpacing:"0.06em" }}>
