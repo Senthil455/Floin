@@ -1,0 +1,41 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "event_date": "2015-12-02",
+        "satellite": "Sentinel-1A",
+        "polarization": "VV+VH",
+        "flood_area_km2": 264
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80.15,
+              12.92
+            ],
+            [
+              80.3,
+              12.92
+            ],
+            [
+              80.3,
+              13.18
+            ],
+            [
+              80.15,
+              13.18
+            ],
+            [
+              80.15,
+              12.92
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

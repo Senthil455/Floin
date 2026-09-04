@@ -1,0 +1,167 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "route_id": "EVAC-1",
+        "from_ward": "Ward 10",
+        "to_shelter": "Shelter 1",
+        "length_km": "2.1",
+        "flood_threshold_m": "0.35"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.2,
+            13.02
+          ],
+          [
+            80.22,
+            13.05
+          ],
+          [
+            80.24,
+            13.08
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "route_id": "EVAC-2",
+        "from_ward": "Ward 28",
+        "to_shelter": "Shelter 2",
+        "length_km": "2.9",
+        "flood_threshold_m": "0.43"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.22,
+            13.035
+          ],
+          [
+            80.24,
+            13.065000000000001
+          ],
+          [
+            80.25999999999999,
+            13.095
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "route_id": "EVAC-3",
+        "from_ward": "Ward 46",
+        "to_shelter": "Shelter 3",
+        "length_km": "3.7",
+        "flood_threshold_m": "0.51"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.24000000000001,
+            13.049999999999999
+          ],
+          [
+            80.26,
+            13.08
+          ],
+          [
+            80.28,
+            13.11
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "route_id": "EVAC-4",
+        "from_ward": "Ward 64",
+        "to_shelter": "Shelter 4",
+        "length_km": "4.5",
+        "flood_threshold_m": "0.59"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.26,
+            13.065
+          ],
+          [
+            80.28,
+            13.095
+          ],
+          [
+            80.3,
+            13.125
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "route_id": "EVAC-5",
+        "from_ward": "Ward 82",
+        "to_shelter": "Shelter 5",
+        "length_km": "5.3",
+        "flood_threshold_m": "0.67"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.28,
+            13.08
+          ],
+          [
+            80.3,
+            13.110000000000001
+          ],
+          [
+            80.32,
+            13.14
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "route_id": "EVAC-6",
+        "from_ward": "Ward 100",
+        "to_shelter": "Shelter 6",
+        "length_km": "6.1",
+        "flood_threshold_m": "0.75"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.3,
+            13.094999999999999
+          ],
+          [
+            80.32,
+            13.125
+          ],
+          [
+            80.33999999999999,
+            13.155
+          ]
+        ]
+      }
+    }
+  ]
+}

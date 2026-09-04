@@ -1,0 +1,101 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "well_id": "CGWB-100",
+        "depth_m": "4.2",
+        "aquifer": "Alluvium",
+        "trend_m_per_year": "-0.12"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.2759691202856,
+          13.033995704685463
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "well_id": "CGWB-101",
+        "depth_m": "5.3",
+        "aquifer": "Sandstone",
+        "trend_m_per_year": "-0.08"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.21799726923649,
+          13.003607415894235
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "well_id": "CGWB-102",
+        "depth_m": "6.4",
+        "aquifer": "Laterite",
+        "trend_m_per_year": "-0.04"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.24832417165855,
+          13.069753664414028
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "well_id": "CGWB-103",
+        "depth_m": "7.5",
+        "aquifer": "Alluvium",
+        "trend_m_per_year": "0.00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.23802397132984,
+          13.033099993591474
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "well_id": "CGWB-104",
+        "depth_m": "8.6",
+        "aquifer": "Sandstone",
+        "trend_m_per_year": "0.04"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.22074863532333,
+          13.072238684943724
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "well_id": "CGWB-105",
+        "depth_m": "9.7",
+        "aquifer": "Laterite",
+        "trend_m_per_year": "0.08"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.26094734420745,
+          13.037825689305222
+        ]
+      }
+    }
+  ]
+}

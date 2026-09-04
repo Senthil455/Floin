@@ -1,0 +1,39 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "station": "Ennore Tide Gauge",
+        "sea_level_m": 0.42,
+        "tide_m": 0.31,
+        "surge_m": 0.11,
+        "timestamp": "2026-09-04T18:58:14.141Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.3245,
+          13.2312
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "station": "Marina Beach Gauge",
+        "sea_level_m": 0.38,
+        "tide_m": 0.28,
+        "surge_m": 0.1,
+        "timestamp": "2026-09-04T18:58:14.144Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.278,
+          13.05
+        ]
+      }
+    }
+  ]
+}

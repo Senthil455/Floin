@@ -1,0 +1,221 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rajiv Gandhi GH 1",
+        "type": "Relief Shelter",
+        "beds": 50,
+        "capacity": 200,
+        "dry_access": false,
+        "contact": "044-28000000"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.21495641064013,
+          13.139661000869436
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Stanley Medical 2",
+        "type": "Hospital",
+        "beds": 72,
+        "capacity": 230,
+        "dry_access": true,
+        "contact": "044-28000001"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.27583402313394,
+          13.154355745933266
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kilpauk MC 3",
+        "type": "Hospital",
+        "beds": 94,
+        "capacity": 260,
+        "dry_access": true,
+        "contact": "044-28000002"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.30103970859369,
+          13.106121209319133
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Omandurar GH 4",
+        "type": "Relief Shelter",
+        "beds": 116,
+        "capacity": 290,
+        "dry_access": true,
+        "contact": "044-28000003"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.30595441827413,
+          13.115346561917045
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Egmore Child 5",
+        "type": "Hospital",
+        "beds": 138,
+        "capacity": 320,
+        "dry_access": false,
+        "contact": "044-28000004"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.24342939977363,
+          13.04097056907783
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Royapettah GH 6",
+        "type": "Hospital",
+        "beds": 160,
+        "capacity": 350,
+        "dry_access": true,
+        "contact": "044-28000005"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.23144347449296,
+          13.11169042230977
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Chettinad Health City 7",
+        "type": "Relief Shelter",
+        "beds": 182,
+        "capacity": 380,
+        "dry_access": true,
+        "contact": "044-28000006"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.26378313655202,
+          13.105762800247787
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "SRM GH 8",
+        "type": "Hospital",
+        "beds": 204,
+        "capacity": 410,
+        "dry_access": true,
+        "contact": "044-28000007"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.22693514572609,
+          13.0154128581958
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rajiv Gandhi GH 9",
+        "type": "Hospital",
+        "beds": 226,
+        "capacity": 440,
+        "dry_access": false,
+        "contact": "044-28000008"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.24857638365546,
+          13.035829244133687
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Stanley Medical 10",
+        "type": "Relief Shelter",
+        "beds": 248,
+        "capacity": 470,
+        "dry_access": true,
+        "contact": "044-28000009"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.29764906816034,
+          13.049360843298652
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kilpauk MC 11",
+        "type": "Hospital",
+        "beds": 270,
+        "capacity": 500,
+        "dry_access": true,
+        "contact": "044-28000010"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.23158952253738,
+          13.074186231730478
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Omandurar GH 12",
+        "type": "Hospital",
+        "beds": 292,
+        "capacity": 530,
+        "dry_access": true,
+        "contact": "044-28000011"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.27948670694248,
+          13.0441179843032
+        ]
+      }
+    }
+  ]
+}

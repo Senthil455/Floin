@@ -1,0 +1,141 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pump 1",
+        "zone": "I",
+        "capacity_cusecs": 120,
+        "status": "Standby",
+        "power_backup": "EB"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.2917193117533,
+          13.054300408870068
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pump 2",
+        "zone": "II",
+        "capacity_cusecs": 135,
+        "status": "Active",
+        "power_backup": "DG"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.18863223013238,
+          13.108730237555047
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pump 3",
+        "zone": "III",
+        "capacity_cusecs": 150,
+        "status": "Active",
+        "power_backup": "EB"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.2789197830715,
+          13.022901412597442
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pump 4",
+        "zone": "IV",
+        "capacity_cusecs": 165,
+        "status": "Standby",
+        "power_backup": "DG"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.29765839587337,
+          13.045268601189276
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pump 5",
+        "zone": "I",
+        "capacity_cusecs": 180,
+        "status": "Active",
+        "power_backup": "EB"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.21006575937713,
+          13.069970083195475
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pump 6",
+        "zone": "II",
+        "capacity_cusecs": 195,
+        "status": "Active",
+        "power_backup": "DG"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.28914510497951,
+          13.03258243256131
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pump 7",
+        "zone": "III",
+        "capacity_cusecs": 210,
+        "status": "Standby",
+        "power_backup": "EB"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.27711877028025,
+          13.028328698764104
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pump 8",
+        "zone": "IV",
+        "capacity_cusecs": 225,
+        "status": "Active",
+        "power_backup": "DG"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.24175957913329,
+          13.069003545370704
+        ]
+      }
+    }
+  ]
+}
