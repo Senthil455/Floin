@@ -464,20 +464,20 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
           <button onClick={()=>setShowLulc(!showLulc)} style={{ padding:"4px 8px", border:"1px solid", borderColor: showLulc?"var(--ink)":"var(--rule-strong)", background: showLulc?"var(--ink)":"var(--paper)", color: showLulc?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>LULC 2015</button>
           <button onClick={()=>setShowHotspots(!showHotspots)} style={{ padding:"4px 8px", border:"1px solid", borderColor: showHotspots?"var(--ink)":"var(--rule-strong)", background: showHotspots?"var(--vermillion)":"var(--paper)", color: showHotspots?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>2015 HOTSPOTS</button>
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8 }} className="max-[600px]:!grid-cols-1">
+        <div className="ctrl-3grid">
           <div><label style={{ display:"flex", justifyContent:"space-between", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.06em" }}>P RAINFALL <span style={{ color:"var(--hydro)" }}>{P}mm</span></label><input type="range" min={0} max={400} value={P} onChange={(e)=>setP(+e.target.value)} aria-label="Rainfall" style={{ width:"100%", accentColor:"var(--ink)", marginTop:4 }} /></div>
           <div><label style={{ display:"flex", justifyContent:"space-between", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.06em" }}>CN <span style={{ color:"var(--ink)" }}>{CN}</span></label><input type="range" min={40} max={98} value={CN} onChange={(e)=>setCN(+e.target.value)} aria-label="CN" style={{ width:"100%", accentColor:"var(--ink)", marginTop:4 }} /></div>
           <div><label style={{ display:"flex", justifyContent:"space-between", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.06em" }}>DURATION <span style={{ color:"var(--muted)" }}>{t}min</span></label><input type="range" min={15} max={180} value={t} onChange={(e)=>setT(+e.target.value)} aria-label="Duration" style={{ width:"100%", accentColor:"var(--ink)", marginTop:4 }} /></div>
         </div>
         <div style={{ border:"1px solid var(--ink)", background:"var(--paper)", padding:"8px 10px" }}>
           <div style={{ display:"flex", justifyContent:"space-between", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}><span style={{ letterSpacing:"0.08em" }}>HYDROGRAPH 0—6H</span><span style={{ color:"var(--muted)" }}>{timeSeries[currentHour] ? `${currentHour}H · ${timeSeries[currentHour].depth?.toFixed(2)}m · ${timeSeries[currentHour].velocity?.toFixed(2)}m/s` : `t ${t}min`}</span></div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:4, marginTop:6 }}>
+          <div className="hydro-7grid" style={{ marginTop:6 }}>
             {[0,1,2,3,4,5,6].map((hour)=> (
               <button key={hour} onClick={()=>onTimeChange?.(hour)} style={{ padding:"6px 0", border:"1px solid", borderColor: currentHour===hour?"var(--ink)":"var(--rule-strong)", background: currentHour===hour?"var(--ink)":"var(--paper)", color: currentHour===hour?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>{hour}H</button>
             ))}
           </div>
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:6 }} className="max-[600px]:!grid-cols-2">
+        <div className="kpi-4grid">
           <div style={{ border:"1px solid var(--rule)", background:"var(--paper)", padding:"8px 10px", borderLeft:`2px solid ${d>0.8?"var(--vermillion)":d>0.3?"#E6B422":"var(--hydro)"}` }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", letterSpacing:"0.08em" }}>DEPTH</div><div style={{ fontFamily:"var(--font-mono)", fontSize:13, fontWeight:700, color: d>0.8?"var(--vermillion)":d>0.3?"#8A6D00":"var(--hydro)" }}>{stats.depth} m</div></div>
           <div style={{ border:"1px solid var(--rule)", background:"var(--paper)", padding:"8px 10px" }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", letterSpacing:"0.08em" }}>RUNOFF Q</div><div style={{ fontFamily:"var(--font-mono)", fontSize:13, fontWeight:700, color:"var(--hydro)" }}>{stats.runoff} mm</div></div>
           <div style={{ border:"1px solid var(--rule)", background:"var(--paper)", padding:"8px 10px" }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", letterSpacing:"0.08em" }}>VELOCITY</div><div style={{ fontFamily:"var(--font-mono)", fontSize:13, fontWeight:700 }}>{stats.velocity} m/s</div></div>
@@ -523,6 +523,8 @@ function generateTerrainForAOI(terrain: THREE.Mesh, aoi: any, viewMode: ViewMode
     if(aoi.id==="velachery") z-=Math.exp(-(dToAOI*dToAOI)/1.2)*0.45;
     if(aoi.id==="ennore") z+=Math.sin(y*2.2)*0.08;
     if(aoi.id==="chembarambakkam") z+=Math.cos(dx*0.9)*0.22;
+    z+=Math.sin(x*8.4 - y*6.2 + seedY*0.7)*0.022*profile.roughness;
+    z+=Math.cos(x*11.2 + y*4.8 - seedX*0.3)*0.012*profile.roughness;
     // DSM -> DTM erosion (Korea): simple 3x3 blur for interior to remove tower spikes (WorldDEM tower clusters)
     pos.setZ(i,z); zVals.push(z); minZ=Math.min(minZ,z); maxZ=Math.max(maxZ,z);
   }
@@ -623,39 +625,51 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
   sCtx.fillStyle=g; sCtx.fillRect(0,0,512,512);
   const skyTex=new THREE.CanvasTexture(skyCanvas); skyTex.colorSpace=THREE.SRGBColorSpace;
   const skyGeo=new THREE.SphereGeometry(68,32,32); const skyMat=new THREE.MeshBasicMaterial({ map:skyTex, side:THREE.BackSide, depthWrite:false, fog:false }); const sky=new THREE.Mesh(skyGeo,skyMat); scene.add(sky); (scene as any).userData.sky=sky;
-  const hemi=new THREE.HemisphereLight(0xdbeafe,0x0a1a2e,0.92); scene.add(hemi);
-  const dir=new THREE.DirectionalLight(0xffffff,0.9); dir.position.set(8,12,6); dir.castShadow=true; dir.shadow.mapSize.set(1024,1024); dir.shadow.camera.near=0.5; dir.shadow.camera.far=30; dir.shadow.camera.left=-10; dir.shadow.camera.right=10; dir.shadow.camera.top=10; dir.shadow.camera.bottom=-10; dir.shadow.bias=-0.0005; scene.add(dir);
-  const fill=new THREE.DirectionalLight(0x7dd3fc,0.35); fill.position.set(-6,5,-4); scene.add(fill);
-  const sunGeo=new THREE.SphereGeometry(0.35,16,16); const sunMat=new THREE.MeshBasicMaterial({ color:0xFFF4D6, transparent:true, opacity:0.9 }); const sun=new THREE.Mesh(sunGeo,sunMat); sun.position.set(6,9,-4); scene.add(sun); (scene as any).userData.sun=sun;
-  scene.fog=new THREE.FogExp2(0xE8E0D0, 0.014);
-  // Volumetric light rays (god rays) — 4 cones from sun
-  for(let i=0;i<3;i++){ const rayGeo=new THREE.ConeGeometry(0.8+ i*0.4, 12, 8, 1, true); const rayMat=new THREE.MeshBasicMaterial({ color:0xFFE8A0, transparent:true, opacity:0.03 - i*0.008, side:THREE.DoubleSide, depthWrite:false }); const ray=new THREE.Mesh(rayGeo, rayMat); ray.position.set(6,9,-4); ray.lookAt(0,0,0); ray.rotateX(Math.PI); (ray as any).userData.isRay=true; scene.add(ray); }
-  const aoiW=opts.aoi?.bounds?Math.abs(opts.aoi.bounds.xmax-opts.aoi.bounds.xmin):0.25; const seg=aoiW>0.15?140:110; const size=14;
-  const geo=new THREE.PlaneGeometry(size,size,seg,seg); const satTex=createSatelliteDrapeTexture(); const tmat=new THREE.MeshStandardMaterial({ vertexColors:true, map: satTex, roughness:0.88, metalness:0.02 }); const terrain=new THREE.Mesh(geo,tmat); terrain.rotation.x=-Math.PI/2; terrain.position.y=-1.2; terrain.receiveShadow=true; scene.add(terrain);
+  const hemi=new THREE.HemisphereLight(0xdbeafe,0x0a1a2e,0.96); scene.add(hemi);
+  const dir=new THREE.DirectionalLight(0xffffff,1.05); dir.position.set(8,12,6); dir.castShadow=true; dir.shadow.mapSize.set(2048,2048); dir.shadow.camera.near=0.5; dir.shadow.camera.far=32; dir.shadow.camera.left=-12; dir.shadow.camera.right=12; dir.shadow.camera.top=12; dir.shadow.camera.bottom=-12; dir.shadow.bias=-0.0008; dir.shadow.radius=3; scene.add(dir);
+  const fill=new THREE.DirectionalLight(0x7dd3fc,0.42); fill.position.set(-6,5,-4); scene.add(fill);
+  const rim=new THREE.DirectionalLight(0xFFE8A0,0.18); rim.position.set(2,6,-8); scene.add(rim);
+  const sunGeo=new THREE.SphereGeometry(0.38,16,16); const sunMat=new THREE.MeshBasicMaterial({ color:0xFFF4D6, transparent:true, opacity:0.92 }); const sun=new THREE.Mesh(sunGeo,sunMat); sun.position.set(6,9,-4); scene.add(sun); (scene as any).userData.sun=sun;
+  scene.fog=new THREE.FogExp2(0xE8E0D0, 0.012);
+  for(let i=0;i<3;i++){ const rayGeo=new THREE.ConeGeometry(0.9+ i*0.45, 12, 8, 1, true); const rayMat=new THREE.MeshBasicMaterial({ color:0xFFE8A0, transparent:true, opacity:0.035 - i*0.009, side:THREE.DoubleSide, depthWrite:false }); const ray=new THREE.Mesh(rayGeo, rayMat); ray.position.set(6,9,-4); ray.lookAt(0,0,0); ray.rotateX(Math.PI); (ray as any).userData.isRay=true; scene.add(ray); }
+  const aoiW=opts.aoi?.bounds?Math.abs(opts.aoi.bounds.xmax-opts.aoi.bounds.xmin):0.25; const seg=aoiW>0.15?180:140; const size=14;
+  const geo=new THREE.PlaneGeometry(size,size,seg,seg); const satTex=createSatelliteDrapeTexture(); const tmat=new THREE.MeshStandardMaterial({ vertexColors:true, map: satTex, roughness:0.86, metalness:0.03 }); const terrain=new THREE.Mesh(geo,tmat); terrain.rotation.x=-Math.PI/2; terrain.position.y=-1.2; terrain.receiveShadow=true; scene.add(terrain);
   if(opts.aoi) generateTerrainForAOI(terrain,opts.aoi,opts.viewMode);
-  const grid=new THREE.GridHelper(size,28,0x1e3a5a,0x0f1e2e); (grid as any).position.y=-1.19; (grid as any).material.opacity=0.14; (grid as any).material.transparent=true; (grid as any).material.depthWrite=false; scene.add(grid);
-  const contactGeo=new THREE.CircleGeometry(size*0.62, 48);
-  const contactMat=new THREE.MeshBasicMaterial({ color:0x060d1a, transparent:true, opacity:0.28, depthWrite:false });
-  const contact=new THREE.Mesh(contactGeo, contactMat); contact.rotation.x=-Math.PI/2; contact.position.y=-1.195; scene.add(contact); (scene as any).userData.contact=contact;
+  const grid=new THREE.GridHelper(size,36,0x1e3a5a,0x0f1e2e); (grid as any).position.y=-1.19; (grid as any).material.opacity=0.11; (grid as any).material.transparent=true; (grid as any).material.depthWrite=false; scene.add(grid);
+  const contactCanvas=document.createElement("canvas"); contactCanvas.width=256; contactCanvas.height=256;
+  const cc=contactCanvas.getContext("2d")!; const rg=cc.createRadialGradient(128,128,20,128,128,128); rg.addColorStop(0,"rgba(6,13,26,0.55)"); rg.addColorStop(0.5,"rgba(6,13,26,0.28)"); rg.addColorStop(1,"rgba(6,13,26,0)"); cc.fillStyle=rg; cc.fillRect(0,0,256,256);
+  const contactTex=new THREE.CanvasTexture(contactCanvas);
+  const contactGeo=new THREE.CircleGeometry(size*0.72, 48);
+  const contactMat=new THREE.MeshBasicMaterial({ map: contactTex, transparent:true, opacity:0.95, depthWrite:false });
+  const contact=new THREE.Mesh(contactGeo, contactMat); contact.rotation.x=-Math.PI/2; contact.position.y=-1.193; scene.add(contact); (scene as any).userData.contact=contact;
   const contourGroup=new THREE.Group(); scene.add(contourGroup); (scene as any).userData.contourGroup=contourGroup; (terrain as any).__contourGroup=contourGroup; (terrain as any).__sceneRef=scene;
   // Detail: instanced tree layer for green zones (Pallikaranai, Adyar) + ward labels
   const treeGroup=new THREE.Group(); scene.add(treeGroup); (scene as any).userData.treeGroup=treeGroup;
   const labelGroup=new THREE.Group(); scene.add(labelGroup); (scene as any).userData.labelGroup=labelGroup;
   try {
     const isMarsh=opts.aoi?.id==="velachery"||opts.aoi?.id==="adyar";
-    const treeCount=isMarsh?80:35;
+    const isCentral=opts.aoi?.id==="central";
+    const treeCount=isMarsh?110:isCentral?28:48;
     const trunkGeo=new THREE.CylinderGeometry(0.02,0.03,0.18,6);
     const crownGeo=new THREE.ConeGeometry(0.09,0.22,6);
+    const bushGeo=new THREE.SphereGeometry(0.09,6,5);
     const trunkMat=new THREE.MeshStandardMaterial({ color:0x5A3E1B, roughness:0.9 });
     const crownMat=new THREE.MeshStandardMaterial({ color:isMarsh?0x4a7c59:0x6b8e6b, roughness:0.85 });
+    const bushMat=new THREE.MeshStandardMaterial({ color:isMarsh?0x5a7c3a:0x7a9b6a, roughness:0.9 });
     for(let i=0;i<treeCount;i++){
-      const rx=(Math.random()-0.5)*size*0.85, rz=(Math.random()-0.5)*size*0.85;
-      if(Math.hypot(rx,rz)>size*0.42) continue;
+      const rx=(Math.random()-0.5)*size*0.88, rz=(Math.random()-0.5)*size*0.88;
+      if(Math.hypot(rx,rz)>size*0.44) continue;
       const h=getTerrainHeightAt(terrain, rx, rz);
-      const s=0.85+Math.random()*0.35;
+      const s=0.82+Math.random()*0.42;
       const trunk=new THREE.Mesh(trunkGeo, trunkMat); trunk.position.set(rx, h+0.09*s, rz); trunk.scale.set(s,s,s); trunk.castShadow=true; treeGroup.add(trunk);
-      const crownG=Math.random()>0.5? crownGeo : new THREE.SphereGeometry(0.11,6,6);
-      const crown=new THREE.Mesh(crownG, crownMat); crown.position.set(rx, h+0.28*s, rz); crown.scale.set(s,s,s); crown.castShadow=true; treeGroup.add(crown);
+      const roll=Math.random();
+      const crownG= roll<0.4? crownGeo : roll<0.7? new THREE.SphereGeometry(0.11,7,6) : bushGeo;
+      const mat = roll>0.7? bushMat : crownMat;
+      const crown=new THREE.Mesh(crownG, mat); crown.position.set(rx, h+(roll>0.7?0.18:0.28)*s, rz); crown.scale.set(s,s,s); crown.castShadow=true; treeGroup.add(crown);
+      if(isMarsh && Math.random()<0.35){
+        const reedH=0.14+Math.random()*0.12; const reedGeo=new THREE.CylinderGeometry(0.01,0.015,reedH,5);
+        const reed=new THREE.Mesh(reedGeo, bushMat); reed.position.set(rx+ (Math.random()-0.5)*0.18, h+reedH*0.5, rz+ (Math.random()-0.5)*0.18); treeGroup.add(reed);
+      }
     }
     // Ward/road labels as sprites (canvas)
     const makeLabel=(text:string, x:number, z:number, bg:string)=>{
@@ -669,7 +683,7 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
     if(opts.aoi?.id==="central") makeLabel("ANNA SALAI", 1.2, 0.8, "#F8F6F1");
     if(opts.aoi?.id==="adyar") makeLabel("ADYAR RIVER", -0.8, -1.1, "#E8F0F2");
   } catch {}
-  const wSeg=opts.viewMode==="depth_heatmap"?64:40; const wgeo=new THREE.PlaneGeometry(13.4,13.4,wSeg,wSeg);
+  const wSeg=opts.viewMode==="depth_heatmap"?96:64; const wgeo=new THREE.PlaneGeometry(13.4,13.4,wSeg,wSeg);
   const waterMat=new THREE.ShaderMaterial({
     uniforms:{ time:{value:0}, depth:{value:opts.d??0.5}, opacity:{value:opts.viewMode==="depth_heatmap"?0.72:0.54}, rippleCenter:{value:new THREE.Vector2(0.5,0.5)}, rippleTime:{value:10} },
     vertexShader:`uniform float time; uniform float rippleTime; uniform vec2 rippleCenter; varying vec2 vUv; varying float vWave; varying float vRipple; varying vec3 vNormal;
@@ -677,16 +691,17 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
       void main(){
         vUv=uv; vec3 p=position;
         float w=0.0;
-        w+=gerstner(p.xy, 1.1, 0.035, vec2(1.0,0.3), time*2.2);
-        w+=gerstner(p.xy, 0.95, 0.025, vec2(-0.4,1.0), time*1.6);
-        w+=gerstner(p.xy, 2.1, 0.012, vec2(0.7,-0.7), time*3.1);
-        w+=gerstner(p.xy, 3.4, 0.006, vec2(0.2,1.0), time*4.2);
+        w+=gerstner(p.xy, 1.1, 0.036, vec2(1.0,0.3), time*2.2);
+        w+=gerstner(p.xy, 0.95, 0.028, vec2(-0.4,1.0), time*1.6);
+        w+=gerstner(p.xy, 2.1, 0.014, vec2(0.7,-0.7), time*3.1);
+        w+=gerstner(p.xy, 3.4, 0.007, vec2(0.2,1.0), time*4.2);
+        w+=gerstner(p.xy, 5.8, 0.004, vec2(0.9,0.2), time*5.5);
+        w+=gerstner(p.xy, 7.2, 0.0025, vec2(-0.3,0.9), time*6.8);
         float dist=distance(uv, rippleCenter); float ripple=0.0;
         if(rippleTime<3.0){ float t=rippleTime*2.5; float wave=sin(dist*28.0 - t*8.0)*exp(-dist*6.0)*exp(-t*0.8)*0.12*(1.0-smoothstep(2.5,3.0,t)); ripple=wave; }
         p.z+=w+ripple; vWave=w; vRipple=ripple;
-        // normal from Gerstner derivatives
-        float ddx=cos(dot(vec2(1.0,0.3),p.xy)*1.1+time*2.2)*0.035*1.1*1.0 + cos(dot(vec2(-0.4,1.0),p.xy)*0.95+time*1.6)*0.025*0.95*(-0.4);
-        float ddy=cos(dot(vec2(1.0,0.3),p.xy)*1.1+time*2.2)*0.035*1.1*0.3 + cos(dot(vec2(-0.4,1.0),p.xy)*0.95+time*1.6)*0.025*0.95*1.0;
+        float ddx=cos(dot(vec2(1.0,0.3),p.xy)*1.1+time*2.2)*0.036*1.1*1.0 + cos(dot(vec2(-0.4,1.0),p.xy)*0.95+time*1.6)*0.028*0.95*(-0.4) + cos(dot(vec2(0.7,-0.7),p.xy)*2.1+time*3.1)*0.014*2.1*0.7;
+        float ddy=cos(dot(vec2(1.0,0.3),p.xy)*1.1+time*2.2)*0.036*1.1*0.3 + cos(dot(vec2(-0.4,1.0),p.xy)*0.95+time*1.6)*0.028*0.95*1.0 + cos(dot(vec2(0.7,-0.7),p.xy)*2.1+time*3.1)*0.014*2.1*(-0.7);
         vNormal=normalize(vec3(-ddx, 1.0, -ddy));
         gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);
       }`,
