@@ -365,12 +365,63 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
   );
 }
 
+const BASIN_PROFILE: Record<string, { base:number; roughness:number; marsh:number; hill:number; urban:number }> = {
+  all: { base: 6.5, roughness: 0.35, marsh: 0, hill: 0, urban: 0.5 },
+  central: { base: 5.8, roughness: 0.18, marsh: 0, hill: -0.15, urban: 1.0 },
+  adyar: { base: 6.0, roughness: 0.28, marsh: 0.4, hill: -0.10, urban: 0.6 },
+  ennore: { base: 4.2, roughness: 0.12, marsh: 0.2, hill: 0.25, urban: 0.3 },
+  velachery: { base: 3.1, roughness: 0.08, marsh: 3.0, hill: -0.40, urban: 0.4 },
+  chembarambakkam: { base: 9.5, roughness: 0.55, marsh: 0, hill: 4.5, urban: 0.15 },
+};
 function generateTerrainForAOI(terrain: THREE.Mesh, aoi: any, viewMode: ViewMode) {
-  const geo: any = terrain.geometry; const pos: any = geo.attributes.position; const colors: number[]=[]; const color=new THREE.Color(); let minZ=Infinity,maxZ=-Infinity; const zVals:number[]=[]; const seedX=(aoi.center?aoi.center[0]:80.25)*3.7; const seedY=(aoi.center?aoi.center[1]:13.05)*3.7; const isCentral=aoi.id==="central"; const isNorth=aoi.id==="ennore"; const [aoiCx,aoiCz]=lngLatToXZ(aoi.center?aoi.center[0]:80.25, aoi.center?aoi.center[1]:13.05,14);
-  for(let i=0;i<pos.count;i++){ const x=pos.getX(i), y=pos.getY(i); const dx=x-aoiCx, dy=y-aoiCz; const dToAOI=Math.hypot(dx,dy); const dToCenter=Math.hypot(x,y); let z=Math.sin((x+seedX)*0.58)*0.62+Math.cos((y+seedY)*0.68)*0.52; z+=Math.sin((x+seedX)*1.35+(y+seedY)*0.92)*0.26; z+=Math.cos((x+seedX)*2.1-(y+seedY)*1.3)*0.12; z+=Math.sin((x+seedX)*0.22+(y+seedY)*0.18)*0.35; z+=Math.exp(-(dToAOI*dToAOI)/3.5)*1.85; z+=Math.sin(dx*1.8+dy*1.2+seedX)*0.18*Math.exp(-dToAOI/4); if(isCentral) z-=0.15; if(isNorth) z+=0.25; z-=clamp((dToCenter-5)/6,0,1)*0.9; z+=Math.sin(x*12+y*9+seedX)*0.015; pos.setZ(i,z); zVals.push(z); minZ=Math.min(minZ,z); maxZ=Math.max(maxZ,z); }
-  for(let i=0;i<zVals.length;i++){ const t=(zVals[i]-minZ)/(maxZ-minZ||1); if(viewMode==="hydrology"){ const band=Math.floor(t*12)%2; color.setHSL(0.55,0.6,band===0?0.15:0.35); } else if(viewMode==="data_quality"){ color.setHSL(0.45,0.5,0.25+t*0.2); } else { if(t<0.25) color.setHSL(0.42,0.35,0.18+t*0.3); else if(t<0.55) color.setHSL(0.32,0.28,0.24+t*0.15); else if(t<0.8) color.setHSL(0.08,0.22,0.32+t*0.1); else color.setHSL(0.06,0.12,0.42); } colors.push(color.r,color.g,color.b); }
+  const geo: any = terrain.geometry; const pos: any = geo.attributes.position; const colors: number[]=[]; const color=new THREE.Color();
+  let minZ=Infinity,maxZ=-Infinity; const zVals:number[]=[];
+  const seedX=(aoi.center?aoi.center[0]:80.25)*3.7; const seedY=(aoi.center?aoi.center[1]:13.05)*3.7;
+  const profile=BASIN_PROFILE[aoi.id] || BASIN_PROFILE.all;
+  const [aoiCx,aoiCz]=lngLatToXZ(aoi.center?aoi.center[0]:80.25, aoi.center?aoi.center[1]:13.05,14);
+  const dRaw=(aoi.bounds?Math.abs(aoi.bounds.xmax-aoi.bounds.xmin):0.25);
+  const viewScale = viewMode==="velocity_field"?0.22 : viewMode==="depth_heatmap"?0.18 : viewMode==="hydrology"?0.42 : profile.roughness;
+  for(let i=0;i<pos.count;i++){
+    const x=pos.getX(i), y=pos.getY(i); const dx=x-aoiCx, dy=y-aoiCz; const dToAOI=Math.hypot(dx,dy); const dToCenter=Math.hypot(x,y);
+    let z=profile.base*0.18;
+    z+=Math.sin((x+seedX)*0.58)*0.62*viewScale*1.8 + Math.cos((y+seedY)*0.68)*0.52*viewScale*1.8;
+    z+=Math.sin((x+seedX)*1.35+(y+seedY)*0.92)*0.26*viewScale*2;
+    z+=Math.cos((x+seedX)*2.1-(y+seedY)*1.3)*0.12*viewScale;
+    z+=Math.sin((x+seedX)*0.22+(y+seedY)*0.18)*0.35*profile.roughness;
+    z+=Math.exp(-(dToAOI*dToAOI)/(3.0+profile.urban))*1.85;
+    if(viewMode==="hydrology") z+=Math.sin(dToAOI*4.2)*0.18; // contour ridges
+    if(viewMode==="velocity_field") z+=Math.sin(dx*2.5+dy*1.1)*0.12*Math.exp(-dToAOI/3);
+    if(viewMode==="depth_heatmap") z-=Math.exp(-(dToAOI*dToAOI)/2.2)*0.35; // bowl for flood
+    if(viewMode==="data_quality") z+= ((Math.floor(x*2)%2)===0?0.06:-0.06)*0.15;
+    z+=Math.sin(dx*1.8+dy*1.2+seedX)*0.18*Math.exp(-dToAOI/4);
+    z+=profile.hill*Math.exp(-(dToAOI*dToAOI)/6);
+    z-=profile.marsh*Math.exp(-(dToAOI*dToAOI)/1.8);
+    z-=clamp((dToCenter-5)/6,0,1)*0.9;
+    z+=Math.sin(x*12+y*9+seedX)*0.015*profile.roughness*3;
+    if(aoi.id==="velachery") z-=Math.exp(-(dToAOI*dToAOI)/1.2)*0.45;
+    if(aoi.id==="ennore") z+=Math.sin(y*2.2)*0.08;
+    if(aoi.id==="chembarambakkam") z+=Math.cos(dx*0.9)*0.22;
+    pos.setZ(i,z); zVals.push(z); minZ=Math.min(minZ,z); maxZ=Math.max(maxZ,z);
+  }
+  for(let i=0;i<zVals.length;i++){
+    const t=(zVals[i]-minZ)/(maxZ-minZ||1);
+    if(viewMode==="hydrology"){ const band=Math.floor(t*14)%2; color.setHSL(0.58, band?0.55:0.35, band?0.28:0.14); }
+    else if(viewMode==="velocity_field"){ const v=(Math.sin(zVals[i]*2.2)+1)/2; color.setHSL(0.55+v*0.12, 0.75, 0.22+v*0.18); }
+    else if(viewMode==="depth_heatmap"){ color.setHSL(0.58 - t*0.55, 0.85, 0.32 + t*0.12); }
+    else if(viewMode==="infrastructure_impact"){ color.setHSL(0.08, 0.12, 0.28 + t*0.14); }
+    else if(viewMode==="data_quality"){ const chk=(Math.floor(zVals[i]*8)%2); color.setHSL(chk?0.55:0.08, 0.35, chk?0.18:0.32); }
+    else if(viewMode==="progression"){ color.setHSL(0.52, 0.45, 0.18 + t*0.28); }
+    else { // digital_twin distinct per basin
+      if(aoi.id==="velachery") color.setHSL(0.42, 0.28+t*0.15, 0.20+t*0.12);
+      else if(aoi.id==="ennore") color.setHSL(0.06, 0.18, 0.28+t*0.18);
+      else if(aoi.id==="chembarambakkam") color.setHSL(0.32, 0.22, 0.24+t*0.20);
+      else if(t<0.25) color.setHSL(0.42,0.35,0.18+t*0.3); else if(t<0.55) color.setHSL(0.32,0.28,0.24+t*0.15); else if(t<0.8) color.setHSL(0.08,0.22,0.32+t*0.1); else color.setHSL(0.06,0.12,0.42);
+    }
+    colors.push(color.r,color.g,color.b);
+  }
   (geo as any).setAttribute("color", new THREE.Float32BufferAttribute(colors,3)); (geo as any).computeVertexNormals(); geo.attributes.position.needsUpdate=true;
-  return { min:Math.max(1.2,(minZ+1.2)*4), max:Math.max(8.5,(maxZ+1.2)*8), grid:`${(geo as any).attributes.position.count} cells`, source:`SRTM DEM 30m / D8 Catchment`, bounds:aoi.bounds };
+  const basinLabel = aoi.id ? aoi.id.toUpperCase() : "BASIN";
+  return { min:Math.max(0.6,(minZ+1.2)*3.5+profile.base*0.4), max:Math.max(8.5,(maxZ+1.2)*7+profile.base*0.6), grid:`${(geo as any).attributes.position.count} cells`, source:`SRTM DEM 30m / ${basinLabel} · ${viewMode}`, bounds:aoi.bounds, profile: profile.base };
 }
 function applyCachedResult(ctx:any,cached:any,aoi:any,viewMode:ViewMode){
   generateTerrainForAOI(ctx.terrain,aoi,viewMode);
