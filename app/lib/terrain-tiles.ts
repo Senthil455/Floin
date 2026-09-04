@@ -17,10 +17,17 @@ export async function sampleMapzenTerrarium(lng:number, lat:number): Promise<num
     const res=await fetch(url,{ next:{ revalidate: 86400 } } as any);
     if(!res.ok) return null;
     const buf=await res.arrayBuffer();
-    // Decode PNG RGB -> elevation: (R*256+G+B/256)-32768 , Mapzen Terrarium spec
-    // Use lightweight png decode via canvas in node not available — fallback to approximate via failed path returns null
-    // For serverless we store null and use fallback synthetic ETOPO
-    return null;
+    const { PNG } = await import("pngjs");
+    const png=PNG.sync.read(Buffer.from(buf));
+    const fx=((lng+180)/360*Math.pow(2,z) - x)*256;
+    const fy=((1-Math.log(Math.tan(lat*Math.PI/180)+1/Math.cos(lat*Math.PI/180))/Math.PI)/2*Math.pow(2,z) - y)*256;
+    const px=Math.max(0,Math.min(255,Math.floor(fx))), py=Math.max(0,Math.min(255,Math.floor(fy)));
+    const idx=(py*256+px)*4;
+    const R=png.data[idx], G=png.data[idx+1], B=png.data[idx+2];
+    const elev=(R*256 + G + B/256) - 32768;
+    if(!isFinite(elev)) return null;
+    CACHE.set(key,{elev, at:new Date().toISOString()});
+    return elev;
   }catch{ return null; }
 }
 export function syntheticBathymetry(lng:number, lat:number): number {

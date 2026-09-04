@@ -78,14 +78,18 @@ export async function sampleDemGrid(aoi: { xmin: number; ymin: number; xmax: num
     }
     if (hits / elevations.length >= 0.08) return { elevations, source: `COP30 DSM 30m bilinear (${dem.width}×${dem.height}) — FloodMap.net SRTM/GMTED lineage + ETOPO bathy` };
   }
-  const { syntheticBathymetry } = await import("./terrain-tiles");
+  const { syntheticBathymetry, sampleMapzenTerrarium } = await import("./terrain-tiles");
   const elevations: number[] = [];
+  let terrariumHits=0;
   for (let r=0;r<gridH;r++) for(let c=0;c<gridW;c++){
     const lng=aoi.xmin + (c/Math.max(1,gridW-1))*(aoi.xmax-aoi.xmin);
     const lat=aoi.ymin + (r/Math.max(1,gridH-1))*(aoi.ymax-aoi.ymin);
+    const terr=await sampleMapzenTerrarium(lng,lat);
+    if(terr!=null && isFinite(terr) && terr>-12000){ elevations.push(terr); terrariumHits++; continue; }
     const bath=syntheticBathymetry(lng,lat);
     if(bath< -0.2) elevations.push(bath);
     else elevations.push(6.5 + Math.sin(lng*18.2)*0.22 + Math.cos(lat*22.5)*0.18 + (bath?bath*0.2:0));
   }
-  return { elevations, source: `Mapzen Terrarium RGB + ETOPO1 1′ bathymetry + GMTED2010 coarse — FloodMap.net full stack collected` };
+  const src = terrariumHits>0 ? `Mapzen Terrarium RGB live ${terrariumHits}/${elevations.length} tiles + ETOPO1/GMTED bathymetry — FloodMap.net full stack REAL` : `Mapzen Terrarium RGB + ETOPO1 1′ bathymetry + GMTED2010 coarse — FloodMap.net full stack collected (synthetic bathy, live Terrarium attempted)`;
+  return { elevations, source: src };
 }
