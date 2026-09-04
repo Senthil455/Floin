@@ -173,10 +173,23 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
     if(!simCtxRef.current || !selectedArea) return;
     const ctx = simCtxRef.current; const [cx,cz]=lngLatToXZ(selectedArea.center?selectedArea.center[0]:80.25, selectedArea.center?selectedArea.center[1]:13.05,14);
     const ctrl: OrbitControls = ctx.controls;
-    if(view==="top"){ ctrl.target.set(cx,-0.88,cz); ctx.camera.position.set(cx,16.5,cz+0.0001); }
-    else if(view==="street"){ ctrl.target.set(cx,-0.75,cz); ctx.camera.position.set(cx+0.8,-0.45,cz+0.8); }
-    else if(view==="aoi"){ ctrl.target.set(cx,-0.8,cz); ctx.camera.position.set(cx+4.5,3.8,cz+4.5); }
-    else { const dist=selectedArea.id==="all"?14:7.2; ctrl.target.set(cx,-0.2,cz); ctx.camera.position.set(cx+dist*0.6,6.2,cz+dist*0.6); }
+    const terrain:any = ctx.terrain;
+    const eyeH = (()=>{ try{ return getTerrainHeightAt(terrain,cx,cz)+0.34; }catch{ return -0.42; }})();
+    const fog:any = ctx.scene.fog;
+    if(view==="top"){ ctrl.target.set(cx,-0.88,cz); ctx.camera.position.set(cx,16.5,cz+0.0001); ctx.camera.fov=42; ctx.camera.updateProjectionMatrix(); if(fog) fog.density=0.012; ctrl.minDistance=3; ctrl.maxDistance=28; ctrl.maxPolarAngle=Math.PI*0.48; }
+    else if(view==="street"){
+      const lookX=cx+0.9, lookZ=cz+0.45;
+      const eyeLookH = (()=>{ try{ return getTerrainHeightAt(terrain,lookX,lookZ)+0.32; }catch{ return eyeH; }})();
+      ctrl.target.set(lookX, eyeLookH -0.04, lookZ);
+      ctx.camera.position.set(cx-0.45, eyeH+0.06, cz-0.42);
+      ctx.camera.fov=62; ctx.camera.near=0.04; ctx.camera.updateProjectionMatrix();
+      if(fog) { fog.color.setHex(0xC8D6E8); fog.density=0.022; }
+      ctrl.minDistance=0.15; ctrl.maxDistance=4.2; ctrl.maxPolarAngle=Math.PI*0.56; ctrl.minPolarAngle=0.08;
+      if(ctx.streetGroup){ ctx.streetGroup.visible=true; const t0=ctx.terrain; if(t0) buildStreetFurniture(ctx.streetGroup, t0, cx, cz, selectedArea); }
+      if(ctx.grid) ctx.grid.visible=false; if(ctx.contourGroup) ctx.contourGroup.visible=false;
+    }
+    else if(view==="aoi"){ ctrl.target.set(cx,-0.8,cz); ctx.camera.position.set(cx+4.5,3.8,cz+4.5); ctx.camera.fov=42; ctx.camera.updateProjectionMatrix(); if(fog){ fog.color.setHex(0xE8E0D0); fog.density=0.012; } ctrl.minDistance=3; ctrl.maxDistance=28; ctrl.maxPolarAngle=Math.PI*0.48; if(ctx.streetGroup) ctx.streetGroup.visible=false; if(ctx.grid) ctx.grid.visible=true; if(ctx.contourGroup) ctx.contourGroup.visible=true; }
+    else { const dist=selectedArea.id==="all"?14:7.2; ctrl.target.set(cx,-0.2,cz); ctx.camera.position.set(cx+dist*0.6,6.2,cz+dist*0.6); ctx.camera.fov=42; ctx.camera.updateProjectionMatrix(); if(fog){ fog.color.setHex(0xE8E0D0); fog.density=0.012; } ctrl.minDistance=3; ctrl.maxDistance=28; ctrl.maxPolarAngle=Math.PI*0.48; if(ctx.streetGroup) ctx.streetGroup.visible=false; if(ctx.grid) ctx.grid.visible=true; if(ctx.contourGroup) ctx.contourGroup.visible=true; }
     ctrl.update();
   };
 
@@ -704,6 +717,7 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
   const contactMat=new THREE.MeshBasicMaterial({ map: contactTex, transparent:true, opacity:0.95, depthWrite:false });
   const contact=new THREE.Mesh(contactGeo, contactMat); contact.rotation.x=-Math.PI/2; contact.position.y=-1.193; scene.add(contact); (scene as any).userData.contact=contact;
   const contourGroup=new THREE.Group(); scene.add(contourGroup); (scene as any).userData.contourGroup=contourGroup; (terrain as any).__contourGroup=contourGroup; (terrain as any).__sceneRef=scene;
+  const streetGroup=new THREE.Group(); streetGroup.visible=false; scene.add(streetGroup); (scene as any).userData.streetGroup=streetGroup; (scene as any).userData.grid=grid;
   // Detail: instanced tree layer for green zones (Pallikaranai, Adyar) + ward labels
   const treeGroup=new THREE.Group(); scene.add(treeGroup); (scene as any).userData.treeGroup=treeGroup;
   const labelGroup=new THREE.Group(); scene.add(labelGroup); (scene as any).userData.labelGroup=labelGroup;
@@ -969,6 +983,34 @@ function buildWards(group:THREE.Group,features:any[],terrain:THREE.Mesh, rainfal
       }
     });
   });
+}
+function buildStreetFurniture(group:THREE.Group, terrain:THREE.Mesh, cx:number, cz:number, aoi:any){
+  group.clear();
+  const lampGeo=new THREE.CylinderGeometry(0.012,0.015,0.62,6);
+  const lampHeadGeo=new THREE.SphereGeometry(0.035,8,8);
+  const lampMat=new THREE.MeshStandardMaterial({ color:0x2B2B2B, roughness:0.7, metalness:0.2 });
+  const headMat=new THREE.MeshStandardMaterial({ color:0xFFE8A0, emissive:0xFFD18A, emissiveIntensity:0.9 });
+  const curbMat=new THREE.MeshStandardMaterial({ color:0xA8A6A0, roughness:0.9 });
+  const markMat=new THREE.MeshStandardMaterial({ color:0xFFFFFF, roughness:0.85 });
+  const bollardGeo=new THREE.CylinderGeometry(0.018,0.018,0.18,8);
+  const bollardMat=new THREE.MeshStandardMaterial({ color:0xE6B422, roughness:0.6 });
+  const offsets=[-1.2,-0.6,0,0.6,1.2];
+  for(const off of offsets){
+    const x=cx+off*0.55, z=cz+off*0.25;
+    let h=0; try{ h=getTerrainHeightAt(terrain,x,z); }catch{ h=-0.6; }
+    if(Math.hypot(x,z)>6.6) continue;
+    const pole=new THREE.Mesh(lampGeo,lampMat); pole.position.set(x+0.28, h+0.31, z); pole.castShadow=true; group.add(pole);
+    const head=new THREE.Mesh(lampHeadGeo,headMat); head.position.set(x+0.28, h+0.62, z); group.add(head);
+    const bulb=new THREE.PointLight(0xFFE8A0,0.55,1.2); bulb.position.set(x+0.28, h+0.62, z); group.add(bulb);
+    const curbGeo=new THREE.BoxGeometry(0.42,0.04,0.07); const curb=new THREE.Mesh(curbGeo,curbMat); curb.position.set(x, h+0.02, z+0.14); curb.receiveShadow=true; group.add(curb);
+    for(let k=-2;k<=2;k++){
+      const mx=x+k*0.14; const mz=z; let mh=0; try{ mh=getTerrainHeightAt(terrain,mx,mz);}catch{mh=h;}
+      const markGeo=new THREE.PlaneGeometry(0.08,0.02); const mark=new THREE.Mesh(markGeo,markMat); mark.rotation.x=-Math.PI/2; mark.position.set(mx, mh+0.015, mz); mark.receiveShadow=true; group.add(mark);
+    }
+    const boll=new THREE.Mesh(bollardGeo,bollardMat); boll.position.set(x-0.22, h+0.09, z+0.14); group.add(boll);
+  }
+  const puddleGeo=new THREE.CircleGeometry(0.22,16); const puddleMat=new THREE.MeshStandardMaterial({ color:0x0E7490, transparent:true, opacity:0.32, roughness:0.2, metalness:0.05 }); for(let i=0;i<3;i++){ const px=cx+(Math.random()-0.5)*1.1, pz=cz+(Math.random()-0.5)*0.9; let ph=0; try{ ph=getTerrainHeightAt(terrain,px,pz);}catch{ph=-0.6;} const puddle=new THREE.Mesh(puddleGeo,puddleMat); puddle.rotation.x=-Math.PI/2; puddle.position.set(px, ph+0.018, pz); puddle.scale.set(0.7+Math.random()*0.6,1,1); group.add(puddle); }
+  const signCanvas=document.createElement("canvas"); signCanvas.width=256; signCanvas.height=96; const sctx=signCanvas.getContext("2d")!; sctx.fillStyle="#0B3D5F"; sctx.fillRect(0,0,256,96); sctx.fillStyle="#FFFFFF"; sctx.font="700 14px IBM Plex Mono"; sctx.fillText((aoi?.name||"CHENNAI").slice(0,18).toUpperCase(),10,28); sctx.font="400 10px IBM Plex Mono"; sctx.fillStyle="#8BB4D9"; sctx.fillText("FLOOD DEPTH • STREET VIEW",10,48); sctx.strokeStyle="#FFFFFF"; sctx.strokeRect(1,1,254,94); const signTex=new THREE.CanvasTexture(signCanvas); signTex.colorSpace=THREE.SRGBColorSpace; const signMat=new THREE.MeshStandardMaterial({ map:signTex }); const signGeo=new THREE.PlaneGeometry(0.54,0.20); const sign=new THREE.Mesh(signGeo,signMat); let sh=0; try{ sh=getTerrainHeightAt(terrain,cx+0.5,cz-0.2);}catch{sh=-0.6;} sign.position.set(cx+0.5, sh+0.48, cz-0.2); sign.lookAt(cx, sh+0.48, cz); group.add(sign);
 }
 function buildSoil(group:THREE.Group,features:any[],terrain:THREE.Mesh){
   group.clear(); if(!features||features.length===0) return;
