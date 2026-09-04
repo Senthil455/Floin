@@ -1,0 +1,128 @@
+{
+  "type": "FeatureCollection",
+  "features": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "pop": 1200,
+          "density_per_km2": 14000,
+          "age_65_pct": "6.2"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.22360672106169,
+            13.05806450273944
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "pop": 1540,
+          "density_per_km2": 16100,
+          "age_65_pct": "6.6"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.27343668791401,
+            13.027723565530946
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "pop": 1880,
+          "density_per_km2": 18200,
+          "age_65_pct": "7.0"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.21578808549057,
+            13.097502916536873
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "pop": 2220,
+          "density_per_km2": 20300,
+          "age_65_pct": "7.4"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.22345504289635,
+            13.066422616522912
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "pop": 2560,
+          "density_per_km2": 22400,
+          "age_65_pct": "7.8"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.24476205172924,
+            13.075189320265109
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "pop": 2900,
+          "density_per_km2": 24500,
+          "age_65_pct": "8.2"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.23372841195324,
+            13.048148636870096
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "pop": 3240,
+          "density_per_km2": 26600,
+          "age_65_pct": "8.6"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.27648904581537,
+            13.024701410601226
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "pop": 3580,
+          "density_per_km2": 28700,
+          "age_65_pct": "9.0"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.26946391245352,
+            13.049408298110444
+          ]
+        }
+      }
+    ]
+  }
+}

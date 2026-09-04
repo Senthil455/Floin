@@ -1,0 +1,144 @@
+{
+  "type": "FeatureCollection",
+  "features": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "school_name": "School 1",
+          "ward": 10,
+          "capacity_persons": 400,
+          "has_kitchen": true,
+          "has_generator": true
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.24965561649951,
+            13.052734562497168
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "school_name": "School 2",
+          "ward": 32,
+          "capacity_persons": 520,
+          "has_kitchen": false,
+          "has_generator": false
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.19590114315858,
+            13.10864071062927
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "school_name": "School 3",
+          "ward": 54,
+          "capacity_persons": 640,
+          "has_kitchen": true,
+          "has_generator": false
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.26656589941807,
+            13.083954025754597
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "school_name": "School 4",
+          "ward": 76,
+          "capacity_persons": 760,
+          "has_kitchen": false,
+          "has_generator": true
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.26262118897995,
+            13.08891610223051
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "school_name": "School 5",
+          "ward": 98,
+          "capacity_persons": 880,
+          "has_kitchen": true,
+          "has_generator": false
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.2403465597239,
+            13.02204968702466
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "school_name": "School 6",
+          "ward": 120,
+          "capacity_persons": 1000,
+          "has_kitchen": false,
+          "has_generator": false
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.26279439268288,
+            13.037119056950965
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "school_name": "School 7",
+          "ward": 142,
+          "capacity_persons": 1120,
+          "has_kitchen": true,
+          "has_generator": true
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.25551971687929,
+            13.078816970650907
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "school_name": "School 8",
+          "ward": 164,
+          "capacity_persons": 1240,
+          "has_kitchen": false,
+          "has_generator": false
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.26232654728264,
+            13.11523725344245
+          ]
+        }
+      }
+    ]
+  }
+}

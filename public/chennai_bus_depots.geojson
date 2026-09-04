@@ -1,0 +1,104 @@
+{
+  "type": "FeatureCollection",
+  "features": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "depot_name": "Depot 1",
+          "bus_count": 80,
+          "elevation_m": "5.0",
+          "flood_prone": true
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.22241514218925,
+            13.119036954532813
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "depot_name": "Depot 2",
+          "bus_count": 92,
+          "elevation_m": "5.7",
+          "flood_prone": false
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.26582592087018,
+            13.07263998097297
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "depot_name": "Depot 3",
+          "bus_count": 104,
+          "elevation_m": "6.4",
+          "flood_prone": false
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.23401714517708,
+            13.03225783974508
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "depot_name": "Depot 4",
+          "bus_count": 116,
+          "elevation_m": "7.1",
+          "flood_prone": true
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.1955294560586,
+            13.082054222545183
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "depot_name": "Depot 5",
+          "bus_count": 128,
+          "elevation_m": "7.8",
+          "flood_prone": false
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.23131836758462,
+            13.04539848600711
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "depot_name": "Depot 6",
+          "bus_count": 140,
+          "elevation_m": "8.5",
+          "flood_prone": false
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.25343202579491,
+            13.130459854597955
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "type": "FeatureCollection",
+  "features": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "basin_name": "Adyar",
+          "area_km2": 530,
+          "outlet": "Adyar Estuary",
+          "stream_order": 4
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.05,
+                12.95
+              ],
+              [
+                80.28,
+                12.95
+              ],
+              [
+                80.28,
+                13.05
+              ],
+              [
+                80.05,
+                13.05
+              ],
+              [
+                80.05,
+                12.95
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "basin_name": "Cooum",
+          "area_km2": 420,
+          "outlet": "Cooum Mouth",
+          "stream_order": 3
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.15,
+                13.02
+              ],
+              [
+                80.3,
+                13.02
+              ],
+              [
+                80.3,
+                13.12
+              ],
+              [
+                80.15,
+                13.12
+              ],
+              [
+                80.15,
+                13.02
+              ]
+            ]
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "type": "FeatureCollection",
+  "features": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "ss_name": "SS 1",
+          "voltage_kv": 11,
+          "elevation_m": "6.0",
+          "trip_level_m": "0.60",
+          "backup": "None"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.21013923648833,
+            13.113783010498066
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "ss_name": "SS 2",
+          "voltage_kv": 33,
+          "elevation_m": "6.8",
+          "trip_level_m": "0.72",
+          "backup": "DG"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.26668480499097,
+            13.081598191412326
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "ss_name": "SS 3",
+          "voltage_kv": 110,
+          "elevation_m": "7.6",
+          "trip_level_m": "0.84",
+          "backup": "None"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.27958098868083,
+            13.107333770119373
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "ss_name": "SS 4",
+          "voltage_kv": 11,
+          "elevation_m": "8.4",
+          "trip_level_m": "0.96",
+          "backup": "DG"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.2291352855024,
+            13.022305859731091
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "ss_name": "SS 5",
+          "voltage_kv": 33,
+          "elevation_m": "9.2",
+          "trip_level_m": "1.08",
+          "backup": "None"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.28999478212982,
+            13.093205080697661
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "ss_name": "SS 6",
+          "voltage_kv": 110,
+          "elevation_m": "10.0",
+          "trip_level_m": "1.20",
+          "backup": "DG"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.20123109400262,
+            13.053306645492178
+          ]
+        }
+      }
+    ]
+  }
+}

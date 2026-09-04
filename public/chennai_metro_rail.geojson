@@ -1,0 +1,60 @@
+{
+  "type": "FeatureCollection",
+  "features": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "line": "Blue Line",
+          "station_count": 25,
+          "elevation_m": 12,
+          "flood_clearance_m": 4.5
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              80.17,
+              13.08
+            ],
+            [
+              80.22,
+              13.06
+            ],
+            [
+              80.26,
+              13.03
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "line": "Green Line",
+          "station_count": 22,
+          "elevation_m": 12,
+          "flood_clearance_m": 4.5
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              80.19,
+              13.09
+            ],
+            [
+              80.23,
+              13.07
+            ],
+            [
+              80.27,
+              13.04
+            ]
+          ]
+        }
+      }
+    ]
+  }
+}

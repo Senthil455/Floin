@@ -1,0 +1,80 @@
+{
+  "type": "FeatureCollection",
+  "features": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "event_year": 2023,
+          "rainfall_mm": 280,
+          "area_km2": 142,
+          "max_depth_m": 1.1
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.18,
+                12.98
+              ],
+              [
+                80.28,
+                12.98
+              ],
+              [
+                80.28,
+                13.08
+              ],
+              [
+                80.18,
+                13.08
+              ],
+              [
+                80.18,
+                12.98
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "event_year": 2021,
+          "rainfall_mm": 210,
+          "area_km2": 98,
+          "max_depth_m": 0.78
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2,
+                13.02
+              ],
+              [
+                80.27,
+                13.02
+              ],
+              [
+                80.27,
+                13.09
+              ],
+              [
+                80.2,
+                13.09
+              ],
+              [
+                80.2,
+                13.02
+              ]
+            ]
+          ]
+        }
+      }
+    ]
+  }
+}
