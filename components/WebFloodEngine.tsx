@@ -51,6 +51,7 @@ export default function WebFloodEngine({ rainfall, cn, aoi, viewMode }: Props) {
       steps++;
     }
     function render() {
+      if (!ctx) return;
       const img = ctx.createImageData(W, H);
       let maxH = 0, sum = 0, flooded = 0;
       for (let i = 0; i < W * H; i++) {
@@ -65,7 +66,7 @@ export default function WebFloodEngine({ rainfall, cn, aoi, viewMode }: Props) {
         img.data[i * 4 + 2] = Math.max(0, Math.min(255, b));
         img.data[i * 4 + 3] = 255;
       }
-      ctx.putImageData(img, 0, 0);
+      ctx!.putImageData(img, 0, 0);
       if (steps % 10 === 0) setStats({ maxH, meanH: sum / (W * H), flooded });
     }
     function loop() { for (let k = 0; k < 3; k++) step(); render(); raf = requestAnimationFrame(loop); }
