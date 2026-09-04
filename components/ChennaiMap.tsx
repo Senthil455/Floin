@@ -345,6 +345,50 @@ export default function ChennaiMap({
     })();
   }, [selectedArea]);
 
+  const dynamicLayersRef=useRef<Map<string,any>>(new Map());
+  useEffect(()=>{
+    if(!mapRef.current || !activeDatasets) return;
+    (async()=>{
+      const L=(await import("leaflet")).default;
+      const map=mapRef.current;
+      const existing=dynamicLayersRef.current;
+      // remove deselected
+      for(const [id,layer] of Array.from(existing.entries())){
+        if(!activeDatasets.includes(id)){
+          try{ map.removeLayer(layer); }catch{}
+          existing.delete(id);
+        }
+      }
+      // add newly selected (public/*.geojson)
+      for(const id of activeDatasets){
+        if(existing.has(id)) continue;
+        if((map as any)._floinLayers?.[id]) continue;
+        try{
+          const res=await fetch(`/${id}.geojson`);
+          if(!res.ok) continue;
+          const gj=await res.json();
+          const isPoint=gj.features?.[0]?.geometry?.type==="Point";
+          const layer=L.geoJSON(gj,{
+            style: (f:any)=>{
+              const geom=f.geometry?.type;
+              if(geom==="LineString"||geom==="MultiLineString") return { color:"#0E7490", weight:1.8, opacity:0.9 } as any;
+              if(geom==="Polygon"||geom==="MultiPolygon") return { color:"#111210", weight:0.8, fillColor:"#E6B422", fillOpacity:0.18 } as any;
+              return { color:"#111210", weight:1 } as any;
+            },
+            pointToLayer: isPoint ? (f:any, latlng:any)=> L.circleMarker(latlng,{ radius:4.5, fillColor:"#E63946", color:"#fff", weight:1, fillOpacity:0.9 }) : undefined,
+            onEachFeature:(f:any,ly:any)=>{
+              const p=f.properties||{}; const title=p.name||p.Name||p Ward_No||id;
+              ly.bindTooltip(String(title).slice(0,40),{sticky:true});
+              ly.on("click",(e:any)=>{ L.DomEvent.stopPropagation(e); onSelectFeature?.({ name:String(title), type:f.geometry?.type, properties:p }); });
+            }
+          }).addTo(map);
+          existing.set(id, layer);
+          if(countRef.current) countRef.current.textContent=`${existing.size + Object.keys((map as any)._floinLayers||{}).length} layers · ${activeDatasets.length} active`;
+        }catch{}
+      }
+    })();
+  },[activeDatasets]);
+
   // Handle Layer filter switching
   const handleLayerToggle = (layerName: string) => {
     setCurrentLayerFilter(layerName);

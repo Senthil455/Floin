@@ -6,6 +6,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import RainParticleOverlay from "./RainParticleOverlay";
 import { useChennaiLive } from "@/hooks/useChennaiLive";
 import { wardForLngLat, wardDamage } from "@/app/lib/floodml-chennai";
+import { EVERY_FILE_3D_LAYERS } from "@/app/lib/unified-3d";
 // @ts-ignore
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
 // @ts-ignore
@@ -375,7 +376,7 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
         }
         const queryResponse=await fetch("/api/location/query",{ method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ aoi, requestId:reqId }), signal:abortControllerRef.current?.signal }).then(r=>r.json());
         if(requestIdRef.current!==reqId) return;
-        const datasetsToFetch=["buildings","highway","waterway","natural_water","chennai2015_hotspots","chennai_wards_200","chennai_soil","chennai_lulc","chennai_drainage"];
+        const datasetsToFetch=[...Object.keys(EVERY_FILE_3D_LAYERS), "buildings","highway","waterway","natural_water","chennai2015_hotspots","chennai_wards_200","chennai_soil","chennai_lulc","chennai_drainage"].filter((v,i,a)=>a.indexOf(v)===i).slice(0,60);
         const featuresPromise=fetch("/api/location/features",{ method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ aoi, datasets:datasetsToFetch, requestId:reqId, limit:600 }), signal:abortControllerRef.current?.signal }).then(r=>r.json());
         const terrainPromise=fetch("/api/location/terrain",{ method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ aoi, requestId:reqId }), signal:abortControllerRef.current?.signal }).then(r=>r.json()).catch(()=>null);
         const featuresResponse=await featuresPromise;

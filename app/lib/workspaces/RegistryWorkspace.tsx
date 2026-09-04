@@ -16,7 +16,7 @@ const CAT_META: Record<string,{label:string; col:string; icon:string}> = {
   reference:{label:"Reference", col:"var(--muted2)", icon:"◎"},
 };
 
-export default function RegistryWorkspace(){
+export default function RegistryWorkspace({ activeDatasets=[], onToggleDataset }: { activeDatasets?: string[]; onToggleDataset?: (id:string)=>void }){
   const [datasets,setDatasets]=useState<Ds[]>([]);
   const [meta,setMeta]=useState<any>(null);
   const [q,setQ]=useState("");
