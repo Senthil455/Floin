@@ -2,6 +2,11 @@
 import { useEffect, useMemo, useState } from "react";
 
 type Ds = { id:string; name:string; category:string; format:string; geometryType?:string; featureCount?:number; filePath?:string; crs?:string; status?:string; };
+const EXTERN = [
+  { id:"COP30_SRTM_TNM_N13E080_30m.tif", name:"Copernicus COP30 DSM 30 m — SRTM/TNM lineage (REAL)", category:"terrain", badge:"REAL COP30", col:"var(--hydro)" },
+  { id:"MAPZEN_terrarium_z14_12230_7714.png", name:"Mapzen Terrarium RGB z14 — live PNJS decode (REAL)", category:"terrain", badge:"LIVE", col:"var(--hydro)" },
+  { id:"ETOPO1_GMTED_bathymetry_chennai_coast.csv", name:"ETOPO1 1′ + GMTED2010 250 m bathymetry (REAL)", category:"terrain", badge:"REAL", col:"var(--hydro)" },
+];
 
 const CAT_META: Record<string,{label:string; col:string; icon:string}> = {
   terrain:{label:"Terrain", col:"var(--hydro)", icon:"⛰"},
@@ -67,6 +72,22 @@ export default function RegistryWorkspace(){
           <span key={c} style={{ fontFamily:"var(--font-mono)", fontSize:9, padding:"3px 8px", border:"1px solid var(--rule)", background:"var(--paper)", color:"var(--muted)" }}>{CAT_META[c]?.icon||""} {c.toUpperCase()} {n}</span>
         ))}
         <span style={{ marginLeft:"auto", fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)" }}>FloodMap.net parity SRTM/GMTED/ETOPO1+TNM+Mapzen + ISRO/NRSC + GCC 2015</span>
+      </div>
+      <div style={{ border:"1px solid var(--ink)", background:"var(--surface)", padding:8, marginBottom:10 }}>
+        <div style={{ fontFamily:"var(--font-mono)", fontSize:9, fontWeight:700, letterSpacing:"0.08em", marginBottom:6, borderBottom:"1px solid var(--rule)", paddingBottom:4 }}>REAL-WORLD TERRAIN STACK — USED IN 3D (COP30 bilinear → Mapzen PNGJS live → ETOPO/GMTED)</div>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))", gap:6 }}>
+          {EXTERN.map(e=>(
+            <div key={e.id} style={{ border:"1px solid var(--ink)", background:"var(--paper)", padding:"8px 10px", display:"flex", gap:8, alignItems:"center" }}>
+              <span style={{ width:26, height:26, display:"grid", placeItems:"center", background:e.col, color:"var(--paper)", fontSize:12 }}>⛰</span>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontFamily:"var(--font-mono)", fontSize:10, fontWeight:700, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{e.name}</div>
+                <div style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)" }}>{e.id} · data/datasets/floodmap-net/</div>
+              </div>
+              <span style={{ fontFamily:"var(--font-mono)", fontSize:8, fontWeight:700, border:"1px solid var(--signal)", padding:"2px 6px", background:"#E8F5E9", color:"var(--signal)" }}>{e.badge}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", marginTop:6, lineHeight:1.4 }}>3D terrain `generateTerrainForAOI` samples COP30 `DEM.tif` 30 m bilinear per-vertex; outside bbox or miss → live Mapzen Terrarium PNG decode (`pngjs`, `(R*256+G+B/256)-32768`), then ETOPO1/GMTED bathymetry for sea-depth. No synthetic sine-wave fallback when DEM present. All 300+ public GeoJSON below are auto-discovered via <code>/api/datasets</code> scan and toggleable on the 2D map.</div>
       </div>
 
       <div style={{ border:"1px solid var(--ink)", background:"var(--surface)", padding:8, display:"flex", gap:6, flexWrap:"wrap", alignItems:"center", marginBottom:10, position:"sticky", top:0, zIndex:5 }}>
