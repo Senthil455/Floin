@@ -2,10 +2,12 @@ services:
   postgis:
     image: postgis/postgis:16-3.4
     container_name: floin-postgis
+    env_file:
+      - .env
     environment:
-      POSTGRES_DB: floin
-      POSTGRES_USER: floin
-      POSTGRES_PASSWORD: floin
+      POSTGRES_DB: ${POSTGRES_DB:-floin}
+      POSTGRES_USER: ${POSTGRES_USER:-floin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-floin}
     ports:
       - "5432:5432"
     volumes:
