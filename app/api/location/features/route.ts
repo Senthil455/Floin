@@ -1,145 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-
-/**
- * POST /api/location/features
- * Fetches actual GeoJSON features for an AOI
- * Used by 3D visualization to load buildings, roads, etc.
- */
-
-interface AOI {
-  bounds: {
-    xmin: number;
-    xmax: number;
-    ymin: number;
-    ymax: number;
-  };
-}
-
-function isInBounds(
-  lng: number,
-  lat: number,
-  bounds: AOI['bounds']
-): boolean {
-  return (
-    lng >= bounds.xmin &&
-    lng <= bounds.xmax &&
-    lat >= bounds.ymin &&
-    lat <= bounds.ymax
-  );
-}
-
-function geometryIntersectsBounds(
-  coordinates: any,
-  geometryType: string,
-  bounds: AOI['bounds']
-): boolean {
-  if (geometryType === 'Point') {
-    return isInBounds(coordinates[0], coordinates[1], bounds);
-  }
-
-  if (geometryType === 'LineString' || geometryType === 'MultiLineString') {
-    const coords =
-      geometryType === 'LineString' ? coordinates : coordinates.flat(1);
-    return coords.some(
-      (c: any) =>
-        Array.isArray(c) && c.length >= 2 && isInBounds(c[0], c[1], bounds)
-    );
-  }
-
-  if (geometryType === 'Polygon' || geometryType === 'MultiPolygon') {
-    const rings =
-      geometryType === 'Polygon'
-        ? [coordinates[0]]
-        : coordinates.map((p: any) => p[0]);
-    return rings.some((ring: any) =>
-      ring.some(
-        (c: any) =>
-          Array.isArray(c) && c.length >= 2 && isInBounds(c[0], c[1], bounds)
-      )
-    );
-  }
-
-  return false;
-}
-
+import { fileFallbackQuery, tryPostGISQuery } from '@/app/lib/postgis';
+interface AOI { bounds: { xmin: number; xmax: number; ymin: number; ymax: number }; }
+const TABLE_MAP: Record<string,string>={ buildings:"buildings", highway:"highway", waterway:"waterway", natural_water:"natural_water", chennai2015_hotspots:"chennai2015_hotspots", rainfall_stations:"rainfall_stations" };
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  try {
-    const body = await request.json();
-    const { aoi, datasets, limit = 500 } = body;
-
-    if (!aoi || !aoi.bounds || !datasets) {
-      return NextResponse.json(
-        { error: 'Invalid request format' },
-        { status: 400 }
-      );
-    }
-
-    const results: Record<string, any> = {};
-
-    // Fetch each requested dataset
-    for (const datasetId of datasets) {
-      try {
-        const filePath = path.join(
-          process.cwd(),
-          'public',
-          `${datasetId}.geojson`
-        );
-        if (!fs.existsSync(filePath)) {
-          results[datasetId] = {
-            type: 'FeatureCollection',
-            features: [],
-            count: 0,
-          };
-          continue;
+  try{
+    const body=await request.json(); const { aoi, datasets, limit=500 }=body;
+    if(!aoi||!aoi.bounds||!datasets) return NextResponse.json({ error:'Invalid request format' },{ status:400 });
+    const results: Record<string,any>={};
+    for(const datasetId of datasets){
+      try{
+        const table=TABLE_MAP[datasetId];
+        if(table && process.env.DATABASE_URL){
+          const sql=`SELECT ST_AsGeoJSON(geom)::json as geometry, row_to_json(t) - 'geom' as props FROM ${table} t WHERE ST_Intersects(geom, ST_MakeEnvelope($1,$2,$3,$4,4326)) LIMIT ${Math.min(600, Number(limit)||500)}`;
+          const rows=await tryPostGISQuery(sql,[aoi.bounds.xmin, aoi.bounds.ymin, aoi.bounds.xmax, aoi.bounds.ymax]);
+          if(rows){
+            const features=rows.map((r:any)=>({ type:"Feature", geometry:r.geometry, properties:r.props }));
+            results[datasetId]={ type:'FeatureCollection', features, count:features.length, source:'postgis' }; continue;
+          }
         }
-
-        const content = fs.readFileSync(filePath, 'utf-8');
-        const geojson = JSON.parse(content);
-        const features = geojson.features || [];
-
-        const filtered = features
-          .filter((f: any) => {
-            const geom = f.geometry;
-            if (!geom) return false;
-            return geometryIntersectsBounds(
-              geom.coordinates,
-              geom.type,
-              aoi.bounds
-            );
-          })
-          .slice(0, limit);
-
-        results[datasetId] = {
-          type: 'FeatureCollection',
-          features: filtered,
-          count: filtered.length,
-        };
-      } catch (error) {
-        console.error(`Error fetching ${datasetId}:`, error);
-        results[datasetId] = {
-          type: 'FeatureCollection',
-          features: [],
-          count: 0,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        };
-      }
+        const fb=fileFallbackQuery(aoi, datasetId, limit);
+        results[datasetId]={ type:'FeatureCollection', features:fb.features, count:fb.count, source:'file' };
+      }catch(error){ results[datasetId]={ type:'FeatureCollection', features:[], count:0, error: error instanceof Error?error.message:'Unknown error' }; }
     }
-
-    return NextResponse.json({
-      requestId: body.requestId || `feat-${Date.now()}`,
-      aoi,
-      timestamp: new Date().toISOString(),
-      features: results,
-    });
-  } catch (error) {
-    console.error('Features fetch error:', error);
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
-    );
-  }
+    return NextResponse.json({ requestId: body.requestId||`feat-${Date.now()}`, aoi, timestamp:new Date().toISOString(), features: results });
+  }catch(error){ return NextResponse.json({ error: error instanceof Error?error.message:'Unknown error' },{ status:500 }); }
 }
