@@ -1,0 +1,140 @@
+{
+  "type": "FeatureCollection",
+  "features": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "diameter_mm": 600,
+          "capacity_m3s": "0.80",
+          "silt_pct": 15,
+          "pump_linked": true
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              80.2,
+              13.04
+            ],
+            [
+              80.22,
+              13.045
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "diameter_mm": 750,
+          "capacity_m3s": "1.10",
+          "silt_pct": 21,
+          "pump_linked": false
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              80.215,
+              13.049999999999999
+            ],
+            [
+              80.235,
+              13.055
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "diameter_mm": 900,
+          "capacity_m3s": "1.40",
+          "silt_pct": 27,
+          "pump_linked": true
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              80.23,
+              13.059999999999999
+            ],
+            [
+              80.25,
+              13.065
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "diameter_mm": 1050,
+          "capacity_m3s": "1.70",
+          "silt_pct": 33,
+          "pump_linked": false
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              80.245,
+              13.069999999999999
+            ],
+            [
+              80.265,
+              13.075
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "diameter_mm": 1200,
+          "capacity_m3s": "2.00",
+          "silt_pct": 39,
+          "pump_linked": true
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              80.26,
+              13.079999999999998
+            ],
+            [
+              80.28,
+              13.084999999999999
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "diameter_mm": 1350,
+          "capacity_m3s": "2.30",
+          "silt_pct": 45,
+          "pump_linked": false
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              80.275,
+              13.09
+            ],
+            [
+              80.295,
+              13.095
+            ]
+          ]
+        }
+      }
+    ]
+  }
+}

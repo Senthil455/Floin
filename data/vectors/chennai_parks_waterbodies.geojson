@@ -1,0 +1,230 @@
+{
+  "type": "FeatureCollection",
+  "features": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "name": "Park 1",
+          "type": "Park",
+          "area_ha": "2.0",
+          "retention_m3": 8000,
+          "encroached_pct": 5
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2,
+                13.02
+              ],
+              [
+                80.205,
+                13.02
+              ],
+              [
+                80.205,
+                13.025
+              ],
+              [
+                80.2,
+                13.025
+              ],
+              [
+                80.2,
+                13.02
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "name": "Park 2",
+          "type": "Lake",
+          "area_ha": "6.2",
+          "retention_m3": 11000,
+          "encroached_pct": 9
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.22,
+                13.02
+              ],
+              [
+                80.225,
+                13.02
+              ],
+              [
+                80.225,
+                13.025
+              ],
+              [
+                80.22,
+                13.025
+              ],
+              [
+                80.22,
+                13.02
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "name": "Park 3",
+          "type": "Park",
+          "area_ha": "10.4",
+          "retention_m3": 14000,
+          "encroached_pct": 13
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.24000000000001,
+                13.02
+              ],
+              [
+                80.245,
+                13.02
+              ],
+              [
+                80.245,
+                13.025
+              ],
+              [
+                80.24000000000001,
+                13.025
+              ],
+              [
+                80.24000000000001,
+                13.02
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "name": "Park 4",
+          "type": "Lake",
+          "area_ha": "14.6",
+          "retention_m3": 17000,
+          "encroached_pct": 17
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.26,
+                13.02
+              ],
+              [
+                80.265,
+                13.02
+              ],
+              [
+                80.265,
+                13.025
+              ],
+              [
+                80.26,
+                13.025
+              ],
+              [
+                80.26,
+                13.02
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "name": "Park 5",
+          "type": "Park",
+          "area_ha": "18.8",
+          "retention_m3": 20000,
+          "encroached_pct": 21
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.28,
+                13.02
+              ],
+              [
+                80.285,
+                13.02
+              ],
+              [
+                80.285,
+                13.025
+              ],
+              [
+                80.28,
+                13.025
+              ],
+              [
+                80.28,
+                13.02
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "name": "Park 6",
+          "type": "Lake",
+          "area_ha": "23.0",
+          "retention_m3": 23000,
+          "encroached_pct": 25
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.3,
+                13.02
+              ],
+              [
+                80.30499999999999,
+                13.02
+              ],
+              [
+                80.30499999999999,
+                13.025
+              ],
+              [
+                80.3,
+                13.025
+              ],
+              [
+                80.3,
+                13.02
+              ]
+            ]
+          ]
+        }
+      }
+    ]
+  }
+}

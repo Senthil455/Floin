@@ -1,0 +1,143 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "river": "Adyar",
+        "chainage_km": "2.0",
+        "bed_level_m": "1.2",
+        "bankfull_m": "3.5",
+        "manning_n": 0.035
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.15,
+            13
+          ],
+          [
+            80.16,
+            13.01
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "river": "Cooum",
+        "chainage_km": "3.8",
+        "bed_level_m": "1.8",
+        "bankfull_m": "3.9",
+        "manning_n": 0.035
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.18,
+            13.02
+          ],
+          [
+            80.19,
+            13.03
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "river": "Kosasthalaiyar",
+        "chainage_km": "5.6",
+        "bed_level_m": "2.4",
+        "bankfull_m": "4.3",
+        "manning_n": 0.035
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.21000000000001,
+            13.04
+          ],
+          [
+            80.22,
+            13.049999999999999
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "river": "Adyar",
+        "chainage_km": "7.4",
+        "bed_level_m": "3.0",
+        "bankfull_m": "4.7",
+        "manning_n": 0.035
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.24000000000001,
+            13.06
+          ],
+          [
+            80.25,
+            13.07
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "river": "Cooum",
+        "chainage_km": "9.2",
+        "bed_level_m": "3.6",
+        "bankfull_m": "5.1",
+        "manning_n": 0.035
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.27000000000001,
+            13.08
+          ],
+          [
+            80.28,
+            13.09
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "river": "Kosasthalaiyar",
+        "chainage_km": "11.0",
+        "bed_level_m": "4.2",
+        "bankfull_m": "5.5",
+        "manning_n": 0.035
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.30000000000001,
+            13.1
+          ],
+          [
+            80.31,
+            13.11
+          ]
+        ]
+      }
+    }
+  ]
+}

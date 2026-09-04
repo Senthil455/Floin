@@ -1,0 +1,140 @@
+{
+  "type": "FeatureCollection",
+  "features": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "road_name": "Anna Salai 0",
+          "max_depth_m": "0.45",
+          "closure_hours": 8,
+          "detour_km": "1.2"
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              80.2,
+              13.05
+            ],
+            [
+              80.22,
+              13.06
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "road_name": "PH Road 1",
+          "max_depth_m": "0.67",
+          "closure_hours": 14,
+          "detour_km": "1.9"
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              80.215,
+              13.06
+            ],
+            [
+              80.235,
+              13.07
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "road_name": "Mount Road 2",
+          "max_depth_m": "0.89",
+          "closure_hours": 20,
+          "detour_km": "2.6"
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              80.23,
+              13.07
+            ],
+            [
+              80.25,
+              13.08
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "road_name": "ECR 3",
+          "max_depth_m": "1.11",
+          "closure_hours": 26,
+          "detour_km": "3.3"
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              80.245,
+              13.08
+            ],
+            [
+              80.265,
+              13.09
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "road_name": "OMR 4",
+          "max_depth_m": "1.33",
+          "closure_hours": 32,
+          "detour_km": "4.0"
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              80.26,
+              13.09
+            ],
+            [
+              80.28,
+              13.1
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "road_name": "Anna Salai 5",
+          "max_depth_m": "1.55",
+          "closure_hours": 38,
+          "detour_km": "4.7"
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              80.275,
+              13.100000000000001
+            ],
+            [
+              80.295,
+              13.110000000000001
+            ]
+          ]
+        }
+      }
+    ]
+  }
+}

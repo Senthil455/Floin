@@ -1,0 +1,104 @@
+{
+  "type": "FeatureCollection",
+  "features": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "height_m": 8,
+          "storeys": 2,
+          "roof_type": "Flat",
+          "flood_exposure": "Low"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.21905492552791,
+            13.046744948885598
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "height_m": 12.2,
+          "storeys": 3,
+          "roof_type": "Sloped",
+          "flood_exposure": "High"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.23412313361048,
+            13.064509395819872
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "height_m": 16.4,
+          "storeys": 4,
+          "roof_type": "Terrace",
+          "flood_exposure": "Low"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.2149700148828,
+            13.055581410523898
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "height_m": 20.6,
+          "storeys": 5,
+          "roof_type": "Flat",
+          "flood_exposure": "High"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.2497482728744,
+            13.060281918664158
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "height_m": 24.8,
+          "storeys": 6,
+          "roof_type": "Sloped",
+          "flood_exposure": "Low"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.24865425087584,
+            13.067754039302162
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "height_m": 29,
+          "storeys": 7,
+          "roof_type": "Terrace",
+          "flood_exposure": "High"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.24912780814935,
+            13.086801224062658
+          ]
+        }
+      }
+    ]
+  }
+}

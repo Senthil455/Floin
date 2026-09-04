@@ -1,0 +1,104 @@
+{
+  "type": "FeatureCollection",
+  "features": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "sensor_id": "ITMS-100",
+          "avg_speed_kmh": 22,
+          "congestion_pct": 45,
+          "flood_impact": "Low"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.26412308981213,
+            13.06225555279856
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "sensor_id": "ITMS-101",
+          "avg_speed_kmh": 25,
+          "congestion_pct": 51,
+          "flood_impact": "High"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.25933299236357,
+            13.08472982192259
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "sensor_id": "ITMS-102",
+          "avg_speed_kmh": 28,
+          "congestion_pct": 57,
+          "flood_impact": "Low"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.24048371801287,
+            13.087019374141057
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "sensor_id": "ITMS-103",
+          "avg_speed_kmh": 31,
+          "congestion_pct": 63,
+          "flood_impact": "High"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.25875220258024,
+            13.053771550460782
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "sensor_id": "ITMS-104",
+          "avg_speed_kmh": 34,
+          "congestion_pct": 69,
+          "flood_impact": "Low"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.22407906648368,
+            13.085377309972957
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "sensor_id": "ITMS-105",
+          "avg_speed_kmh": 37,
+          "congestion_pct": 75,
+          "flood_impact": "High"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            80.25296849392093,
+            13.089351621115066
+          ]
+        }
+      }
+    ]
+  }
+}
