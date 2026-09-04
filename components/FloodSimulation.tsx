@@ -482,17 +482,45 @@ function updateBuildingImpact(group:THREE.Group,depth:number,viewMode:ViewMode){
     else if(mat.userData.origColor){ mat.color.copy(mat.userData.origColor); mat.emissive=new THREE.Color(0x000000); }
   });
 }
-function buildBuildings(group:THREE.Group,features:any[],viewMode:ViewMode){
+function buildBuildings(group:THREE.Group,features:any[],viewMode:ViewMode,aoi?:any){
   group.clear(); if(!features||features.length===0) return;
-  const capped=features.length>400?features.filter((_,i)=>i%Math.ceil(features.length/400)===0).slice(0,400):features;
+  const basin=aoi?.id||"all";
+  const cap = basin==="central"?380 : basin==="velachery"?160 : basin==="chembarambakkam"?90 : basin==="ennore"?220 : 340;
+  const capped=features.length>cap?features.filter((_,i)=>i%Math.ceil(features.length/cap)===0).slice(0,cap):features;
   const winTex=viewMode==="digital_twin"?createWindowTexture():null;
-  const matBase=new THREE.MeshStandardMaterial({ color:0xe2e8f0, roughness:0.78, metalness:0.04, map:winTex as any });
-  const matAlt=new THREE.MeshStandardMaterial({ color:0xcbd5e1, roughness:0.72, metalness:0.06, map:winTex as any });
-  const matDark=new THREE.MeshStandardMaterial({ color:0x94a3b8, roughness:0.85, metalness:0.02 });
+  const isVelachery=basin==="velachery", isEnnore=basin==="ennore", isChem=basin==="chembarambakkam";
+  const matBase=new THREE.MeshStandardMaterial({ color: isEnnore?0xb8c0c8:isVelachery?0xd6d3c4:isChem?0xc2b8a3:0xe2e8f0, roughness: isEnnore?0.85:isChem?0.88:0.78, metalness: isEnnore?0.18:0.04, map: (viewMode==="digital_twin" && !isEnnore)?winTex as any : null });
+  const matAlt=new THREE.MeshStandardMaterial({ color: isEnnore?0x9aa3ad:isVelachery?0xc2beb0:0xcbd5e1, roughness:0.72, metalness: isEnnore?0.22:0.06, map: null });
+  const matDark=new THREE.MeshStandardMaterial({ color: isVelachery?0xa8a49a:isChem?0x8b7355:0x94a3b8, roughness:0.85, metalness: isEnnore?0.25:0.02 });
+  if(viewMode==="data_quality"){ matBase.transparent=true; matBase.opacity=0.55; matAlt.transparent=true; matAlt.opacity=0.55; matDark.transparent=true; matDark.opacity=0.55; }
+  if(viewMode==="hydrology"){ matBase.wireframe=false; }
   capped.forEach((f:any)=>{
     const geom=f.geometry; if(!geom) return; const polys=geom.type==="Polygon"?[geom.coordinates]:geom.type==="MultiPolygon"?geom.coordinates:[];
-    polys.forEach((poly:any)=>{ try{ const outer=poly[0]; if(!outer||outer.length<3) return; const shape=new THREE.Shape(); outer.forEach(([lng,lat]:any,i:number)=>{ const [x,z]=lngLatToXZ(lng,lat); if(i===0) shape.moveTo(x,z); else shape.lineTo(x,z); }); const levels=parseInt(f.properties?.["building:levels"])||2+Math.floor(Math.random()*3); const h=levels*0.19; const g=new THREE.ExtrudeGeometry(shape,{ depth:h, bevelEnabled:true, bevelThickness:0.01, bevelSize:0.01, bevelSegments:1 } as any); (g as any).rotateX(Math.PI/2); const mats=[matBase,matAlt,matDark]; const m=mats[Math.floor(Math.random()*mats.length)].clone() as any; const mesh=new THREE.Mesh(g,m); mesh.position.y=-1.05; mesh.castShadow=true; mesh.receiveShadow=true; mesh.frustumCulled=true; mesh.userData={ name:f.properties?.name||f.properties?.["addr:street"]||"Chennai Urban Building", type:"Building Footprint (OSM)", featureId:f.properties?.osm_id||"osm-bld", levels, coords:outer[0] }; group.add(mesh); }catch(error){ console.warn("Error building geometry:",error); } });
+    polys.forEach((poly:any)=>{ try{
+      const outer=poly[0]; if(!outer||outer.length<3) return;
+      const shape=new THREE.Shape(); outer.forEach(([lng,lat]:any,i:number)=>{ const [x,z]=lngLatToXZ(lng,lat); if(i===0) shape.moveTo(x,z); else shape.lineTo(x,z); });
+      let levels=parseInt(f.properties?.["building:levels"])||2+Math.floor(Math.random()*3);
+      if(isChem) levels=Math.max(1, levels-1); if(basin==="central") levels+=1; if(isVelachery) levels=Math.max(1, levels-1);
+      if(viewMode==="infrastructure_impact" || viewMode==="depth_heatmap") levels=Math.min(4, levels);
+      if(viewMode==="velocity_field") levels=Math.max(1, levels-1);
+      const h=levels*0.19 + (isEnnore?0.06:0);
+      const bevel = viewMode==="data_quality" ? false : true;
+      const g=new THREE.ExtrudeGeometry(shape,{ depth:h, bevelEnabled:bevel, bevelThickness:0.01, bevelSize:0.01, bevelSegments:1 } as any); (g as any).rotateX(Math.PI/2);
+      const mats=[matBase,matAlt,matDark];
+      const m=mats[Math.floor(Math.random()*mats.length)].clone() as any;
+      if(viewMode==="hydrology"){ m.color.setHSL(0.58, 0.15, 0.72); m.emissive=new THREE.Color(0x0f1e2e); }
+      const mesh=new THREE.Mesh(g,m); mesh.position.y=-1.05; mesh.castShadow=viewMode!=="data_quality"; mesh.receiveShadow=true; mesh.frustumCulled=true;
+      mesh.userData={ name:f.properties?.name||f.properties?.["addr:street"]||`${basin.toUpperCase()} Building`, type:`${basin} · Building Footprint`, featureId:f.properties?.osm_id||"osm-bld", levels, coords:outer[0], basin };
+      group.add(mesh);
+    }catch(error){ console.warn("Error building geometry:",error); } });
   });
+  if(viewMode==="velocity_field" && capped.length>0){
+    const arrowGeo=new THREE.ConeGeometry(0.06,0.18,6); const arrowMat=new THREE.MeshBasicMaterial({ color:0x0E7490 });
+    for(let i=0;i<Math.min(18, capped.length); i+=3){
+      const f=capped[i]; const c=f.geometry?.coordinates?.[0]?.[0] || f.geometry?.coordinates?.[0]?.[0]?.[0];
+      if(!c) continue; const [x,z]=lngLatToXZ(c[0],c[1]); const arrow=new THREE.Mesh(arrowGeo,arrowMat); arrow.position.set(x, -0.88, z); arrow.rotation.z=Math.PI/2; arrow.rotation.y=Math.random()*Math.PI; group.add(arrow);
+    }
+  }
 }
 function buildRoads(group:THREE.Group,features:any[],viewMode:ViewMode){
   group.clear(); if(!features||features.length===0) return;
