@@ -92,6 +92,8 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
   const [showHotspots, setShowHotspots] = useState(true);
   const [showWaterways, setShowWaterways] = useState(true);
   const [showWards, setShowWards] = useState(true);
+  const [showSoil, setShowSoil] = useState(false);
+  const [showLulc, setShowLulc] = useState(false);
   const [debug, setDebug] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [timeSeries, setTimeSeries] = useState<any[]>([]);
@@ -294,7 +296,7 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
         }
         const queryResponse=await fetch("/api/location/query",{ method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ aoi, requestId:reqId }), signal:abortControllerRef.current?.signal }).then(r=>r.json());
         if(requestIdRef.current!==reqId) return;
-        const datasetsToFetch=["buildings","highway","waterway","natural_water","chennai2015_hotspots","chennai_wards_200"];
+        const datasetsToFetch=["buildings","highway","waterway","natural_water","chennai2015_hotspots","chennai_wards_200","chennai_soil","chennai_lulc","chennai_drainage"];
         const featuresResponse=await fetch("/api/location/features",{ method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ aoi, datasets:datasetsToFetch, requestId:reqId, limit:600 }), signal:abortControllerRef.current?.signal }).then(r=>r.json());
         if(requestIdRef.current!==reqId) return;
         const terrainStats=generateTerrainForAOI(ctx.terrain,aoi,viewMode);
@@ -303,12 +305,19 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
         const hotspotFeatures=featuresResponse.features?.chennai2015_hotspots?.features||[];
         const waterwayFeatures=featuresResponse.features?.waterway?.features||[];
         const wardFeatures=featuresResponse.features?.chennai_wards_200?.features||[];
+        const soilFeatures=featuresResponse.features?.chennai_soil?.features||[];
+        const lulcFeatures=featuresResponse.features?.chennai_lulc?.features||[];
+        const drainageFeatures=featuresResponse.features?.chennai_drainage?.features||[];
+        // Drainage is primary waterway with capacity, merge with waterway for detailed hydro
+        const allWaterways=[...waterwayFeatures, ...drainageFeatures];
         buildBuildings(ctx.buildingsGroup,buildingFeatures,viewMode,aoi,blendedP,CN);
         buildRoads(ctx.roadsGroup,roadFeatures,viewMode);
-        buildWaterways(ctx.waterwaysGroup,waterwayFeatures);
+        buildWaterways(ctx.waterwaysGroup,allWaterways);
         buildHotspots(ctx.hotspotsGroup,hotspotFeatures,ctx.terrain);
         buildWards(ctx.wardsGroup,wardFeatures,ctx.terrain);
-        const counts={ buildings:buildingFeatures.length, roads:roadFeatures.length, waterways:waterwayFeatures.length, hotspots:hotspotFeatures.length, wards:wardFeatures.length };
+        buildSoil(ctx.soilGroup,soilFeatures,ctx.terrain);
+        buildLulc(ctx.lulcGroup,lulcFeatures,ctx.terrain);
+        const counts={ buildings:buildingFeatures.length, roads:roadFeatures.length, waterways:allWaterways.length, hotspots:hotspotFeatures.length, wards:wardFeatures.length, soil:soilFeatures.length, lulc:lulcFeatures.length };
         if(requestIdRef.current!==reqId) return;
         const simResponse=await fetch("/api/simulate",{ method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ aoi, rainfall:P, cn:CN, duration:t, requestId:reqId }), signal:abortControllerRef.current?.signal }).then(r=>r.json());
         if(requestIdRef.current!==reqId) return;
@@ -348,7 +357,7 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
   },[selectedArea?.id, selectedArea?.bounds?.xmin, selectedArea?.bounds?.xmax, P, CN, t, d, viewMode, measureMode, measurePts.length]);
 
   useEffect(()=>{ setMeasureMode(false); setMeasurePts([]); if(simCtxRef.current?.measureLine){ try{ simCtxRef.current.scene.remove(simCtxRef.current.measureLine); simCtxRef.current.measureLine.geometry.dispose(); }catch{} simCtxRef.current.measureLine=null; } },[selectedArea?.id]);
-  useEffect(()=>{ if(!simCtxRef.current) return; const ctx=simCtxRef.current; if(ctx.buildingsGroup) ctx.buildingsGroup.visible=showBuildings; if(ctx.roadsGroup) ctx.roadsGroup.visible=showRoads; if(ctx.hotspotsGroup) ctx.hotspotsGroup.visible=showHotspots; if(ctx.waterwaysGroup) ctx.waterwaysGroup.visible=showWaterways; if(ctx.wardsGroup) ctx.wardsGroup.visible=showWards; if(ctx.water) ctx.water.visible=showWater; },[showBuildings,showRoads,showHotspots,showWaterways,showWards,showWater]);
+  useEffect(()=>{ if(!simCtxRef.current) return; const ctx=simCtxRef.current; if(ctx.buildingsGroup) ctx.buildingsGroup.visible=showBuildings; if(ctx.roadsGroup) ctx.roadsGroup.visible=showRoads; if(ctx.hotspotsGroup) ctx.hotspotsGroup.visible=showHotspots; if(ctx.waterwaysGroup) ctx.waterwaysGroup.visible=showWaterways; if(ctx.wardsGroup) ctx.wardsGroup.visible=showWards; if(ctx.soilGroup) ctx.soilGroup.visible=showSoil; if(ctx.lulcGroup) ctx.lulcGroup.visible=showLulc; if(ctx.water) ctx.water.visible=showWater; },[showBuildings,showRoads,showHotspots,showWaterways,showWards,showSoil,showLulc,showWater]);
 
   return (
     <div className="sim-layout">
@@ -551,11 +560,10 @@ function getTerrainHeightAt(terrain:THREE.Mesh,x:number,z:number){
 function disposeScene(ctx:any){
   try{
     ctx.terrain.geometry.dispose(); (ctx.terrain.material as any).dispose(); ctx.water.geometry.dispose(); (ctx.water.material as any).dispose();
-    ctx.buildingsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); ctx.roadsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); ctx.waterwaysGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); ctx.hotspotsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); if(ctx.wardsGroup) ctx.wardsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); });
-    const treeGroup=(ctx.scene as any)?.userData?.treeGroup as THREE.Group; if(treeGroup) treeGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); (m.material as any)?.dispose?.(); }); const labelGroup=(ctx.scene as any)?.userData?.labelGroup as THREE.Group; if(labelGroup) labelGroup.children.forEach((m:any)=>{ (m.material as any)?.map?.dispose?.(); });
+    ctx.buildingsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); ctx.roadsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); ctx.waterwaysGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); ctx.hotspotsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); if(ctx.wardsGroup) ctx.wardsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); if(ctx.soilGroup) ctx.soilGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); if(ctx.lulcGroup) ctx.lulcGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); });
     if(ctx.measureLine){ ctx.measureLine.geometry.dispose(); (ctx.measureLine.material as any).dispose(); }
     ctx.controls.dispose(); ctx.renderer.dispose();
-    ctx.buildingsGroup.clear(); ctx.roadsGroup.clear(); ctx.waterwaysGroup.clear(); ctx.hotspotsGroup.clear(); if(ctx.wardsGroup) ctx.wardsGroup.clear();
+    ctx.buildingsGroup.clear(); ctx.roadsGroup.clear(); ctx.waterwaysGroup.clear(); ctx.hotspotsGroup.clear(); if(ctx.wardsGroup) ctx.wardsGroup.clear(); if(ctx.soilGroup) ctx.soilGroup.clear(); if(ctx.lulcGroup) ctx.lulcGroup.clear();
   }catch{}
 }
 function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:number; aoi?:any; viewMode:ViewMode }){
@@ -657,8 +665,8 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
     transparent:true, side:THREE.DoubleSide,
   });
   const water=new THREE.Mesh(wgeo, waterMat as any); water.rotation.x=-Math.PI/2; water.position.y=-0.88; scene.add(water);
-  const buildingsGroup=new THREE.Group(); const roadsGroup=new THREE.Group(); const waterwaysGroup=new THREE.Group(); const hotspotsGroup=new THREE.Group(); const wardsGroup=new THREE.Group();
-  scene.add(buildingsGroup); scene.add(roadsGroup); scene.add(waterwaysGroup); scene.add(hotspotsGroup); scene.add(wardsGroup);
+  const buildingsGroup=new THREE.Group(); const roadsGroup=new THREE.Group(); const waterwaysGroup=new THREE.Group(); const hotspotsGroup=new THREE.Group(); const wardsGroup=new THREE.Group(); const soilGroup=new THREE.Group(); const lulcGroup=new THREE.Group();
+  scene.add(buildingsGroup); scene.add(roadsGroup); scene.add(waterwaysGroup); scene.add(hotspotsGroup); scene.add(wardsGroup); scene.add(soilGroup); scene.add(lulcGroup);
   const controls=new OrbitControls(camera, canvas);
   controls.enableDamping=true; controls.dampingFactor=0.08; controls.rotateSpeed=0.7; controls.zoomSpeed=0.9; controls.panSpeed=0.7;
   controls.minDistance=3; controls.maxDistance=28; controls.maxPolarAngle=Math.PI*0.48; controls.minPolarAngle=0.15;
@@ -669,7 +677,7 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
     // update Line2 resolution for width-respected lines (Hydro3DJS)
     scene.traverse((obj:any)=>{ if(obj.isLine2 && obj.material && obj.material.resolution){ obj.material.resolution.set(W,H); } });
   }).observe(canvas);
-  return { scene, camera, renderer, terrain, water, buildingsGroup, roadsGroup, waterwaysGroup, hotspotsGroup, wardsGroup, controls, measureLine:null as any };
+  return { scene, camera, renderer, terrain, water, buildingsGroup, roadsGroup, waterwaysGroup, hotspotsGroup, wardsGroup, soilGroup, lulcGroup, controls, measureLine:null as any };
 }
 function updateBuildingImpact(group:THREE.Group,depth:number,viewMode:ViewMode){
   const threshold=0.35; const flooded=depth>threshold;
