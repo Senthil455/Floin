@@ -250,7 +250,7 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
         const roadFeatures=featuresResponse.features?.highway?.features||[];
         const hotspotFeatures=featuresResponse.features?.chennai2015_hotspots?.features||[];
         const waterwayFeatures=featuresResponse.features?.waterway?.features||[];
-        buildBuildings(ctx.buildingsGroup,buildingFeatures,viewMode);
+        buildBuildings(ctx.buildingsGroup,buildingFeatures,viewMode,aoi);
         buildRoads(ctx.roadsGroup,roadFeatures,viewMode);
         buildWaterways(ctx.waterwaysGroup,waterwayFeatures);
         buildHotspots(ctx.hotspotsGroup,hotspotFeatures,ctx.terrain);
