@@ -123,7 +123,11 @@ export default function RegistryWorkspace({ activeDatasets=[], onToggleDataset }
                 </div>
               </div>
               <div style={{ display:"flex", gap:4, padding:"6px 8px", borderTop:"1px solid var(--rule)", background:"var(--surface)" }}>
-                <a href={`/${d.id}.${d.format||'geojson'}`} target="_blank" rel="noreferrer" style={{ flex:1, textAlign:"center", padding:"4px 0", border:"1px solid var(--ink)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:9, fontWeight:700, textDecoration:"none", color:"var(--ink)" }}>VIEW</a>
+                {onToggleDataset ? (
+                  <button onClick={()=>onToggleDataset(d.id)} style={{ flex:1, padding:"4px 0", border:"1px solid", borderColor: activeDatasets.includes(d.id)?"var(--ink)":"var(--rule-strong)", background: activeDatasets.includes(d.id)?"var(--ink)":"var(--paper)", color: activeDatasets.includes(d.id)?"var(--paper)":"var(--ink)", fontFamily:"var(--font-mono)", fontSize:9, fontWeight:700 }}>{activeDatasets.includes(d.id)?"ON MAP ✓":"ADD TO MAP"}</button>
+                ) : (
+                  <a href={`/${d.id}.${d.format||'geojson'}`} target="_blank" rel="noreferrer" style={{ flex:1, textAlign:"center", padding:"4px 0", border:"1px solid var(--ink)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:9, fontWeight:700, textDecoration:"none", color:"var(--ink)" }}>VIEW</a>
+                )}
                 <a href={`/${d.id}.${d.format||'geojson'}`} download style={{ flex:1, textAlign:"center", padding:"4px 0", background:"var(--ink)", color:"var(--paper)", border:"1px solid var(--ink)", fontFamily:"var(--font-mono)", fontSize:9, fontWeight:700, textDecoration:"none" }}>DL</a>
               </div>
             </div>

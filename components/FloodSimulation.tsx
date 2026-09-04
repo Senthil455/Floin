@@ -401,7 +401,35 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
         buildWards(ctx.wardsGroup,wardFeatures,ctx.terrain, blendedP, CN, viewMode);
         buildSoil(ctx.soilGroup,soilFeatures,ctx.terrain);
         buildLulc(ctx.lulcGroup,lulcFeatures,ctx.terrain);
-        const counts={ buildings:buildingFeatures.length, roads:roadFeatures.length, waterways:allWaterways.length, hotspots:hotspotFeatures.length, wards:wardFeatures.length, soil:soilFeatures.length, lulc:lulcFeatures.length };
+        // Unified 3D: every remaining file contributes — generic per-dataset layer
+        const handled = new Set(["buildings","highway","waterway","natural_water","chennai2015_hotspots","chennai_wards_200","chennai_soil","chennai_lulc","chennai_drainage"]);
+        const unifiedGroup = (ctx as any).unifiedGroup as THREE.Group || (()=>{ const g=new THREE.Group(); ctx.scene.add(g); (ctx as any).unifiedGroup=g; return g; })();
+        unifiedGroup.clear();
+        Object.entries(featuresResponse.features||{}).forEach(([id, fc]: any)=>{
+          if(handled.has(id)) return;
+          const layer = (EVERY_FILE_3D_LAYERS as any)[id];
+          if(!layer) return;
+          const feats=(fc as any).features||[];
+          const color=layer.color || 0x8B7355;
+          const matLine=new THREE.LineBasicMaterial({ color, transparent:true, opacity:0.7, depthWrite:false } as any);
+          const matMesh=new THREE.MeshStandardMaterial({ color, transparent:true, opacity:0.28, side:THREE.DoubleSide, depthWrite:false } as any);
+          feats.slice(0,18).forEach((f:any)=>{
+            const g=f.geometry; if(!g) return;
+            try{
+              if(g.type==="Point"){
+                const [lng,lat]=g.coordinates; const [x,z]=lngLatToXZ(lng,lat); const h=getTerrainHeightAt(ctx.terrain,x,z);
+                const geo=new THREE.SphereGeometry(0.07,8,8); const m=new THREE.Mesh(geo, matMesh as any); m.position.set(x,h+0.18,z); m.userData={ name: f.properties?.name||id, type: layer.note }; unifiedGroup.add(m);
+              } else if(g.type==="LineString"||g.type==="MultiLineString"){
+                const lines=g.type==="LineString"?[g.coordinates]:g.coordinates;
+                lines.forEach((coords:any)=>{ const pts=coords.map(([lng,lat]:any)=>{ const [x,z]=lngLatToXZ(lng,lat); return new THREE.Vector3(x, getTerrainHeightAt(ctx.terrain,x,z)+0.06, z); }); const geo=new THREE.BufferGeometry().setFromPoints(pts); const line=new THREE.Line(geo, matLine as any); (line as any).userData={ name: f.properties?.name||id, type: layer.note }; unifiedGroup.add(line); });
+              } else if(g.type==="Polygon"||g.type==="MultiPolygon"){
+                const polys=g.type==="Polygon"?[g.coordinates]:g.coordinates;
+                polys.forEach((poly:any)=>{ const outer=poly[0]; const shape=new THREE.Shape(); outer.forEach(([lng,lat]:any,i:number)=>{ const [x,z]=lngLatToXZ(lng,lat); if(i===0) shape.moveTo(x,z); else shape.lineTo(x,z); }); const geo=new THREE.ShapeGeometry(shape); const pos=geo.attributes.position as THREE.BufferAttribute; for(let i=0;i<pos.count;i++){ const x=pos.getX(i), z=pos.getY(i); pos.setZ(i, getTerrainHeightAt(ctx.terrain,x,z)+0.04); } geo.computeVertexNormals(); const mesh=new THREE.Mesh(geo, matMesh as any); mesh.rotation.x=-Math.PI/2; mesh.position.y=0.02; mesh.userData={ name: f.properties?.name||id, type: layer.note }; unifiedGroup.add(mesh); });
+              }
+            }catch{}
+          });
+        });
+        const counts={ buildings:buildingFeatures.length, roads:roadFeatures.length, waterways:allWaterways.length, hotspots:hotspotFeatures.length, wards:wardFeatures.length, soil:soilFeatures.length, lulc:lulcFeatures.length, unified: (unifiedGroup.children.length) };
         if(requestIdRef.current!==reqId) return;
         const simResponse=await fetch("/api/simulate",{ method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ aoi, rainfall:P, cn:CN, duration:t, requestId:reqId }), signal:abortControllerRef.current?.signal }).then(r=>r.json());
         if(requestIdRef.current!==reqId) return;
