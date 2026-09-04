@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState, useMemo } from "react";
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import RainParticleOverlay from "./RainParticleOverlay";
 import { useChennaiLive } from "@/hooks/useChennaiLive";
 import { wardForLngLat, wardDamage } from "@/app/lib/floodml-chennai";
