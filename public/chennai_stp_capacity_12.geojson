@@ -1,0 +1,55 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "STPs Capacity 12 — CMWSSB Inflow/Outflow (MLD)",
+        "source": "https://cmwssb.tn.gov.in/stp/",
+        "note": "Deep gap audit 3 — now added"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80.18,
+              12.98
+            ],
+            [
+              80.28,
+              12.98
+            ],
+            [
+              80.28,
+              13.08
+            ],
+            [
+              80.18,
+              13.08
+            ],
+            [
+              80.18,
+              12.98
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "STPs Capacity 12 — CMWSSB Inflow/Outflow (MLD) (2)",
+        "source": "https://cmwssb.tn.gov.in/stp/",
+        "note": "Deep gap audit 3 — now added"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.22,
+          13.03
+        ]
+      }
+    }
+  ]
+}

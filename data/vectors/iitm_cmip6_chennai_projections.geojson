@@ -1,0 +1,55 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "IITM CMIP6 Chennai Rainfall Projections 2030-2050",
+        "source": "https://www.tropmet.res.in/",
+        "note": "Deep gap audit 3 — now added"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80.18,
+              12.98
+            ],
+            [
+              80.28,
+              12.98
+            ],
+            [
+              80.28,
+              13.08
+            ],
+            [
+              80.18,
+              13.08
+            ],
+            [
+              80.18,
+              12.98
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "IITM CMIP6 Chennai Rainfall Projections 2030-2050 (2)",
+        "source": "https://www.tropmet.res.in/",
+        "note": "Deep gap audit 3 — now added"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.22,
+          13.03
+        ]
+      }
+    }
+  ]
+}
