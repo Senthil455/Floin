@@ -432,134 +432,63 @@ export default function FloodSimulation({
 
   return (
     <div className="sim-layout">
-      <div className="sim-canvas-wrap" style={{ position: "relative", background: "#040a14", borderRadius: 16, overflow: "hidden", border: "1px solid #1e3a5a" }}>
-        {/* Dynamic Canvas Rain Storm Particle Overlay (from CrisisFlow) */}
+      <div className="sim-canvas-wrap" style={{ position: "relative", background: "#0F1110", overflow: "hidden", border: "1px solid var(--ink)" }}>
         <RainParticleOverlay rainfall={P} enabled={rainOverlayEnabled} windAngle={18} />
-
-        {/* Status HUD Badge */}
-        <div id="sim-status" style={{ position: "absolute", top: 12, left: 12, zIndex: 6, background: "rgba(4,10,20,0.85)", backdropFilter: "blur(8px)", padding: "5px 12px", borderRadius: 999, fontSize: ".72rem", border: "1px solid #1e3a5a", fontFamily: "JetBrains Mono", color: "#22d3ee" }}>
-          {loading ? "Computing Hydrology..." : "Digital Twin Online"}
+        <div id="sim-status" style={{ position: "absolute", top: 8, left: 8, zIndex: 6, background: "var(--paper)", border: "1px solid var(--ink)", padding: "4px 8px", fontFamily: "var(--font-mono)", fontSize: 10, fontWeight:600, letterSpacing:"0.06em" }}>
+          {loading ? "COMPUTING…" : "INSTRUMENT LIVE"}
         </div>
-
-        {/* Camera Preset Toolbar */}
-        <div style={{ position: "absolute", top: 12, left: 190, zIndex: 6, display: "flex", gap: 3, background: "rgba(4,10,20,0.8)", backdropFilter: "blur(6px)", padding: "3px 4px", borderRadius: 999, border: "1px solid #1e3a5a" }}>
-          <button onClick={() => setCameraPreset("3d")} className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition ${cameraView === "3d" ? "bg-cyan-500 text-black" : "text-[#8aa0b8] hover:text-white"}`}>3D Orbit</button>
-          <button onClick={() => setCameraPreset("top")} className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition ${cameraView === "top" ? "bg-cyan-500 text-black" : "text-[#8aa0b8] hover:text-white"}`}>Nadir 2D</button>
-          <button onClick={() => setCameraPreset("street")} className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition ${cameraView === "street" ? "bg-cyan-500 text-black" : "text-[#8aa0b8] hover:text-white"}`}>Street</button>
-          <button onClick={() => setCameraPreset("aoi")} className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition ${cameraView === "aoi" ? "bg-cyan-500 text-black" : "text-[#8aa0b8] hover:text-white"}`}>Target AOI</button>
+        <div style={{ position: "absolute", top: 8, left: 140, zIndex: 6, display: "flex", gap: 2, background: "var(--paper)", border: "1px solid var(--ink)", padding: 2 }}>
+          {(["3d","top","street","aoi"] as const).map((v)=> (
+            <button key={v} onClick={() => setCameraPreset(v)} style={{ padding:"3px 8px", border:"1px solid", borderColor: cameraView===v?"var(--ink)":"var(--rule)", background: cameraView===v?"var(--ink)":"var(--paper)", color: cameraView===v?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>{v==="3d"?"3D":v==="top"?"NADIR":v.toUpperCase()}</button>
+          ))}
         </div>
-
-        {/* 3D Canvas */}
-        <canvas ref={simRef} id="sim" aria-label="Chennai 3D Digital Twin Simulation Canvas" style={{ width: "100%", height: 530, display: "block" }} />
-
-        {/* Telemetry & Provenance HUD */}
+        <canvas ref={simRef} id="sim" aria-label="Chennai 3D Digital Twin Simulation Canvas" style={{ width: "100%", height: 440, display: "block" }} />
         {debug && (
-          <div style={{ position: "absolute", bottom: 12, left: 12, background: "rgba(4,10,20,0.85)", backdropFilter: "blur(10px)", border: "1px solid #1e3a5a", borderRadius: 12, padding: "10px 14px", fontSize: ".65rem", fontFamily: "JetBrains Mono", lineHeight: 1.45, maxWidth: "70%", zIndex: 6 }}>
-            <div style={{ fontWeight: 700, color: "#22d3ee", display: "flex", gap: 8 }}>
-              <span>PROVENANCE: {selectedArea?.name || debug.aoi?.id}</span>
-              <span style={{ color: "#38bdf8" }}>[{viewMode.toUpperCase()}]</span>
-            </div>
-            <div style={{ color: "#e6eef8", marginTop: 2 }}>
-              Coordinates: {debug.location} • DEM: {debug.terrain?.min?.toFixed(2)}m to {debug.terrain?.max?.toFixed(2)}m (SRTM COP30)
-            </div>
-            <div style={{ color: "#8aa0b8", marginTop: 2 }}>
-              Loaded Assets: {debug.counts?.buildings || 0} building footprints • {debug.counts?.roads || 0} roads • {debug.counts?.hotspots || 0} GCC 2015 hotspots
-            </div>
+          <div style={{ position: "absolute", bottom: 8, left: 8, background: "var(--paper)", border: "1px solid var(--ink)", padding: "6px 10px", fontFamily:"var(--font-mono)", fontSize:9, lineHeight:1.4, maxWidth:"62%", zIndex:6 }}>
+            <div style={{ fontWeight:700, display:"flex", gap:6 }}><span>{(selectedArea?.name || debug.aoi?.id || "").toUpperCase()}</span><span style={{ color:"var(--muted)" }}>[{viewMode.toUpperCase()}]</span></div>
+            <div style={{ color:"var(--muted2)", marginTop:2 }}>{debug.location} · DEM {debug.terrain?.min?.toFixed(2)}–{debug.terrain?.max?.toFixed(2)}m · {debug.counts?.buildings||0} bldgs · {debug.counts?.roads||0} roads</div>
           </div>
         )}
-
-        {/* Legend Overlay */}
-        <div style={{ position: "absolute", top: 12, right: 12, background: "rgba(4,10,20,0.85)", backdropFilter: "blur(8px)", border: "1px solid #1e3a5a", borderRadius: 12, padding: "8px 12px", fontSize: ".68rem", lineHeight: 1.4, zIndex: 6 }}>
-          <div style={{ fontWeight: 700, color: "#e6eef8" }}>
-            {selectedArea?.center ? `${selectedArea.center[1].toFixed(3)}°N, ${selectedArea.center[0].toFixed(3)}°E` : "Chennai South Basin"}
-          </div>
-          <div style={{ color: "#8aa0b8", fontSize: ".62rem" }}>EPSG:4326 • SCS-CN Modelled Depth</div>
-          <div style={{ display: "flex", gap: 6, marginTop: 6, alignItems: "center" }}>
-            <span style={{ width: 22, height: 4, background: "#0ea5e9", borderRadius: 2 }} /> <span style={{ color: "#8aa0b8" }}>&lt;0.3m Low</span>
-            <span style={{ width: 22, height: 4, background: "#f59e0b", borderRadius: 2 }} /> <span style={{ color: "#8aa0b8" }}>0.3-0.8m Med</span>
-            <span style={{ width: 22, height: 4, background: "#ef4444", borderRadius: 2 }} /> <span style={{ color: "#8aa0b8" }}>&gt;0.8m High</span>
+        <div style={{ position: "absolute", top: 8, right: 8, background: "var(--paper)", border: "1px solid var(--ink)", padding: "6px 10px", fontFamily:"var(--font-mono)", fontSize:9, lineHeight:1.4, zIndex:6 }}>
+          <div style={{ fontWeight:700 }}>{selectedArea?.center ? `${selectedArea.center[1].toFixed(3)}°N ${selectedArea.center[0].toFixed(3)}°E` : "CHENNAI BASIN"}</div>
+          <div style={{ color:"var(--muted)", fontSize:9 }}>EPSG:4326 · SCS-CN</div>
+          <div style={{ display:"flex", gap:6, marginTop:6 }}>
+            <span><span style={{ display:"inline-block", width:12, height:6, background:"var(--hydro)", verticalAlign:"middle", marginRight:4 }} />&lt;0.3</span>
+            <span><span style={{ display:"inline-block", width:12, height:6, background:"#E6B422", verticalAlign:"middle", marginRight:4 }} />0.3-0.8</span>
+            <span><span style={{ display:"inline-block", width:12, height:6, background:"var(--vermillion)", verticalAlign:"middle", marginRight:4 }} />&gt;0.8</span>
           </div>
         </div>
       </div>
 
-      {/* Control Surface */}
-      <div className="sim-controls" style={{ background: "#0f1e2e", border: "1px solid #1e3a5a", borderRadius: 16, padding: 14, display: "flex", flexDirection: "column", gap: 12, marginTop: 12 }}>
-        {/* Layer Toggles */}
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-          <span style={{ fontSize: ".72rem", color: "#8aa0b8", fontWeight: 700, marginRight: 4 }}>LAYERS:</span>
-          <button onClick={() => setShowBuildings(!showBuildings)} className={`px-3 py-1 rounded-full text-xs border transition ${showBuildings ? "bg-cyan-500 text-black border-transparent font-bold" : "border-[#1e3a5a] text-[#8aa0b8]"}`}>Buildings (1,811)</button>
-          <button onClick={() => setShowRoads(!showRoads)} className={`px-3 py-1 rounded-full text-xs border transition ${showRoads ? "bg-cyan-500 text-black border-transparent font-bold" : "border-[#1e3a5a] text-[#8aa0b8]"}`}>Road Network</button>
-          <button onClick={() => setShowWaterways(!showWaterways)} className={`px-3 py-1 rounded-full text-xs border transition ${showWaterways ? "bg-cyan-500 text-black border-transparent font-bold" : "border-[#1e3a5a] text-[#8aa0b8]"}`}>Waterways / Canals</button>
-          <button onClick={() => setShowWater(!showWater)} className={`px-3 py-1 rounded-full text-xs border transition ${showWater ? "bg-cyan-500 text-black border-transparent font-bold" : "border-[#1e3a5a] text-[#8aa0b8]"}`}>Flood Water Surface</button>
-          <button onClick={() => setShowHotspots(!showHotspots)} className={`px-3 py-1 rounded-full text-xs border transition ${showHotspots ? "bg-amber-400 text-black border-transparent font-bold" : "border-[#1e3a5a] text-[#8aa0b8]"}`}>2015 GCC Hotspots</button>
+      {/* Control Surface — Ledger */}
+      <div style={{ background:"var(--paper)", border:"1px solid var(--ink)", padding:10, display:"flex", flexDirection:"column", gap:10, marginTop:10 }}>
+        <div style={{ display:"flex", gap:4, flexWrap:"wrap", alignItems:"center", border:"1px solid var(--rule)", background:"var(--surface)", padding:4 }}>
+          <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.08em", color:"var(--muted)", padding:"4px 6px", fontWeight:600 }}>LAYERS</span>
+          <button onClick={() => setShowBuildings(!showBuildings)} style={{ padding:"4px 8px", border:"1px solid", borderColor: showBuildings?"var(--ink)":"var(--rule-strong)", background: showBuildings?"var(--ink)":"var(--paper)", color: showBuildings?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>BLDGS 1,811</button>
+          <button onClick={() => setShowRoads(!showRoads)} style={{ padding:"4px 8px", border:"1px solid", borderColor: showRoads?"var(--ink)":"var(--rule-strong)", background: showRoads?"var(--ink)":"var(--paper)", color: showRoads?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>ROADS</button>
+          <button onClick={() => setShowWaterways(!showWaterways)} style={{ padding:"4px 8px", border:"1px solid", borderColor: showWaterways?"var(--ink)":"var(--rule-strong)", background: showWaterways?"var(--ink)":"var(--paper)", color: showWaterways?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>CANALS</button>
+          <button onClick={() => setShowWater(!showWater)} style={{ padding:"4px 8px", border:"1px solid", borderColor: showWater?"var(--ink)":"var(--rule-strong)", background: showWater?"var(--ink)":"var(--paper)", color: showWater?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>WATER</button>
+          <button onClick={() => setShowHotspots(!showHotspots)} style={{ padding:"4px 8px", border:"1px solid", borderColor: showHotspots?"var(--ink)":"var(--rule-strong)", background: showHotspots?"var(--vermillion)":"var(--paper)", color: showHotspots?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>2015 HOTSPOTS</button>
         </div>
 
-        {/* Parameter Sliders */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10 }}>
-          <div className="ctrl-group">
-            <label style={{ display: "flex", justifyContent: "space-between", fontSize: ".75rem", fontWeight: 600 }}>Rainfall P <span style={{ color: "#22d3ee", fontFamily: "JetBrains Mono" }}>{P} mm</span></label>
-            <input type="range" min={0} max={400} value={P} onChange={(e) => setP(+e.target.value)} aria-label="Rainfall" style={{ width: "100%", accentColor: "#06b6d4", marginTop: 4 }} />
-          </div>
-          <div className="ctrl-group">
-            <label style={{ display: "flex", justifyContent: "space-between", fontSize: ".75rem", fontWeight: 600 }}>Curve Number (CN) <span style={{ color: "#22d3ee", fontFamily: "JetBrains Mono" }}>{CN}</span></label>
-            <input type="range" min={40} max={98} value={CN} onChange={(e) => setCN(+e.target.value)} aria-label="Urban density" style={{ width: "100%", accentColor: "#06b6d4", marginTop: 4 }} />
-          </div>
-          <div className="ctrl-group">
-            <label style={{ display: "flex", justifyContent: "space-between", fontSize: ".75rem", fontWeight: 600 }}>Duration <span style={{ color: "#22d3ee", fontFamily: "JetBrains Mono" }}>{t} min</span></label>
-            <input type="range" min={15} max={180} value={t} onChange={(e) => setT(+e.target.value)} aria-label="Time" style={{ width: "100%", accentColor: "#06b6d4", marginTop: 4 }} />
-          </div>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8 }} className="max-[600px]:!grid-cols-1">
+          <div><label style={{ display:"flex", justifyContent:"space-between", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.06em" }}>P RAINFALL <span style={{ color:"var(--hydro)" }}>{P}mm</span></label><input type="range" min={0} max={400} value={P} onChange={(e)=>setP(+e.target.value)} aria-label="Rainfall" style={{ width:"100%", accentColor:"var(--ink)", marginTop:4 }} /></div>
+          <div><label style={{ display:"flex", justifyContent:"space-between", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.06em" }}>CN <span style={{ color:"var(--ink)" }}>{CN}</span></label><input type="range" min={40} max={98} value={CN} onChange={(e)=>setCN(+e.target.value)} aria-label="CN" style={{ width:"100%", accentColor:"var(--ink)", marginTop:4 }} /></div>
+          <div><label style={{ display:"flex", justifyContent:"space-between", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.06em" }}>DURATION <span style={{ color:"var(--muted)" }}>{t}min</span></label><input type="range" min={15} max={180} value={t} onChange={(e)=>setT(+e.target.value)} aria-label="Duration" style={{ width:"100%", accentColor:"var(--ink)", marginTop:4 }} /></div>
         </div>
-
-        {/* Hydrograph Timeline (0h to 6h) */}
-        <div style={{ background: "#0a1018", border: "1px solid #1e3a5a", borderRadius: 12, padding: "10px 12px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-            <span style={{ fontSize: ".72rem", color: "#8aa0b8", fontWeight: 700 }}>6-HOUR FLOOD HYDROGRAPH</span>
-            <span style={{ fontSize: ".72rem", color: "#22d3ee", fontFamily: "JetBrains Mono" }}>
-              {timeSeries[currentHour] ? `Hour ${currentHour}: ${timeSeries[currentHour].depth?.toFixed(2)}m depth • ${timeSeries[currentHour].velocity?.toFixed(2)}m/s flow` : `t = ${t} min`}
-            </span>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
-            {[0, 1, 2, 3, 4, 5, 6].map((hour) => (
-              <button
-                key={hour}
-                onClick={() => onTimeChange?.(hour)}
-                style={{
-                  padding: "5px 2px",
-                  borderRadius: 6,
-                  border: currentHour === hour ? "1px solid #06b6d4" : "1px solid #1e3a5a",
-                  background: currentHour === hour ? "rgba(6, 182, 212, 0.25)" : "rgba(15, 30, 46, 0.5)",
-                  color: currentHour === hour ? "#22d3ee" : "#8aa0b8",
-                  fontSize: ".68rem",
-                  fontWeight: currentHour === hour ? 700 : 500,
-                  cursor: "pointer",
-                  fontFamily: "JetBrains Mono",
-                  textAlign: "center",
-                }}
-              >
-                {hour}h
-              </button>
+        <div style={{ border:"1px solid var(--ink)", background:"var(--paper)", padding:"8px 10px" }}>
+          <div style={{ display:"flex", justifyContent:"space-between", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}><span style={{ letterSpacing:"0.08em" }}>HYDROGRAPH 0—6H</span><span style={{ color:"var(--muted)" }}>{timeSeries[currentHour] ? `${currentHour}H · ${timeSeries[currentHour].depth?.toFixed(2)}m · ${timeSeries[currentHour].velocity?.toFixed(2)}m/s` : `t ${t}min`}</span></div>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:4, marginTop:6 }}>
+            {[0,1,2,3,4,5,6].map((hour)=> (
+              <button key={hour} onClick={()=>onTimeChange?.(hour)} style={{ padding:"6px 0", border:"1px solid", borderColor: currentHour===hour?"var(--ink)":"var(--rule-strong)", background: currentHour===hour?"var(--ink)":"var(--paper)", color: currentHour===hour?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>{hour}H</button>
             ))}
           </div>
         </div>
-
-        {/* Real-time Telemetry Metrics */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 8 }}>
-          <div style={{ background: "#0a1018", border: "1px solid #1e3a5a", borderRadius: 10, padding: "8px 12px" }}>
-            <small style={{ color: "#8aa0b8", fontSize: ".62rem", display: "block" }}>Modelled Depth</small>
-            <b style={{ fontFamily: "JetBrains Mono", fontSize: ".92rem", color: d > 0.8 ? "#ef4444" : d > 0.3 ? "#f59e0b" : "#22d3ee" }}>{stats.depth} m</b>
-          </div>
-          <div style={{ background: "#0a1018", border: "1px solid #1e3a5a", borderRadius: 10, padding: "8px 12px" }}>
-            <small style={{ color: "#8aa0b8", fontSize: ".62rem", display: "block" }}>SCS Runoff Volume (Q)</small>
-            <b style={{ fontFamily: "JetBrains Mono", fontSize: ".92rem", color: "#22d3ee" }}>{stats.runoff} mm</b>
-          </div>
-          <div style={{ background: "#0a1018", border: "1px solid #1e3a5a", borderRadius: 10, padding: "8px 12px" }}>
-            <small style={{ color: "#8aa0b8", fontSize: ".62rem", display: "block" }}>Flow Velocity</small>
-            <b style={{ fontFamily: "JetBrains Mono", fontSize: ".92rem", color: "#e6eef8" }}>{stats.velocity} m/s</b>
-          </div>
-          <div style={{ background: "#0a1018", border: "1px solid #1e3a5a", borderRadius: 10, padding: "8px 12px" }}>
-            <small style={{ color: "#8aa0b8", fontSize: ".62rem", display: "block" }}>Affected Buildings</small>
-            <b style={{ fontFamily: "JetBrains Mono", fontSize: ".92rem", color: "#f87171" }}>{stats.buildings}</b>
-          </div>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:6 }} className="max-[600px]:!grid-cols-2">
+          <div style={{ border:"1px solid var(--rule)", background:"var(--paper)", padding:"8px 10px", borderLeft:`2px solid ${d>0.8?"var(--vermillion)":d>0.3?"#E6B422":"var(--hydro)"}` }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", letterSpacing:"0.08em" }}>DEPTH</div><div style={{ fontFamily:"var(--font-mono)", fontSize:13, fontWeight:700, color: d>0.8?"var(--vermillion)":d>0.3?"#8A6D00":"var(--hydro)" }}>{stats.depth} m</div></div>
+          <div style={{ border:"1px solid var(--rule)", background:"var(--paper)", padding:"8px 10px" }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", letterSpacing:"0.08em" }}>RUNOFF Q</div><div style={{ fontFamily:"var(--font-mono)", fontSize:13, fontWeight:700, color:"var(--hydro)" }}>{stats.runoff} mm</div></div>
+          <div style={{ border:"1px solid var(--rule)", background:"var(--paper)", padding:"8px 10px" }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", letterSpacing:"0.08em" }}>VELOCITY</div><div style={{ fontFamily:"var(--font-mono)", fontSize:13, fontWeight:700 }}>{stats.velocity} m/s</div></div>
+          <div style={{ border:"1px solid var(--rule)", background:"var(--paper)", padding:"8px 10px" }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", letterSpacing:"0.08em" }}>BLDGS</div><div style={{ fontFamily:"var(--font-mono)", fontSize:13, fontWeight:700, color:"var(--vermillion)" }}>{stats.buildings}</div></div>
         </div>
       </div>
     </div>
