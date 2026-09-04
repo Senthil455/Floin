@@ -30,6 +30,9 @@ data/processed/
 .env.local
 .env.production
 
+# Build cache
+*.tsbuildinfo
+
 # OS
 .DS_Store
 Thumbs.db
