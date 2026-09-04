@@ -42,3 +42,6 @@ Chennai Floods 2015 Data.zip
 data/chennai2015/
 data/arcgis_api/
 
+# Github demos — local reference only, not for deploy (transplanted into Floin)
+Github_demos/
+
