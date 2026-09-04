@@ -22,6 +22,8 @@ export default function ChennaiMap({
   aoiSizeKm = 1.5,
   onMapClick,
   activeLayer = "all",
+  rainfall,
+  cn,
 }: {
   selectedArea?: any;
   onSelectArea?: (a: any) => void;
@@ -29,6 +31,8 @@ export default function ChennaiMap({
   aoiSizeKm?: number;
   onMapClick?: (lat: number, lng: number) => void;
   activeLayer?: string;
+  rainfall?: number;
+  cn?: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const countRef = useRef<HTMLSpanElement>(null);
@@ -129,6 +133,31 @@ export default function ChennaiMap({
       const cBld = await loadGeoJson("buildings", "buildings.geojson", { color: colors.buildings, weight: 1, fillOpacity: 0.35 });
       const cRoad = await loadGeoJson("highway", "highway.geojson", { color: colors.highway, weight: 2, fillOpacity: 0.3 });
       const cWater = await loadGeoJson("water", "natural_water.geojson", { color: colors.water, weight: 1.5, fillOpacity: 0.5 });
+
+      // Ward choropleth layer — prob-driven fill (heat) tied to rainfall/CN if provided
+      try {
+        const wj = await fetch("/chennai_wards_200.geojson").then((r) => r.json());
+        const probForWard = (idx:number) => {
+          const P = rainfall ?? 160; const CN = cn ?? 84;
+          const base = [45,78,112,145,98,67,134,89][idx % 8] ?? 80;
+          const S=25400/CN-254, Ia=0.2*S; const mix=(base+P)/2; const Q=mix<=Ia?0:(mix-Ia)**2/(mix+0.8*S);
+          return Math.min(1, Q/80);
+        };
+        const wl = L.geoJSON(wj, {
+          style: (f:any) => {
+            const idx = (f.properties?.Ward_No ?? f.properties?.WARD_NO ?? 1) % 8;
+            const prob = probForWard(idx);
+            const col = prob>0.6?"#E63946": prob>0.32?"#E6B422":"#0E7490";
+            return { color: col, weight: 1, fillColor: col, fillOpacity: 0.10 + prob*0.28, dashArray: "2 3" };
+          },
+          onEachFeature: (f:any, ly:any)=>{
+            const p=f.properties||{}; const name=p.Ward_Name||p.WARD_NAME||`Ward ${p.Ward_No||p.WARD_NO||""}`;
+            ly.bindTooltip(`${name} — prob ${probForWard((p.Ward_No||p.WARD_NO||1)%8).toFixed(2)}`, {sticky:true});
+            ly.on("click",(e:any)=>{ L.DomEvent.stopPropagation(e); const b=(ly as any).getBounds?.(); if(b&&onSelectArea){ const c=b.getCenter(); const d=(aoiSizeKm||1.2)/111; onSelectArea({ id:`wardmap-${name.slice(0,8)}`, name, basin:"ward", bounds:{xmin:c.lng-d,xmax:c.lng+d,ymin:c.lat-d,ymax:c.lat+d}, center:[c.lng,c.lat]}); } });
+          }
+        }).addTo(map);
+        layers.wards = wl;
+      } catch {}
 
       try {
         const wj = await fetch("/waterway.geojson").then((r) => r.json());
@@ -267,7 +296,7 @@ export default function ChennaiMap({
     <div>
       <div style={{ display:"flex", gap:4, flexWrap:"wrap", marginBottom:8, alignItems:"center", border:"1px solid var(--rule)", background:"var(--paper)", padding:4 }}>
         <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.08em", color:"var(--muted)", padding:"4px 6px", fontWeight:600 }}>LAYERS</span>
-        {["all", "buildings", "highway", "water", "hotspots", "rainfall", "shelters", "landmarks"].map((key) => (
+        {["all", "buildings", "highway", "water", "hotspots", "rainfall", "shelters", "landmarks", "wards"].map((key) => (
           <button
             key={key}
             onClick={() => handleLayerToggle(key)}

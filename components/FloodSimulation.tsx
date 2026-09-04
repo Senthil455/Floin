@@ -347,7 +347,7 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
         buildRoads(ctx.roadsGroup,roadFeatures,viewMode);
         buildWaterways(ctx.waterwaysGroup,allWaterways);
         buildHotspots(ctx.hotspotsGroup,hotspotFeatures,ctx.terrain);
-        buildWards(ctx.wardsGroup,wardFeatures,ctx.terrain);
+        buildWards(ctx.wardsGroup,wardFeatures,ctx.terrain, blendedP, CN, viewMode);
         buildSoil(ctx.soilGroup,soilFeatures,ctx.terrain);
         buildLulc(ctx.lulcGroup,lulcFeatures,ctx.terrain);
         const counts={ buildings:buildingFeatures.length, roads:roadFeatures.length, waterways:allWaterways.length, hotspots:hotspotFeatures.length, wards:wardFeatures.length, soil:soilFeatures.length, lulc:lulcFeatures.length };
@@ -845,10 +845,11 @@ function buildHotspots(group:THREE.Group,features:any[],terrain:THREE.Mesh){
   const geo=new THREE.CylinderGeometry(0.08,0.08,0.6,12);
   features.forEach((f:any)=>{ const coords=f.geometry?.coordinates; if(!coords||!Array.isArray(coords)) return; const [x,z]=lngLatToXZ(coords[0],coords[1]); const mat=new THREE.MeshStandardMaterial({ color:0xf59e0b, emissive:0xd97706, emissiveIntensity:0.6, metalness:0.2, roughness:0.4 }); const pin=new THREE.Mesh(geo,mat); const terrainH=getTerrainHeightAt(terrain,x,z); pin.position.set(x,terrainH+0.3,z); pin.userData={ name:f.properties?.name||f.properties?.Location||"2015 GCC Flood Inundation Hotspot", type:"Historical Ground Truth Hotspot", coords }; group.add(pin); });
 }
-function buildWards(group:THREE.Group,features:any[],terrain:THREE.Mesh){
+function buildWards(group:THREE.Group,features:any[],terrain:THREE.Mesh, rainfall?:number, cn?:number, viewMode?:ViewMode){
   group.clear(); if(!features||features.length===0) return;
   const zoneColors: Record<string, number> = { "I":0x8B7355,"II":0x6B8EAE,"III":0x8FA998,"IV":0xB8A082,"V":0x7A9CC6,"VI":0x9B8B6B,"VII":0x6B8E7A,"VIII":0x8B6B8E,"IX":0xA0826D,"X":0x7A8FA9,"XI":0x9B8E6B,"XII":0x6B8E8E,"XIII":0x8E6B7A,"XIV":0x7A9B8E,"XV":0x8B8E6B };
-  const capped=features.slice(0,60);
+  const heatMode = viewMode==="infrastructure_impact" || viewMode==="depth_heatmap";
+  const capped=features.slice(0,80);
   capped.forEach((f:any)=>{
     const geom=f.geometry; if(!geom) return;
     const polys=geom.type==="Polygon"?[geom.coordinates]:geom.type==="MultiPolygon"?geom.coordinates:[];
@@ -857,14 +858,28 @@ function buildWards(group:THREE.Group,features:any[],terrain:THREE.Mesh){
       const pts=outer.map(([lng,lat]:any)=>{ const [x,z]=lngLatToXZ(lng,lat); const h=getTerrainHeightAt(terrain,x,z); return new THREE.Vector3(x, h+0.04, z); });
       const geo=new THREE.BufferGeometry().setFromPoints(pts);
       const zone=f.properties?.Zone_No||"I"; const col=zoneColors[zone]||0x8B7355;
-      const mat=new THREE.LineBasicMaterial({ color:col, transparent:true, opacity:0.55, depthWrite:false });
-      const line=new THREE.LineLoop(geo, mat); line.userData={ name:`Ward ${f.properties?.Ward_No||""} - ${f.properties?.Zone_Name||"Zone "+zone}`, type:`GCC Ward Boundary - Zone ${zone}`, wardNo:f.properties?.Ward_No, zone };
+      let prob=0;
+      if(heatMode && rainfall!==undefined && cn!==undefined){
+        const wardIdx=(f.properties?.Ward_No||f.properties?.WARD_NO||1)%8;
+        const base=[45,78,112,145,98,67,134,89][wardIdx%8]??80;
+        const S=25400/cn-254, Ia=0.2*S; const mix=(base+rainfall)/2; const Q=mix<=Ia?0:(mix-Ia)**2/(mix+0.8*S);
+        prob=Math.min(1,Q/80);
+      }
+      const lineCol = heatMode ? (prob>0.6?0xE63946: prob>0.32?0xE6B422:0x0E7490) : col;
+      const lineOp = heatMode? 0.85:0.55;
+      const mat=new THREE.LineBasicMaterial({ color:lineCol, transparent:true, opacity:lineOp, depthWrite:false });
+      const line=new THREE.LineLoop(geo, mat); line.userData={ name:`Ward ${f.properties?.Ward_No||""} - ${f.properties?.Zone_Name||"Zone "+zone}`, type:`GCC Ward Boundary - Zone ${zone}`, wardNo:f.properties?.Ward_No, zone, wardProb:prob };
       group.add(line);
-      if(pts.length>0){
-        const center=pts.reduce((a: THREE.Vector3,b: THREE.Vector3)=>a.clone().add(b), new THREE.Vector3()).divideScalar(pts.length);
-        const h=getTerrainHeightAt(terrain, center.x, center.z);
-        const spriteMat=new THREE.SpriteMaterial({ color: col, transparent:true, opacity:0 });
-        const sprite=new THREE.Sprite(spriteMat); sprite.position.set(center.x, h+0.5, center.z); sprite.scale.set(0.01,0.01,1); group.add(sprite);
+      if(heatMode && prob>0.08){
+        try{
+          const shape=new THREE.Shape(); outer.forEach(([lng,lat]:any,i:number)=>{ const [x,z]=lngLatToXZ(lng,lat); if(i===0) shape.moveTo(x,z); else shape.lineTo(x,z); });
+          const g=new THREE.ShapeGeometry(shape); const pos=g.attributes.position as THREE.BufferAttribute;
+          for(let i=0;i<pos.count;i++){ const x=pos.getX(i), z=pos.getY(i); const h=getTerrainHeightAt(terrain,x,z); pos.setZ(i, h+0.035); }
+          g.computeVertexNormals();
+          const fillCol = prob>0.6?0xE63946: prob>0.32?0xE6B422:0x0E7490;
+          const fillMat=new THREE.MeshStandardMaterial({ color:fillCol, transparent:true, opacity: 0.08 + prob*0.18, side:THREE.DoubleSide, depthWrite:false });
+          const fill=new THREE.Mesh(g, fillMat); fill.rotation.x=-Math.PI/2; fill.position.y=0.02; fill.userData={ name:`Ward ${f.properties?.Ward_No} heat ${prob.toFixed(2)}`, type:"Ward Choropleth — prob=Q/80", wardProb:prob }; group.add(fill);
+        }catch{}
       }
     });
   });

@@ -13,6 +13,7 @@ import CrisisCommandCenter from "@/components/CrisisCommandCenter";
 import FloodMLAnalytics from "@/components/FloodMLAnalytics";
 import WebFloodEngine from "@/components/WebFloodEngine";
 import AnalyticsSuite from "@/components/AnalyticsSuite";
+import InsightStrip from "@/components/InsightStrip";
 
 const ChennaiMap = dynamic(() => import("@/components/ChennaiMap"), {
   ssr: false,
@@ -206,16 +207,17 @@ export default function Page() {
                     <span><span style={{ display:"inline-block", width:14, height:6, background:"var(--hydro)", verticalAlign:"middle", marginRight:4 }} />&lt;0.3 LOW</span>
                     <span><span style={{ display:"inline-block", width:14, height:6, background:"#E6B422", verticalAlign:"middle", marginRight:4 }} />0.3-0.8 MED</span>
                     <span><span style={{ display:"inline-block", width:14, height:6, background:"var(--vermillion)", verticalAlign:"middle", marginRight:4 }} />&gt;0.8 HIGH</span>
-                    <span style={{ marginLeft:"auto", color:"var(--muted)" }}>EPSG:4326 · SCS-CN</span>
+                    <span style={{ marginLeft:"auto", color:"var(--muted)" }}>EPSG:4326 · SCS-CN · ward choropleth</span>
                   </div>
                 </div>
+                <div style={{ marginTop:12 }}><InsightStrip rainfall={rainfall} cn={cn} duration={duration} currentHour={currentHour} selectedArea={selectedArea} /></div>
 
                 <div style={{ display:"grid", gap:12 }}>
                   <div style={{ border:"1px solid var(--ink)", background:"var(--surface)" }}>
                     <div style={{ height:28, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 10px", borderBottom:"1px solid var(--rule)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>
                       <span>02 // GEOSPATIAL CONTROL</span><span style={{ color:"var(--hydro)", fontWeight:700 }}>CLICK TO RETARGET</span>
                     </div>
-                    <div style={{ padding:8 }}><ChennaiMap selectedArea={selectedArea} aoiSizeKm={aoiKm} onMapClick={handleMapClick} onSelectArea={setSelectedArea} onSelectFeature={(f:any)=>{setInspectedFeature(f); pushToast(f.name);}} /></div>
+                    <div style={{ padding:8 }}><ChennaiMap selectedArea={selectedArea} aoiSizeKm={aoiKm} rainfall={rainfall} cn={cn} onMapClick={handleMapClick} onSelectArea={setSelectedArea} onSelectFeature={(f:any)=>{setInspectedFeature(f); pushToast(f.name);}} /></div>
                   </div>
 
                   <div style={{ border:"1px solid var(--ink)", background:"var(--surface)" }}>
@@ -278,7 +280,7 @@ export default function Page() {
             </div>
           )}
 
-          {activeWorkspace === "hydrology" && <div style={{ display:"grid", gap:12 }}><HydrologyWorkspace S={S} Ia={Ia} Q={Q} rainfall={rainfall} cn={cn} /><AnalyticsSuite rainfall={rainfall} cn={cn} duration={duration} currentHour={currentHour} onHourChange={setCurrentHour} selectedWard={selectedWard} onSelectWard={(id)=>{ setSelectedWard(id); const w={ tondiarpet:[80.286,13.122], anna_nagar:[80.209,13.085], adyar:[80.257,13.006], velachery:[80.22,12.975], saidapet:[80.224,13.02], ennore:[80.32,13.214], perungudi:[80.24,12.961], thurai:[80.248,12.942] } as any; const c=w[id]; if(c){ const d=1.2/111; setSelectedArea({ id:`ward-${id}`, name: id.toUpperCase(), basin: id, bounds:{ xmin:c[0]-d, xmax:c[0]+d, ymin:c[1]-d, ymax:c[1]+d }, center:c }); setActiveWorkspace("digital_twin"); pushToast(id.toUpperCase()+" → 3D FLY"); } }} /><WebFloodEngine rainfall={rainfall} cn={cn} aoi={selectedArea} viewMode={viewMode} /></div>}
+          {activeWorkspace === "hydrology" && <div style={{ display:"grid", gap:12 }}><HydrologyWorkspace S={S} Ia={Ia} Q={Q} rainfall={rainfall} cn={cn} /><AnalyticsSuite rainfall={rainfall} cn={cn} duration={duration} currentHour={currentHour} onHourChange={setCurrentHour} selectedWard={selectedWard} onSelectWard={(id)=>{ setSelectedWard(id); const w={ tondiarpet:[80.286,13.122], anna_nagar:[80.209,13.085], adyar:[80.257,13.006], velachery:[80.22,12.975], saidapet:[80.224,13.02], ennore:[80.32,13.214], perungudi:[80.24,12.961], thurai:[80.248,12.942] } as any; const c=w[id]; if(c){ const d=1.2/111; setSelectedArea({ id:`ward-${id}`, name: id.toUpperCase(), basin: id, bounds:{ xmin:c[0]-d, xmax:c[0]+d, ymin:c[1]-d, ymax:c[1]+d }, center:c }); setActiveWorkspace("digital_twin"); pushToast(id.toUpperCase()+" → 3D FLY"); } }} /><InsightStrip rainfall={rainfall} cn={cn} duration={duration} currentHour={currentHour} selectedArea={selectedArea} /><WebFloodEngine rainfall={rainfall} cn={cn} aoi={selectedArea} viewMode={viewMode} /></div>}
           {activeWorkspace === "impact" && (
             <div>
               <div style={{ display:"flex", alignItems:"baseline", gap:12, borderBottom:"1px solid var(--ink)", paddingBottom:8, marginBottom:12 }}>
