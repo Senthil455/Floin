@@ -17,6 +17,13 @@ import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
 
 const CHENNAI_BOUNDS = { xmin: 80.10, xmax: 80.35, ymin: 12.88, ymax: 13.25 };
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
+function seededRandom(seed: number) {
+  let state = Math.abs(seed) % 2147483647 || 1;
+  return () => {
+    state = state * 16807 % 2147483647;
+    return (state - 1) / 2147483646;
+  };
+}
 function accentForDepth(d: number) { return d > 0.8 ? "var(--vermillion)" : d > 0.32 ? "#B45309" : "var(--hydro)"; }
 function CrossSectionChart({ pts, terrain, depth }: { pts: THREE.Vector3[]; terrain: any; depth: number }) {
   if (!terrain || pts.length !== 2) return <div style={{ marginTop: 6, height: 48, border: "1px solid var(--rule)", display: "grid", placeItems: "center", fontFamily: "var(--font-mono)", fontSize: 8, color: "var(--muted)" }}>—</div>;
@@ -132,6 +139,9 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
   const [isFullscreen, setIsFullscreen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
+  const visualStateRef = useRef({ depth: 0, velocity: 0.2 });
+  const interactionStateRef = useRef({ measureMode: false, measurePts: [] as THREE.Vector3[] });
+
   useEffect(()=>{ if(externalP!==undefined) setP(externalP);},[externalP]);
   useEffect(()=>{ if(externalCN!==undefined) setCN(externalCN);},[externalCN]);
   useEffect(()=>{ if(externalT!==undefined) setT(externalT);},[externalT]);
@@ -148,6 +158,15 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
   const d = currentTimeValue;
   const stats = useMemo(()=>({ depth:d.toFixed(2), runoff:Q.toFixed(1), buildings:Math.round(80+d*900+Q*3).toLocaleString(), velocity:currentVelocity.toFixed(2), hour:currentHour, s:S.toFixed(1), ia:Ia.toFixed(1)}),[d,Q,currentHour,currentVelocity,S,Ia]);
   useEffect(()=>{ onStatsChange?.(stats); },[stats,onStatsChange]);
+  useEffect(()=>{
+    visualStateRef.current = { depth: d, velocity: currentVelocity };
+    interactionStateRef.current = { measureMode, measurePts };
+    const ctx = simCtxRef.current;
+    if (ctx?.water) {
+      ctx.water.position.y = -0.88 + Math.min(d * 0.18, 0.3);
+      (ctx.water.material as any).uniforms.depth.value = d;
+    }
+  },[d,currentVelocity,measureMode,measurePts]);
 
   const setCameraPreset = (view: "3d"|"top"|"street"|"aoi") => {
     setCameraView(view);
@@ -257,11 +276,12 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
       mouse.y=-((e.clientY-rect.top)/rect.height)*2+1;
       raycaster.setFromCamera(mouse, ctx.camera);
 
-      if(measureMode){
+      const interaction = interactionStateRef.current;
+      if(interaction.measureMode){
         const hits=raycaster.intersectObject(ctx.terrain);
         if(hits.length>0){
           const p=hits[0].point.clone();
-          const next=[...measurePts, p];
+          const next=[...interaction.measurePts, p];
           if(next.length>2) next.shift();
           setMeasurePts(next);
           if(ctx.measureLine){ ctx.scene.remove(ctx.measureLine); ctx.measureLine.geometry.dispose(); }
@@ -278,7 +298,7 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
       }
 
       raycaster.setFromCamera(mouse, ctx.camera);
-      const intersects=raycaster.intersectObjects([...ctx.buildingsGroup.children, ...ctx.hotspotsGroup.children, ...ctx.roadsGroup.children, ...ctx.waterwaysGroup.children, ctx.terrain]);
+      const intersects=raycaster.intersectObjects([...ctx.buildingsGroup.children, ...ctx.hotspotsGroup.children, ...ctx.roadsGroup.children, ...ctx.waterwaysGroup.children, ctx.terrain, ctx.water]);
       if(intersects.length>0){
         const hit=intersects[0]; const obj=hit.object as any; const pt=hit.point;
         if(ctx.water && (obj===ctx.terrain || obj===ctx.water)){
@@ -286,7 +306,7 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
           (ctx.water.material as any).uniforms.rippleTime.value=0;
         }
         if(obj===ctx.terrain){
-          onSelectObject?.({ name:`Terrain Cell (${((pt.x/14+0.5)*(CHENNAI_BOUNDS.xmax-CHENNAI_BOUNDS.xmin)+CHENNAI_BOUNDS.xmin).toFixed(4)}degE, ${((pt.z/14+0.5)*(CHENNAI_BOUNDS.ymax-CHENNAI_BOUNDS.ymin)+CHENNAI_BOUNDS.ymin).toFixed(4)}degN)`, type:"Terrain Surface (DEM)", elevation:`${((pt.y+1.2)*5+2).toFixed(2)}m`, depth:`${d.toFixed(2)}m`, velocity:`${currentVelocity.toFixed(2)} m/s`, risk:d>0.8?"Critical":d>0.3?"Moderate":"Low", confidence:"High (SRTM 30m / D8 Modelled)" });
+          onSelectObject?.({ name:`Terrain Cell (${((pt.x/14+0.5)*(CHENNAI_BOUNDS.xmax-CHENNAI_BOUNDS.xmin)+CHENNAI_BOUNDS.xmin).toFixed(4)}degE, ${((pt.z/14+0.5)*(CHENNAI_BOUNDS.ymax-CHENNAI_BOUNDS.ymin)+CHENNAI_BOUNDS.ymin).toFixed(4)}degN)`, type:"Terrain Surface (DEM)", elevation:`${((pt.y+1.2)*5+2).toFixed(2)}m`, depth:`${visualStateRef.current.depth.toFixed(2)}m`, velocity:`${visualStateRef.current.velocity.toFixed(2)} m/s`, risk:visualStateRef.current.depth>0.8?"Critical":visualStateRef.current.depth>0.3?"Moderate":"Low", confidence:"High (SRTM 30m / D8 Modelled)" });
         } else if(obj.userData){
           let data=obj.userData;
           if(data.isBatched && (hit as any).point){
@@ -295,7 +315,7 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
             for(const p of (data.pickData||[])){ const [px,pz]=lngLatToXZ(p.x, p.z); const d2=Math.hypot(px-hp.x, pz-hp.z); if(d2<bd){ bd=d2; best=p.data; } }
             if(best) data=best;
           }
-          onSelectObject?.({ name:data.name||"Urban Feature", type:data.type||"Building Footprint", featureId:data.featureId||"OSM-Chennai", elevation:`${((pt.y+1.2)*5+2).toFixed(2)}m`, depth:`${d.toFixed(2)}m`, velocity:`${currentVelocity.toFixed(2)} m/s`, risk:d>0.8?"Critical / Evacuate":d>0.3?"Moderate Inundation":"Safe", confidence:"Observed OpenStreetMap / GCC 2015", levels:data.levels||2, ward:data.ward, wardProb:data.wardProb });
+          onSelectObject?.({ name:data.name||"Urban Feature", type:data.type||"Building Footprint", featureId:data.featureId||"OSM-Chennai", elevation:`${((pt.y+1.2)*5+2).toFixed(2)}m`, depth:`${visualStateRef.current.depth.toFixed(2)}m`, velocity:`${visualStateRef.current.velocity.toFixed(2)} m/s`, risk:visualStateRef.current.depth>0.8?"Critical / Evacuate":visualStateRef.current.depth>0.3?"Moderate Inundation":"Safe", confidence:"Observed OpenStreetMap / GCC 2015", levels:data.levels||2, ward:data.ward, wardProb:data.wardProb });
         }
       }
     };
@@ -359,28 +379,29 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
         const simResponse=await fetch("/api/simulate",{ method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ aoi, rainfall:P, cn:CN, duration:t, requestId:reqId }), signal:abortControllerRef.current?.signal }).then(r=>r.json());
         if(requestIdRef.current!==reqId) return;
         const timeSeriesData=simResponse.timeSeries||[]; setTimeSeries(timeSeriesData);
-        cacheSet(cacheKey,{ terrain:terrainStats, counts, simResult:simResponse, timeSeries:timeSeriesData, datasetsUsed:queryResponse.datasets?.filter((d:any)=>d.covers)||[] });
+        cacheSet(cacheKey,{ terrain:terrainStats, counts, simResult:simResponse, timeSeries:timeSeriesData, realDem, datasetsUsed:queryResponse.datasets?.filter((d:any)=>d.covers)||[] });
         applyCachedResult(ctx,{ terrain:terrainStats, counts, simResult:simResponse },aoi,viewMode);
         setDebug({ requestId:reqId, aoi, terrain:terrainStats, counts, simResult:simResponse, cached:false, location:`${(aoi.center?aoi.center[1]:13.08).toFixed(4)}°N, ${(aoi.center?aoi.center[0]:80.27).toFixed(4)}°E`, datasetCoverage:queryResponse.summary });
         setLoading(false); if(statusEl) statusEl.textContent=`INSTRUMENT LIVE · REQ #${reqId}`;
       }catch(error){ if(error instanceof Error && error.name==="AbortError") return; console.error("Digital Twin load error:",error); setLoading(false); if(statusEl) statusEl.textContent=`READY · REQ #${reqId}`; }
     })();
 
-    let raf=0; let clock=new THREE.Clock();
+    let raf=0; let previousTime=performance.now(); let elapsed=0;
     const animate=()=>{
       raf=requestAnimationFrame(animate);
-      const delta=clock.getDelta(); const elapsed=clock.getElapsedTime();
+      const now=performance.now(); const delta=Math.min((now-previousTime)/1000,0.05); previousTime=now; elapsed+=delta;
       const phase=elapsed*(isPlaying?0.9:0.25);
       if(ctx.water){
         (ctx.water.material as any).uniforms.time.value=phase;
-        (ctx.water.material as any).uniforms.depth.value=d;
+        (ctx.water.material as any).uniforms.depth.value=visualStateRef.current.depth;
+        ctx.water.position.y=-0.88 + Math.min(visualStateRef.current.depth * 0.18, 0.3);
         const rt=(ctx.water.material as any).uniforms.rippleTime.value;
         if(rt<10) (ctx.water.material as any).uniforms.rippleTime.value=rt+delta*2.0;
       }
       if(ctx.hotspotsGroup){
         ctx.hotspotsGroup.children.forEach((m:any)=>{ if(m.material?.emissiveIntensity!==undefined) m.material.emissiveIntensity=0.55+Math.sin(elapsed*2.2)*0.4; });
       }
-      updateBuildingImpact(ctx.buildingsGroup,d,viewMode);
+      updateBuildingImpact(ctx.buildingsGroup,visualStateRef.current.depth,viewMode);
       ctx.controls.update();
       const az=THREE.MathUtils.radToDeg(ctx.controls.getAzimuthalAngle());
       setCompassDeg(((az%360)+360)%360);
@@ -390,8 +411,8 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
       ctx.renderer.render(ctx.scene, ctx.camera);
     };
     animate();
-    return ()=>{ cancelAnimationFrame(raf); canvas.removeEventListener("mousemove", handleMouseMove); canvas.removeEventListener("mouseleave", handleMouseLeave); canvas.removeEventListener("click", handleCanvasClick); canvas.removeEventListener("dblclick", handleDblClick); if(abortControllerRef.current) abortControllerRef.current.abort(); };
-  },[selectedArea?.id, selectedArea?.bounds?.xmin, selectedArea?.bounds?.xmax, P, CN, t, d, viewMode, measureMode, measurePts.length]);
+    return ()=>{ cancelAnimationFrame(raf); canvas.removeEventListener("mousemove", handleMouseMove); canvas.removeEventListener("mouseleave", handleMouseLeave); canvas.removeEventListener("click", handleCanvasClick); canvas.removeEventListener("dblclick", handleDblClick); if(abortControllerRef.current) abortControllerRef.current.abort(); disposeScene(ctx); };
+  },[selectedArea?.id, selectedArea?.bounds?.xmin, selectedArea?.bounds?.xmax, selectedArea?.bounds?.ymin, selectedArea?.bounds?.ymax, P, CN, t, viewMode]);
 
   useEffect(()=>{ setMeasureMode(false); setMeasurePts([]); if(simCtxRef.current?.measureLine){ try{ simCtxRef.current.scene.remove(simCtxRef.current.measureLine); simCtxRef.current.measureLine.geometry.dispose(); }catch{} simCtxRef.current.measureLine=null; } },[selectedArea?.id]);
   useEffect(()=>{ if(!simCtxRef.current) return; const ctx=simCtxRef.current; if(ctx.buildingsGroup) ctx.buildingsGroup.visible=showBuildings; if(ctx.roadsGroup) ctx.roadsGroup.visible=showRoads; if(ctx.hotspotsGroup) ctx.hotspotsGroup.visible=showHotspots; if(ctx.waterwaysGroup) ctx.waterwaysGroup.visible=showWaterways; if(ctx.wardsGroup) ctx.wardsGroup.visible=showWards; if(ctx.soilGroup) ctx.soilGroup.visible=showSoil; if(ctx.lulcGroup) ctx.lulcGroup.visible=showLulc; if(ctx.water) ctx.water.visible=showWater; },[showBuildings,showRoads,showHotspots,showWaterways,showWards,showSoil,showLulc,showWater]);
@@ -526,7 +547,7 @@ function generateTerrainForAOI(terrain: THREE.Mesh, aoi: any, viewMode: ViewMode
     let z: number;
     const real = hasReal ? sampleRealDem(lng, lat, realDem!) : null;
     if(real!=null){
-      z = (real*0.11 - 0.85);
+      z = (real*0.16 - 0.85);
       z += profile.hill*Math.exp(-(dToAOI*dToAOI)/6)*0.12;
       z -= profile.marsh*Math.exp(-(dToAOI*dToAOI)/1.8)*0.08;
       if(viewMode==="hydrology") z+=Math.sin(dToAOI*4.2)*0.06;
@@ -612,8 +633,7 @@ function generateTerrainForAOI(terrain: THREE.Mesh, aoi: any, viewMode: ViewMode
   return { min:Math.max(0.6,(minZ+1.2)*3.5+profile.base*0.4), max:Math.max(8.5,(maxZ+1.2)*7+profile.base*0.6), grid:`${(geo as any).attributes.position.count} cells • contours 5`, source: src, bounds:aoi.bounds, profile: profile.base, real: hasReal };
 }
 function applyCachedResult(ctx:any,cached:any,aoi:any,viewMode:ViewMode){
-  const dem = cached?.terrain?.real ? null : null;
-  generateTerrainForAOI(ctx.terrain,aoi,viewMode, null);
+  generateTerrainForAOI(ctx.terrain,aoi,viewMode,cached?.realDem||null);
   const b=aoi.bounds||CHENNAI_BOUNDS; const [ax1,az1]=lngLatToXZ(b.xmin,b.ymin,14); const [ax2,az2]=lngLatToXZ(b.xmax,b.ymax,14); const w=Math.abs(ax2-ax1), h=Math.abs(az2-az1); const cx=(ax1+ax2)/2, cz=(az1+az2)/2;
   const scaleX=Math.max(0.18,(w/14)*0.95), scaleY=Math.max(0.18,(h/14)*0.95); ctx.water.scale.set(scaleX,scaleY,1); ctx.water.position.set(cx*0.22,-0.88,cz*0.22); (ctx.water.material as any).uniforms.opacity.value=viewMode==="depth_heatmap"?0.72:0.54;
   if(ctx.aoiMarker){ ctx.scene.remove(ctx.aoiMarker); ctx.aoiMarker.geometry.dispose(); }
@@ -637,9 +657,17 @@ function getTerrainHeightAt(terrain:THREE.Mesh,x:number,z:number){
 }
 function disposeScene(ctx:any){
   try{
+    ctx.resizeObserver?.disconnect();
     ctx.terrain.geometry.dispose(); (ctx.terrain.material as any).dispose(); ctx.water.geometry.dispose(); (ctx.water.material as any).dispose();
     ctx.buildingsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); ctx.roadsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); ctx.waterwaysGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); ctx.hotspotsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); if(ctx.wardsGroup) ctx.wardsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); if(ctx.soilGroup) ctx.soilGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); if(ctx.lulcGroup) ctx.lulcGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); });
     if(ctx.measureLine){ ctx.measureLine.geometry.dispose(); (ctx.measureLine.material as any).dispose(); }
+    ctx.scene?.traverse((obj:any)=>{
+      if(obj.geometry && obj.geometry !== ctx.terrain.geometry && obj.geometry !== ctx.water.geometry) obj.geometry.dispose();
+      if(obj.material && obj.material !== ctx.terrain.material && obj.material !== ctx.water.material){
+        const materials=Array.isArray(obj.material)?obj.material:[obj.material];
+        materials.forEach((material:any)=>material.dispose?.());
+      }
+    });
     ctx.controls.dispose(); ctx.renderer.dispose();
     ctx.buildingsGroup.clear(); ctx.roadsGroup.clear(); ctx.waterwaysGroup.clear(); ctx.hotspotsGroup.clear(); if(ctx.wardsGroup) ctx.wardsGroup.clear(); if(ctx.soilGroup) ctx.soilGroup.clear(); if(ctx.lulcGroup) ctx.lulcGroup.clear();
   }catch{}
@@ -683,6 +711,8 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
     const isMarsh=opts.aoi?.id==="velachery"||opts.aoi?.id==="adyar";
     const isCentral=opts.aoi?.id==="central";
     const treeCount=isMarsh?110:isCentral?28:48;
+    const treeSeed=Math.round(((opts.aoi?.center?.[0]||80.25)*10000)+((opts.aoi?.center?.[1]||13.05)*1000));
+    const random=seededRandom(treeSeed);
     const trunkGeo=new THREE.CylinderGeometry(0.02,0.03,0.18,6);
     const crownGeo=new THREE.ConeGeometry(0.09,0.22,6);
     const bushGeo=new THREE.SphereGeometry(0.09,6,5);
@@ -690,18 +720,18 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
     const crownMat=new THREE.MeshStandardMaterial({ color:isMarsh?0x4a7c59:0x6b8e6b, roughness:0.85 });
     const bushMat=new THREE.MeshStandardMaterial({ color:isMarsh?0x5a7c3a:0x7a9b6a, roughness:0.9 });
     for(let i=0;i<treeCount;i++){
-      const rx=(Math.random()-0.5)*size*0.88, rz=(Math.random()-0.5)*size*0.88;
+      const rx=(random()-0.5)*size*0.88, rz=(random()-0.5)*size*0.88;
       if(Math.hypot(rx,rz)>size*0.44) continue;
       const h=getTerrainHeightAt(terrain, rx, rz);
-      const s=0.82+Math.random()*0.42;
+      const s=0.82+random()*0.42;
       const trunk=new THREE.Mesh(trunkGeo, trunkMat); trunk.position.set(rx, h+0.09*s, rz); trunk.scale.set(s,s,s); trunk.castShadow=true; treeGroup.add(trunk);
-      const roll=Math.random();
+      const roll=random();
       const crownG= roll<0.4? crownGeo : roll<0.7? new THREE.SphereGeometry(0.11,7,6) : bushGeo;
       const mat = roll>0.7? bushMat : crownMat;
       const crown=new THREE.Mesh(crownG, mat); crown.position.set(rx, h+(roll>0.7?0.18:0.28)*s, rz); crown.scale.set(s,s,s); crown.castShadow=true; treeGroup.add(crown);
-      if(isMarsh && Math.random()<0.35){
-        const reedH=0.14+Math.random()*0.12; const reedGeo=new THREE.CylinderGeometry(0.01,0.015,reedH,5);
-        const reed=new THREE.Mesh(reedGeo, bushMat); reed.position.set(rx+ (Math.random()-0.5)*0.18, h+reedH*0.5, rz+ (Math.random()-0.5)*0.18); treeGroup.add(reed);
+      if(isMarsh && random()<0.35){
+        const reedH=0.14+random()*0.12; const reedGeo=new THREE.CylinderGeometry(0.01,0.015,reedH,5);
+        const reed=new THREE.Mesh(reedGeo, bushMat); reed.position.set(rx+ (random()-0.5)*0.18, h+reedH*0.5, rz+ (random()-0.5)*0.18); treeGroup.add(reed);
       }
     }
     // Ward/road labels as sprites (canvas)
@@ -767,11 +797,12 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
   controls.target.set(0,-0.2,0); controls.update();
   // 3D Tiles LOD loader (Kempsey-style) — fetch tileset.json, select LOD by dist, stream on demand
   fetch("/tiles/tileset.json").then(r=>{ if(!r.ok) throw new Error("tileset 404"); return r.json(); }).then(j=>{ (scene as any).userData.tileset=j; }).catch(()=>{});
-  new ResizeObserver(()=>{ const W=canvas.clientWidth, H=canvas.clientHeight; if(!W||!H) return; camera.aspect=W/H; camera.updateProjectionMatrix(); renderer.setSize(W,H,false);
+  const resizeObserver=new ResizeObserver(()=>{ const W=canvas.clientWidth, H=canvas.clientHeight; if(!W||!H) return; camera.aspect=W/H; camera.updateProjectionMatrix(); renderer.setSize(W,H,false);
     // update Line2 resolution for width-respected lines (Hydro3DJS)
     scene.traverse((obj:any)=>{ if(obj.isLine2 && obj.material && obj.material.resolution){ obj.material.resolution.set(W,H); } });
-  }).observe(canvas);
-  return { scene, camera, renderer, terrain, water, buildingsGroup, roadsGroup, waterwaysGroup, hotspotsGroup, wardsGroup, soilGroup, lulcGroup, controls, measureLine:null as any };
+  });
+  resizeObserver.observe(canvas);
+  return { scene, camera, renderer, terrain, water, buildingsGroup, roadsGroup, waterwaysGroup, hotspotsGroup, wardsGroup, soilGroup, lulcGroup, controls, resizeObserver, measureLine:null as any };
 }
 function updateBuildingImpact(group:THREE.Group,depth:number,viewMode:ViewMode){
   const threshold=0.35; const flooded=depth>threshold;
@@ -811,14 +842,15 @@ function buildBuildings(group:THREE.Group,features:any[],viewMode:ViewMode,aoi?:
     polys.forEach((poly:any)=>{ try{
       const outer=poly[0]; if(!outer||outer.length<3) return;
       const shape=new THREE.Shape(); outer.forEach(([lng,lat]:any,i:number)=>{ const [x,z]=lngLatToXZ(lng,lat); if(i===0) shape.moveTo(x,z); else shape.lineTo(x,z); });
-      let levels=parseInt(f.properties?.["building:levels"])||2+Math.floor(Math.random()*3);
+      const featureSeed=Math.abs(Math.floor((outer[0][0]*10000)+(outer[0][1]*10000)));
+      let levels=parseInt(f.properties?.["building:levels"])||2+(featureSeed%3);
       if(isChem) levels=Math.max(1, levels-1); if(basin==="central") levels+=1; if(isVelachery) levels=Math.max(1, levels-1);
       if(viewMode==="infrastructure_impact" || viewMode==="depth_heatmap") levels=Math.min(4, levels);
       if(viewMode==="velocity_field") levels=Math.max(1, levels-1);
       const h=levels*0.19 + (isEnnore?0.06:0);
       const bevel = viewMode==="data_quality" ? false : true;
       const g=new THREE.ExtrudeGeometry(shape,{ depth:h, bevelEnabled:bevel, bevelThickness:0.01, bevelSize:0.01, bevelSegments:1 } as any); (g as any).rotateX(Math.PI/2); g.translate(0,-1.05,0);
-      const mats=["base","alt","dark"]; const bucket=mats[Math.floor(Math.random()*mats.length)];
+      const mats=["base","alt","dark"]; const bucket=mats[featureSeed%3];
       // @ts-ignore
       if(viewMode==="hydrology"){ /* hydrology handled via mat */ }
       const ward=wardForLngLat(outer[0][0], outer[0][1]); const dmg=wardDamage(ward, rainfall ?? 160, cn ?? 84);
