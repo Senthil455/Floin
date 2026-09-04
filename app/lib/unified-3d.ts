@@ -53,8 +53,6 @@ export const EVERY_FILE_3D_LAYERS: Record<string, Layer3D> = {
   chennai_2015_inundation: { id: "chennai_2015_inundation", group: "water", color: 0x991b1b, opacity: 0.32, builder: "buildFloodMask", note: "2015 inundation NRSC" },
   chennai_2015_hotspots: { id: "chennai_2015_hotspots", group: "infrastructure", color: 0xe63946, opacity: 0.9, builder: "buildHotspots", note: "327 hotspots — cylinders" },
   rainfall_stations: { id: "rainfall_stations", group: "infrastructure", color: 0x111210, opacity: 0.9, builder: "buildRainfallStations", note: "IMD 8 — gauge" },
-  chennai_tide_gauge: { id: "chennai_tide_gauge", group: "water", color: 0x06b6d4, opacity: 1, builder: "waterLevel", note: "duplicate tide" },
-  chennai_groundwater: { id: "chennai_groundwater", group: "terrain", color: 0x0ea5e9, opacity: 0.4, builder: "buildInfrastructureMarkers", note: "duplicate GW" },
 };
 
 export function get3DContribution(id: string): Layer3D | null { return EVERY_FILE_3D_LAYERS[id] || null; }
