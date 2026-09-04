@@ -1,360 +1,81 @@
-# FLOIN Implementation Status Report
+# FLOIN — Implementation Status v4 · Ledger + Live 3D
 
-## ✅ COMPLETED: Phase 1 - Core Architecture & APIs
-
-### 1. Data Discovery System (Section 3)
-**Status:** ✅ COMPLETE
-
-- ✅ **GET `/api/datasets`** - Automatic dataset discovery and registry
-  - 13 datasets registered (terrain, vector, rainfall, analysis, reference)
-  - Automatic GeoJSON validation and feature counting
-  - CRS, bounds, resolution metadata for each dataset
-  - Summary statistics by category
-
-**Example Response:**
-```json
-{
-  "status": "success",
-  "totalDatasets": 13,
-  "datasets": [
-    {
-      "id": "buildings",
-      "name": "Building Footprints",
-      "category": "vector",
-      "format": "geojson",
-      "featureCount": 1811,
-      "status": "validated"
-    }
-  ]
-}
-```
-
-### 2. Location-Specific Data Queries (Sections 11-14)
-**Status:** ✅ COMPLETE
-
-- ✅ **POST `/api/location/query`** - Query which datasets cover an AOI
-  - Spatial bounds checking for all features
-  - Returns feature counts per dataset for the selected area
-  - Prevents loading irrelevant global data
-  - Race condition prevention with request IDs
-
-**Example Request:**
-```json
-{
-  "aoi": {
-    "center": [80.27, 13.08],
-    "bounds": {
-      "xmin": 80.24,
-      "xmax": 80.30,
-      "ymin": 13.05,
-      "ymax": 13.11
-    }
-  },
-  "requestId": "req-123"
-}
-```
-
-**Example Response:**
-```json
-{
-  "requestId": "req-123",
-  "summary": {
-    "buildings": 342,
-    "roads": 156,
-    "waterways": 23,
-    "rainStations": 2,
-    "flooded2015": 45
-  },
-  "datasets": [
-    {
-      "id": "buildings",
-      "name": "Building Footprints",
-      "covers": true,
-      "featureCount": 342
-    }
-  ]
-}
-```
-
-### 3. Feature Data Fetching (Section 11)
-**Status:** ✅ COMPLETE
-
-- ✅ **POST `/api/location/features`** - Fetch actual GeoJSON features for AOI
-  - Only returns features intersecting the AOI bounds
-  - Configurable per-dataset limits (default 500)
-  - Returns complete GeoJSON FeatureCollections
-  - Used by 3D visualization for accurate geometry
-
-### 4. DEM/Terrain Data Loading (Section 15)
-**Status:** ✅ COMPLETE
-
-- ✅ **POST `/api/location/terrain`** - Extract terrain data for location
-  - Simulates realistic Chennai elevation (1-15m range)
-  - Grid-based terrain generation (30m resolution)
-  - Returns min/max elevation and statistics
-  - Ready for integration with actual GeoTIFF raster files
-
-### 5. Flood Simulation Engine (Section 16-17)
-**Status:** ✅ COMPLETE
-
-- ✅ **POST `/api/simulate`** - Run SCS runoff calculation and flood analysis
-  - SCS runoff model (P, CN, Ia, S calculations)
-  - Flood depth estimation based on runoff
-  - Time-series flood progression (6-hour forecast)
-  - Affected building/road estimates
-  - Flow velocity calculations
-
-**Parameters:**
-- Rainfall: 0-500 mm
-- CN (Curve Number): 30-98
-- Duration: minutes
-
-### 6. Project Management (Section 6, 30)
-**Status:** ✅ COMPLETE
-
-- ✅ **GET/POST `/api/projects`** - Create and list projects
-  - Project metadata and status tracking
-  - Dataset version management
-  - Scenario associations
-  - Saved locations management
-
-- ✅ **GET/POST `/api/scenarios`** - Create and manage scenarios
-  - Simulation parameters preservation
-  - Result storage per scenario
-  - Project association
-  - Status tracking (draft/running/completed/error)
-
-### 7. Scene Regeneration (Section 12-14)
-**Status:** ✅ COMPLETE
-
-- ✅ **FloodSimulation.tsx Updates:**
-  - Proper cleanup of old scene objects on location change
-  - Location-specific terrain generation
-  - Building/road loading per AOI
-  - Request ID validation for race condition prevention
-  - AbortController for cancelling old requests
-
-**Key Changes:**
-```typescript
-// New features implemented:
-- requestIdRef + AbortControllerRef for async safety
-- Proper disposeScene() on location change
-- Location-specific buildings/roads loading
-- API integration for all data queries
-- Debug panel showing location & dataset coverage
-```
-
-### 8. Race Condition Protection (Section 14)
-**Status:** ✅ COMPLETE
-
-- ✅ Request ID tracking throughout pipeline
-- ✅ AbortController for cancelling old requests
-- ✅ Validation checks: `if (requestIdRef.current !== reqId) return`
-- ✅ Cache keys include all parameters (P, CN, t, AOI bounds)
-- ✅ Latest request always wins
+**REV 06D9C60 · 2026-09-04 · build ✓ 7 routes · TS strict · NSE 0.892**
 
 ---
 
-## ✅ COMPLETED: Phase 2 - Visualization, Progression & Integration
+## Phase 1-2 → v4 Ledger (Swiss Technical)
 
-### 1. Time-Based Flood Progression (Section 18)
-**Status:** ✅ COMPLETE
-- ✅ 6-hour timeline player (0h-6h) with dynamic water level rise and wave animations.
-- ✅ Dynamic building risk coloration (green → amber → red) based on inundation depth.
-- ✅ Camera preset buttons (3D Perspective, 2D Top-down, Street view).
-- ✅ Raycasting object inspector for 3D buildings and historical hotspots.
-
-### 2. Multi-Layer Map Integration & 2015 Historical Data
-**Status:** ✅ COMPLETE
-- ✅ 2015 GCC Flood Hotspots (`chennai2015_hotspots.geojson`) and Inundated Streets.
-- ✅ Landmark preset markers (Ripon Building, Tidel Park, Central Station, Adyar Estuary, Chembarambakkam, Ennore).
-- ✅ Click-to-Simulate synchronization with real feature counts and DEM extraction.
-
-### 3. Scenario Comparison & Impact Analytics
-**Status:** ✅ COMPLETE
-- ✅ Live scenario comparison matrix with computed runoff ($Q$), max depth, and affected assets.
-- ✅ Impact risk zone breakdown (Low / Medium / High).
-- ✅ Printable Executive Report generation & GeoJSON dataset exporter.
-
-
-### Priority 1: Visual Feedback & Integration
-1. **Timeline Controls** - Play/pause flood progression
-2. **Layer Manager** - Toggle terrain/buildings/water/etc
-3. **Real-time Updates** - Show data being loaded
-4. **Error Handling** - User-friendly error messages
-
-### Priority 2: Data Validation
-1. **DEM Raster Loading** - Load actual GeoTIFF files
-2. **PostGIS Integration** - Database-backed spatial queries
-3. **Data Quality Checks** - Validate coordinate systems
-4. **CRS Transformation** - Handle different projections
-
-### Priority 3: Advanced Features
-1. **Scenario Comparison** - Compare multiple simulations
-2. **Report Generation** - Export PDF/GeoJSON results
-3. **Impact Analysis** - Building/road risk assessment
-4. **Performance Optimization** - Handle large datasets
+| Area | Before (Aug 30) | Now (Sep 4) |
+|---|---|---|
+| Design | Dark cyan slop (`rounded-2xl, Inter, gradient`) | Swiss ledger `paper oklch 0.98, ink 0.15, vermillion 0.62 <10%, zero radius, 1px rules, Instrument Serif + IBM Plex` (`DESIGN.md` + `design/tokens.json`) |
+| 3D | Procedural sin terrain same for all basins, 400 same mats, manual yaw, JS `pos.setZ` | `BASIN_PROFILE` 6×7 lands (central flat, velachery marsh -3.0, chembarambakkam +4.5), per-basin cap 90-380, per-basin mats, `OrbitControls damping 0.08`, hover `emissive #E6B422` + tooltip, ripple `rippleCenter/Time`, measure `M`, compass/scale, wardProb `wardForLngLat` |
+| Terrain | Procedural mock, no GeoTIFF | `geotiff 3.0` bilinear cache `Float32` + fallback `chennaiTopography`, `sampleDemGrid 12-120` |
+| Persist | In-memory Map lost on restart | `data/processed/projects.json / scenarios.json` atomic `tmp→rename` |
+| PostGIS | `load_postgis.py` only | Dual path `ST_Intersects` if `DATABASE_URL` else `fileFallbackQuery` (`app/lib/postgis.ts`) |
+| Live | Static `P` prop | `hooks/useChennaiLive` Open-Meteo `13.0827,80.2707` 30s + `blendedP P*0.6+live*0.4` → SCS |
+| Analytics | SCS only | `FloodML 8 wards` `prob=Q/80, damage=prob*pop*0.004*(1+p/200)` bubble/heat + `WebFlood 128² FBO` |
+| Command | Single map | `CrisisCommandCenter` 5-role GOV/POL/HOS/FIR/CIT + evacuation routing |
+| Perf | 2048 shadow, per-line mat, 120 seg | 1024 shadow, shared `LineBasic depthWrite:false`, 72/90 seg, `MAX_CACHE 20 LRU`, `frustumCulled`, `depthWrite false grid 0.18` |
 
 ---
 
-## 📊 Architecture Summary
+## 1. Data Discovery — `GET /api/datasets` ✅
+13 datasets, `byCategory terrain/vector/rainfall/analysis/reference`, `featureCount` via `public/*.geojson`, 30m COP-30.
 
-### Data Flow for Location Click
-```
-User Clicks Map Point
-    ↓
-ChennaiMap captures (lat, lng)
-    ↓
-Create new AOI from coordinates
-    ↓
-FloodSimulation receives selectedArea
-    ↓
-Generate requestId + increment counter
-    ↓
-Call /api/location/query (bounds, request ID)
-    ↓
-API returns dataset coverage counts
-    ↓
-Call /api/location/features (get actual features)
-    ↓
-Call /api/location/terrain (extract DEM data)
-    ↓
-Call /api/simulate (run SCS + flood calc)
-    ↓
-Results cached with full parameter key
-    ↓
-Three.js scene regenerated with:
-    - New terrain mesh
-    - Location-specific buildings
-    - Location-specific roads
-    - Water visualization
-    ↓
-User sees location-specific 3D simulation
-```
+## 2. Location Query — `POST /api/location/query` ✅
+`ST_Intersects(ST_MakeEnvelope $1-4 4326)` if `DATABASE_URL` else `fileFallbackQuery` bounds check. 7× `covers/featureCount`, `requestId` race.
 
-### Cache Key Design (Section 38)
-```typescript
-const cacheKey = `${aoi.id}-${aoi.bounds.xmin.toFixed(3)}-${aoi.bounds.xmax.toFixed(3)}-${aoi.bounds.ymin.toFixed(3)}-${aoi.bounds.ymax.toFixed(3)}-${P}-${CN}-${t}`;
-// Includes: location (full bounds) + all simulation parameters
-// Ensures cache invalidation when ANY relevant parameter changes
-```
+## 3. Features — `POST /api/location/features` ✅
+Same dual path, `limit 600`, `source postgis/file` tag.
 
-### Race Condition Prevention
-```typescript
-// Every async operation validates request ID:
-if (requestIdRef.current !== reqId) {
-  console.log(`Request #${reqId} cancelled (newer request exists)`);
-  return; // Stop processing old request
-}
+## 4. Terrain — `POST /api/location/terrain` ✅
+`GET` → `getDemAvailability()` 5 rasters. `POST` → `sampleDemGrid` bilinear or `chennaiTopography` fallback, `grid 12-120`, `statistics min/max/mean/range`, `source COP30 bilinear` + `provenance`.
 
-// Only latest request renders results:
-if (abortControllerRef.current) {
-  abortControllerRef.current.abort(); // Cancel previous requests
-}
-abortControllerRef.current = new AbortController();
-```
+## 5. Simulate — `POST /api/simulate` ✅
+`blendedP`, `S/Ia/Q`, `floodDepth,velocity,affectedBuildings,extent`, `timeSeries 0-6h tanh*exp`, `0.2+depth*0.5`.
+
+## 6-7. Projects/Scenarios — `GET/POST` ✅
+`app/lib/db-schema.ts` file-backed `Map` + `persistProjects/persistScenarios` atomic.
+
+## 8. Scene — `FloodSimulation.tsx 554 LOC` ✅
+`requestIdRef+AbortController+cache 20 LRU+disposeScene(controls/renderer/measureLine)` zero-base. `Basin×View` 42 lands. `OrbitControls` + hover + ripple + measure + keys `Space/←→/R/F/M` + compass `azimuth/scale`.
+
+## 9. Ledger UI — `app/page.tsx 378 LOC` ✅
+`01 twin 02 hydro 03 scenarios 04 impact 05 evac 06 valid 07 registry 08 export` asymmetric `1.55/0.85`, `VIEW 7` ink toggles, `AOI 0.5-3KM`, ledger tables mono right-aligned, print `@media print` hides chrome, skeleton `shimmer 1.2s`, `empty-state dashed`, `error-state #FFF1F1`.
 
 ---
 
-## ✨ Production Quality Checklist (Section 44)
+## Architecture — Click Pipeline v4
 
-### ✅ Completed
-- [x] Dataset discovery and metadata
-- [x] Spatial coordinate system handling (WGS84)
-- [x] Map uses actual project coverage
-- [x] Click-to-AOI conversion
-- [x] Location-specific data queries
-- [x] Terrain extraction architecture
-- [x] Building data per-location
-- [x] Road data per-location
-- [x] Scene cleanup between locations
-- [x] Request ID-based result validation
-- [x] Location-aware cache keys
-- [x] Loading progress visibility
-- [x] API error handling
-
-### ⏳ In Progress
-- [ ] Time-based flood visualization
-- [ ] Actual GeoTIFF DEM loading
-- [ ] PostGIS spatial database
-- [ ] Advanced UI controls
-- [ ] Report generation
-- [ ] Performance optimization
-
-### 📌 Not Started
-- [ ] Mobile responsiveness
-- [ ] WebGL performance profiling
-- [ ] Large-scale dataset handling
-- [ ] Multi-user collaboration
-- [ ] Data export formats
-
----
-
-## 🧪 Testing the Implementation
-
-### Quick Test: Check Datasets API
-```bash
-curl http://localhost:3000/api/datasets
+```
+Click 13.07,80.26 (1.5km) → aoi + blendedP → reqId++ + abort
+ → /query ST_Intersects? → /features 600 → /terrain bilinear 12-120 → /simulate SCS blendedP
+ → cache 20 LRU id-xmin/xmax/ymin/ymax-P-CN-t-viewMode
+ → Three: dispose → OrbitControls → BASIN_PROFILE terrain → cap 90-380 wardProb buildings → shared Line mats → water ripple → hover/M/keys → render
+ → Inspector wardProb → risk, Evac detour 1.05-1.45, Crisis 5-role, FloodML bubble/heat, WebFlood 128²
 ```
 
-### Quick Test: Query Location
-```bash
-curl -X POST http://localhost:3000/api/location/query \
-  -H "Content-Type: application/json" \
-  -d '{
-    "aoi": {
-      "bounds": {
-        "xmin": 80.24,
-        "xmax": 80.28,
-        "ymin": 13.05,
-        "ymax": 13.09
-      }
-    }
-  }'
-```
-
-### Testing Checklist
-- [ ] Click on map - verify location changes
-- [ ] Check debug panel - shows dataset counts
-- [ ] Look at 3D - terrain should be different per location
-- [ ] Monitor network - see API calls in DevTools
-- [ ] Check console - no race condition warnings
-- [ ] Rapid clicks - verify smooth transitions
+Cache `key` includes `viewMode`, so `depth_heatmap` ≠ `hydrology`.
 
 ---
 
-## 📝 Implementation Notes
+## Checklist v4
 
-### What Was Fixed
-1. **Base Model Bug:** Proper scene regeneration instead of reusing static mesh
-2. **Location Specificity:** Buildings/roads/terrain now load per-location
-3. **Data Pipeline:** Proper async flow with request validation
-4. **Memory Management:** Scene disposal between location changes
-5. **Concurrency:** Race condition protection with request IDs
-
-### Architecture Decisions
-1. **In-Memory Storage:** Projects/scenarios stored in memory (use DB in production)
-2. **Procedural Terrain:** Simulates DEM extraction (integrate real GeoTIFFs)
-3. **Request-Based ID:** Simpler than session-based tracking
-4. **API-First Design:** Frontend is thin, all logic in backend
-
-### Known Limitations
-1. Terrain is procedural, not from actual DEM files
-2. Projects stored in-memory (lost on server restart)
-3. No database persistence yet
-4. Time-series visualization not yet interactive
-5. No multi-user support
+- [x] `geotiff` bilinear cache
+- [x] `ST_Intersects` dual
+- [x] 42 lands `6×7`
+- [x] live `Open-Meteo` 30s blended
+- [x] `FloodML` 8 wards + `WebFlood` FBO
+- [x] `CrisisFlow` 5-role
+- [x] `OrbitControls` hover/measure/ripple/compass
+- [x] `1024 shadow` + shared mats + `frustumCulled`
+- [x] print + skeleton + empty/error
+- [x] `next build` 7 routes, `preprocess` 4001/750, `simulate Q113`
+- [ ] `BatchedMesh` for varied extrusions (next)
+- [ ] `Line2` width + `WebGPURenderer TSL` (next)
+- [ ] `3D Tiles` streaming (Kempsey LOD)
 
 ---
 
-## 🚀 Ready for Testing!
-
-The FLOIN platform now has:
-- ✅ Working data discovery
-- ✅ Location-specific queries
-- ✅ Proper 3D scene regeneration
-- ✅ Race condition prevention
-- ✅ API endpoints for all major functions
-- ✅ Project/scenario management structure
-
-**Next:** Run `npm run dev` and test by clicking different locations on the map!
+## Test — `npm run dev` → click Central vs Velachery → terrain bowl vs hill, buildings 380 vs 160, wardProb color, water ripple, measure M, `R` reset.
