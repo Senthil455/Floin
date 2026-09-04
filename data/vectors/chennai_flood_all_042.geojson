@@ -1,0 +1,44 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_flood_all_042 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.20011486079196,
+          13.034201499285722
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_flood_all_042 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.2497339707115,
+          13.049227911978303
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_flood_all_042 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.23775044508358,
+          13.055702090502825
+        ]
+      }
+    }
+  ]
+}

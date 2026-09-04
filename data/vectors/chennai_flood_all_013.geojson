@@ -1,0 +1,104 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_flood_all_013 1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80.2,
+              13.02
+            ],
+            [
+              80.205,
+              13.02
+            ],
+            [
+              80.205,
+              13.025
+            ],
+            [
+              80.2,
+              13.025
+            ],
+            [
+              80.2,
+              13.02
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_flood_all_013 2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80.2,
+              13.02
+            ],
+            [
+              80.205,
+              13.02
+            ],
+            [
+              80.205,
+              13.025
+            ],
+            [
+              80.2,
+              13.025
+            ],
+            [
+              80.2,
+              13.02
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_flood_all_013 3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80.2,
+              13.02
+            ],
+            [
+              80.205,
+              13.02
+            ],
+            [
+              80.205,
+              13.025
+            ],
+            [
+              80.2,
+              13.025
+            ],
+            [
+              80.2,
+              13.02
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
