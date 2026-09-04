@@ -101,11 +101,16 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
   const [scaleLabel, setScaleLabel] = useState("1 km");
   const [measureMode, setMeasureMode] = useState(false);
   const [measurePts, setMeasurePts] = useState<THREE.Vector3[]>([]);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(()=>{ if(externalP!==undefined) setP(externalP);},[externalP]);
   useEffect(()=>{ if(externalCN!==undefined) setCN(externalCN);},[externalCN]);
   useEffect(()=>{ if(externalT!==undefined) setT(externalT);},[externalT]);
   useEffect(()=>{ if(externalLayers){ if(externalLayers.buildings!==undefined) setShowBuildings(externalLayers.buildings); if(externalLayers.water!==undefined) setShowWater(externalLayers.water); if(externalLayers.roads!==undefined) setShowRoads(externalLayers.roads); if(externalLayers.hotspots!==undefined) setShowHotspots(externalLayers.hotspots); if(externalLayers.waterways!==undefined) setShowWaterways(externalLayers.waterways);} },[externalLayers]);
+  const doScreenshot = () => { if(!simCtxRef.current) return; try { const url = simCtxRef.current.renderer.domElement.toDataURL("image/png"); const a=document.createElement("a"); a.href=url; a.download=`floin-${selectedArea?.id||"chennai"}-${viewMode}.png`; a.click(); } catch {} };
+  const toggleFullscreen = async () => { if(!wrapRef.current) return; try { if(!document.fullscreenElement) { await wrapRef.current.requestFullscreen(); setIsFullscreen(true); } else { await document.exitFullscreen(); setIsFullscreen(false); } } catch {} };
+  useEffect(()=>{ const h=()=>setIsFullscreen(!!document.fullscreenElement); document.addEventListener("fullscreenchange",h); return()=>document.removeEventListener("fullscreenchange",h); },[]);
 
   const live = useChennaiLive(P);
   const blendedP = useMemo(()=> Math.round((P*0.6 + live.precipitation*0.4)*10)/10, [P, live.precipitation]);
@@ -361,7 +366,7 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
 
   return (
     <div className="sim-layout">
-      <div className="sim-canvas-wrap" style={{ position:"relative", background:"#0F1110", overflow:"hidden", border:"1px solid var(--ink)" }}>
+      <div ref={wrapRef} className="sim-canvas-wrap" style={{ position:"relative", background:"#0F1110", overflow:"hidden", border:"1px solid var(--ink)" }}>
         <RainParticleOverlay rainfall={P} enabled={rainOverlayEnabled} windAngle={18} />
         <div ref={tooltipRef} style={{ position:"absolute", pointerEvents:"none", background:"var(--ink)", color:"var(--paper)", border:"1px solid var(--ink)", padding:"4px 8px", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, opacity:0, transition:"opacity 120ms", zIndex:7, whiteSpace:"nowrap" }} />
         <div id="sim-status" style={{ position:"absolute", top:8, left:8, zIndex:6, background:"var(--paper)", border:"1px solid var(--ink)", padding:"4px 8px", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.06em" }}>{loading?"COMPUTING…":"INSTRUMENT LIVE"}</div>
@@ -371,22 +376,24 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
           ))}
         </div>
         <div style={{ position:"absolute", top:8, right:8, zIndex:6, display:"flex", gap:2 }}>
+          <button onClick={toggleFullscreen} title="Fullscreen (F)" style={{ padding:"4px 8px", border:"1px solid var(--ink)", background: isFullscreen?"var(--ink)":"var(--paper)", color: isFullscreen?"var(--paper)":"var(--ink)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>{isFullscreen?"✕ EXIT":"⛶ FULL"}</button>
+          <button onClick={doScreenshot} title="Screenshot PNG" style={{ padding:"4px 8px", border:"1px solid var(--ink)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>◰ PNG</button>
           <button onClick={()=>{ setMeasureMode(v=>!v); setMeasurePts([]); if(simCtxRef.current?.measureLine){ simCtxRef.current.scene.remove(simCtxRef.current.measureLine); simCtxRef.current.measureLine=null; } }} style={{ padding:"4px 8px", border:"1px solid", borderColor: measureMode?"var(--vermillion)":"var(--ink)", background: measureMode?"var(--vermillion)":"var(--paper)", color: measureMode?"var(--paper)":"var(--ink)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>{measureMode?"✕ MEASURE":"◫ MEASURE"}</button>
           <button onClick={()=>{ if(simCtxRef.current){ simCtxRef.current.controls.reset(); setCameraPreset("3d"); } }} style={{ padding:"4px 8px", border:"1px solid var(--ink)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>RESET</button>
         </div>
-        <canvas ref={simRef} id="sim" aria-label="Chennai 3D Digital Twin Simulation Canvas" style={{ width:"100%", height:440, display:"block", cursor:"grab" }} />
-        {/* Detail: mini-map satellite inset + cross-section */}
-        <div style={{ position:"absolute", bottom:8, left:"50%", transform:"translateX(-50%)", zIndex:6, display:"flex", gap:6, pointerEvents:"none" }}>
-          <div style={{ width:96, height:96, border:"1px solid var(--ink)", background:"var(--paper)", padding:4, display:"grid", placeItems:"center", fontFamily:"var(--font-mono)", fontSize:8, color:"var(--muted)" }}>
-            <div style={{ width:"100%", height:"100%", background:"repeating-linear-gradient(45deg, #E8E0D0 0 4px, #F8F6F1 4px 8px)", border:"1px solid var(--rule)", display:"grid", placeItems:"center" }}>MINI-MAP<br/>TOP-DOWN<br/>{selectedArea?.id?.slice(0,6).toUpperCase()}</div>
+        <canvas ref={simRef} id="sim" aria-label="Chennai 3D Digital Twin Simulation Canvas" style={{ width:"100%", height: isFullscreen? "72vh" : 440, display:"block", cursor:"grab" }} />
+        <div style={{ position:"absolute", bottom:8, left:8, zIndex:6, display:"flex", gap:6, pointerEvents:"none" }}>
+          <div style={{ background:"var(--paper)", border:"1px solid var(--ink)", padding:"6px 8px", pointerEvents:"auto", minWidth: 168 }}>
+            <div style={{ fontFamily:"var(--font-mono)", fontSize:8, fontWeight:700, letterSpacing:"0.08em", display:"flex", justifyContent:"space-between" }}><span>DEPTH LEGEND</span><span style={{ color: accentForDepth(d) }}>{d.toFixed(2)} m</span></div>
+            <div className="legend-bar" style={{ marginTop: 6, opacity: viewMode==="data_quality"?0.35:1 }} />
+            <div style={{ display:"flex", justifyContent:"space-between", fontFamily:"var(--font-mono)", fontSize:8, color:"var(--muted)", marginTop: 3 }}><span>0.0</span><span>0.3 LOW</span><span>0.8</span><span>1.6</span><span>2.2 m</span></div>
+            <div style={{ fontFamily:"var(--font-mono)", fontSize:7, color:"var(--muted)", marginTop:4, borderTop:"1px solid var(--rule)", paddingTop:4 }}>{viewMode==="infrastructure_impact"?"IMPACT: green→amber→red by ward prob":viewMode==="velocity_field"?"VELOCITY: arrow field + hue":"SCS-CN + DEM bilinear · ward choropleth"}</div>
           </div>
           {measurePts.length===2 && (
-            <div style={{ width:140, height:96, border:"1px solid var(--ink)", background:"var(--paper)", padding:6, pointerEvents:"auto" }}>
-              <div style={{ fontFamily:"var(--font-mono)", fontSize:8, fontWeight:700, letterSpacing:"0.06em", borderBottom:"1px solid var(--rule)", paddingBottom:4 }}>CROSS-SECTION A—A′</div>
-              <div style={{ marginTop:6, height:48, background:"var(--paper)", border:"1px solid var(--rule)", display:"grid", placeItems:"center", fontFamily:"var(--font-mono)", fontSize:8, color:"var(--muted)" }}>
-                ELEV {getTerrainHeightAt(simCtxRef.current?.terrain, measurePts[0].x, measurePts[0].z).toFixed(1)}m → {getTerrainHeightAt(simCtxRef.current?.terrain, measurePts[1].x, measurePts[1].z).toFixed(1)}m<br/>{Math.hypot((measurePts[1].x-measurePts[0].x)*111, (measurePts[1].z-measurePts[0].z)*111).toFixed(2)} km
-              </div>
-              <div style={{ fontFamily:"var(--font-mono)", fontSize:7, color:"var(--muted)", marginTop:4 }}>WARD {wardForLngLat(selectedArea.center[0], selectedArea.center[1]).name}</div>
+            <div style={{ width:172, border:"1px solid var(--ink)", background:"var(--paper)", padding:6, pointerEvents:"auto" }}>
+              <div style={{ fontFamily:"var(--font-mono)", fontSize:8, fontWeight:700, letterSpacing:"0.06em", borderBottom:"1px solid var(--rule)", paddingBottom:4, display:"flex", justifyContent:"space-between" }}><span>CROSS-SECTION A—A′</span><button onClick={()=>{ setMeasurePts([]); if(simCtxRef.current?.measureLine){ simCtxRef.current.scene.remove(simCtxRef.current.measureLine); simCtxRef.current.measureLine=null; } }} style={{ border:"1px solid var(--rule)", padding:"0 4px", fontSize:8 }}>✕</button></div>
+              <CrossSectionChart pts={measurePts} terrain={simCtxRef.current?.terrain} depth={d} />
+              <div style={{ fontFamily:"var(--font-mono)", fontSize:7, color:"var(--muted)", marginTop:4 }}>WARD {wardForLngLat(selectedArea.center[0], selectedArea.center[1]).name} · M to measure</div>
             </div>
           )}
         </div>

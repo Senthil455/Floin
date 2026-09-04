@@ -17,6 +17,8 @@
   --font-display: 'Instrument Serif', Georgia, serif;
   --font-body: 'IBM Plex Sans', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+  --focus: oklch(0.55 0.12 220);
+  --shadow: 0 1px 0 var(--ink), 0 8px 24px oklch(0.15 0.01 100 / 0.08);
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -25,7 +27,12 @@ body { font-family: var(--font-body); background: var(--paper); color: var(--ink
 h1,h2,h3 { font-family: var(--font-display); text-wrap: balance; letter-spacing: -0.015em; }
 p { text-wrap: pretty; }
 ::selection { background: var(--ink); color: var(--paper); }
-:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+button:active { transform: translateY(1px); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+.kbd { font-family: var(--font-mono); font-size: 10px; border: 1px solid var(--rule-strong); border-bottom-width: 2px; background: var(--surface); padding: 1px 5px; font-weight: 600; letter-spacing: 0.04em; }
+.range { accent-color: var(--ink); height: 4px; }
+.legend-bar { height: 10px; border: 1px solid var(--ink); background: linear-gradient(90deg, var(--hydro) 0%, #E6B422 48%, var(--vermillion) 100%); }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-thumb { background: var(--rule-strong); }
 ::-webkit-scrollbar-track { background: var(--paper); }
