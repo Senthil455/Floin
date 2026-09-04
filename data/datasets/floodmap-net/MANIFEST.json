@@ -1,0 +1,50 @@
+{
+  "project": "Floin Chennai - FloodMap.net external DEM stack",
+  "collected_at": "2026-05-13",
+  "sources": [
+    {
+      "id": "COP30_SRTM_TNM",
+      "file": "COP30_SRTM_TNM_N13E080_30m.tif",
+      "src": "Copernicus COP30 30m (TanDEM-X) superset SRTM+TNM",
+      "license": "Copernicus",
+      "resolution": "30m"
+    },
+    {
+      "id": "MAPZEN",
+      "file": "MAPZEN_terrarium_z14_12230_7714.png",
+      "src": "Mapzen Terrarium RGB s3://elevation-tiles-prod",
+      "license": "ODbL",
+      "resolution": "9m@z14"
+    },
+    {
+      "id": "GMTED2010",
+      "file": "ETOPO1_GMTED_bathymetry_chennai_coast.csv",
+      "src": "GMTED2010 7.5 arc-sec 250m land",
+      "license": "PD USGS",
+      "resolution": "250m"
+    },
+    {
+      "id": "ETOPO1",
+      "file": "ETOPO1_GMTED_bathymetry_chennai_coast.csv",
+      "src": "ETOPO1 1 arc-min 1.8km bathymetry",
+      "license": "PD NOAA",
+      "resolution": "1.8km"
+    }
+  ],
+  "files": {
+    "COP30_SRTM_TNM_N13E080_30m.tif": {
+      "bytes": 5941670,
+      "sha256_12": "3064772200e1"
+    },
+    "ETOPO1_GMTED_bathymetry_chennai_coast.csv": {
+      "bytes": 4071,
+      "sha256_12": "ecce77d79f8d"
+    },
+    "MAPZEN_terrarium_z14_12230_7714.png": {
+      "bytes": 757,
+      "sha256_12": "4fcfdd8fbc70"
+    }
+  },
+  "usage": "POST /api/location/terrain -> sampleDemGrid COP30 bilinear then ETOPO bathy then Mapzen",
+  "attribution": "Mapzen, TNM, SRTM, GMTED, ETOPO1 via floodmap.net"
+}
