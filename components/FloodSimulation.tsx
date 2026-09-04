@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useRef, useState, useMemo } from "react";
 import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import RainParticleOverlay from "./RainParticleOverlay";
 
 const CHENNAI_BOUNDS = { xmin: 80.10, xmax: 80.35, ymin: 12.88, ymax: 13.25 };
@@ -753,7 +752,9 @@ function createProScene(canvas: HTMLCanvasElement, opts: { isHero?: boolean; d?:
   fill.position.set(-6, 5, -4);
   scene.add(fill);
 
-  const size = 14, seg = 120;
+  const aoiW = opts.aoi?.bounds ? Math.abs(opts.aoi.bounds.xmax - opts.aoi.bounds.xmin) : 0.25;
+  const seg = aoiW > 0.15 ? 90 : 72;
+  const size = 14;
   const geo = new THREE.PlaneGeometry(size, size, seg, seg);
   const tmat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0.02 });
   const terrain = new THREE.Mesh(geo, tmat);
@@ -770,8 +771,8 @@ function createProScene(canvas: HTMLCanvasElement, opts: { isHero?: boolean; d?:
   (grid as any).material.transparent = true;
   scene.add(grid);
 
-  // Caustic Water Simulation Shader (inspired by webgl-water & WebFlood)
-  const wgeo = new THREE.PlaneGeometry(13.4, 13.4, 64, 64);
+  const wSeg = opts.viewMode === "depth_heatmap" ? 64 : 40;
+  const wgeo = new THREE.PlaneGeometry(13.4, 13.4, wSeg, wSeg);
   const waterMat = new THREE.ShaderMaterial({
     uniforms: {
       time: { value: 0 },
@@ -930,55 +931,31 @@ function buildBuildings(group: THREE.Group, features: any[], viewMode: ViewMode)
   const matAlt = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, roughness: 0.72, metalness: 0.06, map: winTex as any });
   const matDark = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.85, metalness: 0.02 });
 
-  features.forEach((f: any) => {
+  capped.forEach((f: any) => {
     const geom = f.geometry;
     if (!geom) return;
-
     const polys = geom.type === "Polygon" ? [geom.coordinates] : geom.type === "MultiPolygon" ? geom.coordinates : [];
-
     polys.forEach((poly: any) => {
       try {
         const outer = poly[0];
         if (!outer || outer.length < 3) return;
-
         const shape = new THREE.Shape();
         outer.forEach(([lng, lat]: any, i: number) => {
           const [x, z] = lngLatToXZ(lng, lat);
-          if (i === 0) shape.moveTo(x, z);
-          else shape.lineTo(x, z);
+          if (i === 0) shape.moveTo(x, z); else shape.lineTo(x, z);
         });
-
         const levels = parseInt(f.properties?.["building:levels"]) || 2 + Math.floor(Math.random() * 3);
         const h = levels * 0.19;
-        const g = new THREE.ExtrudeGeometry(shape, {
-          depth: h,
-          bevelEnabled: true,
-          bevelThickness: 0.01,
-          bevelSize: 0.01,
-          bevelSegments: 1,
-        } as any);
-
+        const g = new THREE.ExtrudeGeometry(shape, { depth: h, bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.01, bevelSegments: 1 } as any);
         (g as any).rotateX(Math.PI / 2);
-
         const mats = [matBase, matAlt, matDark];
         const m = mats[Math.floor(Math.random() * mats.length)].clone() as any;
         const mesh = new THREE.Mesh(g, m);
-        mesh.position.y = -1.05;
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-
-        mesh.userData = {
-          name: f.properties?.name || f.properties?.["addr:street"] || "Chennai Urban Building",
-          type: "Building Footprint (OSM)",
-          featureId: f.properties?.osm_id || "osm-bld",
-          levels,
-          coords: outer[0],
-        };
-
+        mesh.position.y = -1.05; mesh.castShadow = true; mesh.receiveShadow = true;
+        mesh.frustumCulled = true;
+        mesh.userData = { name: f.properties?.name || f.properties?.["addr:street"] || "Chennai Urban Building", type: "Building Footprint (OSM)", featureId: f.properties?.osm_id || "osm-bld", levels, coords: outer[0] };
         group.add(mesh);
-      } catch (error) {
-        console.warn("Error building geometry:", error);
-      }
+      } catch (error) { console.warn("Error building geometry:", error); }
     });
   });
 }
