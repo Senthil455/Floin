@@ -1,0 +1,55 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Thiruppugazh Committee 30-year Flood Data — Chennai Metropolitan Area (Hindu 2023)",
+        "source": "https://www.thehindu.com/news/cities/chennai/thiruppugazh-committee-studying-30-year-flood-data-of-chennai-metropolitan-area-says-corporation/article67666401.ece",
+        "note": "Final gap audit — now added"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80.18,
+              12.98
+            ],
+            [
+              80.28,
+              12.98
+            ],
+            [
+              80.28,
+              13.08
+            ],
+            [
+              80.18,
+              13.08
+            ],
+            [
+              80.18,
+              12.98
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Thiruppugazh Committee 30-year Flood Data — Chennai Metropolitan Area (Hindu 2023) (2)",
+        "source": "https://www.thehindu.com/news/cities/chennai/thiruppugazh-committee-studying-30-year-flood-data-of-chennai-metropolitan-area-says-corporation/article67666401.ece",
+        "note": "Final gap audit — now added"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.22,
+          13.03
+        ]
+      }
+    }
+  ]
+}

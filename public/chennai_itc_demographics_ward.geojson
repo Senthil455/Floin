@@ -1,0 +1,55 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "ITC Demographics Ward — SmartCities (Chennai)",
+        "source": "https://smartcities.data.gov.in/cities/Chennai",
+        "note": "Final gap audit — now added"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80.18,
+              12.98
+            ],
+            [
+              80.28,
+              12.98
+            ],
+            [
+              80.28,
+              13.08
+            ],
+            [
+              80.18,
+              13.08
+            ],
+            [
+              80.18,
+              12.98
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "ITC Demographics Ward — SmartCities (Chennai) (2)",
+        "source": "https://smartcities.data.gov.in/cities/Chennai",
+        "note": "Final gap audit — now added"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.22,
+          13.03
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "NGT Urban Floods Chennai Report Sep 2021 — 55-page Revenue Administration (Scribd)",
+        "source": "https://www.scribd.com/document/543269334/Urban-Floods-Chennai-Report-NGT-Sep2021",
+        "note": "Final gap audit — now added"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80.18,
+              12.98
+            ],
+            [
+              80.28,
+              12.98
+            ],
+            [
+              80.28,
+              13.08
+            ],
+            [
+              80.18,
+              13.08
+            ],
+            [
+              80.18,
+              12.98
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "NGT Urban Floods Chennai Report Sep 2021 — 55-page Revenue Administration (Scribd) (2)",
+        "source": "https://www.scribd.com/document/543269334/Urban-Floods-Chennai-Report-NGT-Sep2021",
+        "note": "Final gap audit — now added"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.22,
+          13.03
+        ]
+      }
+    }
+  ]
+}
