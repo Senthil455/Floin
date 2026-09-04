@@ -40,6 +40,28 @@ function createWindowTexture() {
   for (let y = 20; y < 236; y += 32) for (let x = 16; x < 240; x += 28) { ctx.fillRect(x, y, 18, 22); ctx.fillStyle = y % 64 === 20 ? "#38bdf8" : "#0f172a"; ctx.fillRect(x + 2, y + 2, 14, 18); ctx.fillStyle = "#0f172a"; }
   const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; _winTex = t; return t;
 }
+let _satTex: THREE.CanvasTexture | null = null;
+function createSatelliteDrapeTexture() {
+  if (_satTex) return _satTex;
+  const c = document.createElement("canvas"); c.width = 512; c.height = 512;
+  const ctx = c.getContext("2d")!;
+  ctx.fillStyle = "#E8E0D0"; ctx.fillRect(0, 0, 512, 512);
+  // vegetation patches (Pallikaranai marsh, Adyar)
+  ctx.fillStyle = "rgba(143,169,152,0.35)";
+  for(let i=0;i<18;i++){ const x=Math.random()*512, y=Math.random()*512, r=18+Math.random()*32; ctx.beginPath(); ctx.ellipse(x,y,r*1.2,r,0,0,Math.PI*2); ctx.fill(); }
+  // water bodies
+  ctx.strokeStyle = "rgba(14,116,144,0.45)"; ctx.lineWidth = 2;
+  for(let i=0;i<6;i++){ ctx.beginPath(); ctx.moveTo(Math.random()*512, Math.random()*512); ctx.bezierCurveTo(Math.random()*512,Math.random()*512,Math.random()*512,Math.random()*512,Math.random()*512,Math.random()*512); ctx.stroke(); }
+  // road grid
+  ctx.strokeStyle = "rgba(139,115,85,0.18)"; ctx.lineWidth = 1;
+  for(let x=0;x<512;x+=32){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x+ (Math.random()-0.5)*8,512); ctx.stroke(); }
+  for(let y=0;y<512;y+=32){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(512,y+(Math.random()-0.5)*8); ctx.stroke(); }
+  // noise grain
+  const imgData=ctx.getImageData(0,0,512,512);
+  for(let i=0;i<imgData.data.length;i+=4){ const n=(Math.random()-0.5)*12; imgData.data[i]+=n; imgData.data[i+1]+=n; imgData.data[i+2]+=n; }
+  ctx.putImageData(imgData,0,0);
+  const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.colorSpace=THREE.SRGBColorSpace; _satTex=t; return t;
+}
 let requestCounter = 0;
 const cache = new Map<string, any>();
 const MAX_CACHE = 20;
@@ -515,6 +537,7 @@ function disposeScene(ctx:any){
   try{
     ctx.terrain.geometry.dispose(); (ctx.terrain.material as any).dispose(); ctx.water.geometry.dispose(); (ctx.water.material as any).dispose();
     ctx.buildingsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); ctx.roadsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); ctx.waterwaysGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); ctx.hotspotsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); }); if(ctx.wardsGroup) ctx.wardsGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); m.material?.dispose(); });
+    const treeGroup=(ctx.scene as any)?.userData?.treeGroup as THREE.Group; if(treeGroup) treeGroup.children.forEach((m:any)=>{ m.geometry?.dispose(); (m.material as any)?.dispose?.(); }); const labelGroup=(ctx.scene as any)?.userData?.labelGroup as THREE.Group; if(labelGroup) labelGroup.children.forEach((m:any)=>{ (m.material as any)?.map?.dispose?.(); });
     if(ctx.measureLine){ ctx.measureLine.geometry.dispose(); (ctx.measureLine.material as any).dispose(); }
     ctx.controls.dispose(); ctx.renderer.dispose();
     ctx.buildingsGroup.clear(); ctx.roadsGroup.clear(); ctx.waterwaysGroup.clear(); ctx.hotspotsGroup.clear(); if(ctx.wardsGroup) ctx.wardsGroup.clear();
@@ -527,14 +550,46 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
   const renderer=new THREE.WebGLRenderer({ canvas, antialias:true, alpha:false, powerPreference:"high-performance" });
   renderer.setPixelRatio(Math.min(typeof window!=="undefined"?window.devicePixelRatio:1,2)); renderer.setSize(w,h,false); renderer.setClearColor(0x060d1a,1); renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.05;
   // WebGPU TSL ready: for r171+ replace with `import { WebGPURenderer } from "three/webgpu"` + `await renderer.init()` + TSL nodes, auto-fallback to WebGL2
-  const hemi=new THREE.HemisphereLight(0xdbeafe,0x0a1a2e,0.95); scene.add(hemi);
+  const hemi=new THREE.HemisphereLight(0xdbeafe,0x0a1a2e,0.92); scene.add(hemi);
   const dir=new THREE.DirectionalLight(0xffffff,0.9); dir.position.set(8,12,6); dir.castShadow=true; dir.shadow.mapSize.set(1024,1024); dir.shadow.camera.near=0.5; dir.shadow.camera.far=30; dir.shadow.camera.left=-10; dir.shadow.camera.right=10; dir.shadow.camera.top=10; dir.shadow.camera.bottom=-10; dir.shadow.bias=-0.0005; scene.add(dir);
-  const fill=new THREE.DirectionalLight(0x7dd3fc,0.4); fill.position.set(-6,5,-4); scene.add(fill);
+  const fill=new THREE.DirectionalLight(0x7dd3fc,0.35); fill.position.set(-6,5,-4); scene.add(fill);
+  // Detail: sun sphere + volumetric fog (survey map atmosphere)
+  const sunGeo=new THREE.SphereGeometry(0.35,16,16); const sunMat=new THREE.MeshBasicMaterial({ color:0xFFF4D6, transparent:true, opacity:0.9 }); const sun=new THREE.Mesh(sunGeo,sunMat); sun.position.set(6,9,-4); scene.add(sun); (scene as any).userData.sun=sun;
+  scene.fog=new THREE.FogExp2(0xE8E0D0, 0.018);
   const aoiW=opts.aoi?.bounds?Math.abs(opts.aoi.bounds.xmax-opts.aoi.bounds.xmin):0.25; const seg=aoiW>0.15?140:110; const size=14;
-  const geo=new THREE.PlaneGeometry(size,size,seg,seg); const tmat=new THREE.MeshStandardMaterial({ vertexColors:true, roughness:0.88, metalness:0.02 }); const terrain=new THREE.Mesh(geo,tmat); terrain.rotation.x=-Math.PI/2; terrain.position.y=-1.2; terrain.receiveShadow=true; scene.add(terrain);
+  const geo=new THREE.PlaneGeometry(size,size,seg,seg); const satTex=createSatelliteDrapeTexture(); const tmat=new THREE.MeshStandardMaterial({ vertexColors:true, map: satTex, roughness:0.88, metalness:0.02 }); const terrain=new THREE.Mesh(geo,tmat); terrain.rotation.x=-Math.PI/2; terrain.position.y=-1.2; terrain.receiveShadow=true; scene.add(terrain);
   if(opts.aoi) generateTerrainForAOI(terrain,opts.aoi,opts.viewMode);
   const grid=new THREE.GridHelper(size,28,0x1e3a5a,0x0f1e2e); (grid as any).position.y=-1.19; (grid as any).material.opacity=0.14; (grid as any).material.transparent=true; (grid as any).material.depthWrite=false; scene.add(grid);
   const contourGroup=new THREE.Group(); scene.add(contourGroup); (scene as any).userData.contourGroup=contourGroup; (terrain as any).__contourGroup=contourGroup; (terrain as any).__sceneRef=scene;
+  // Detail: instanced tree layer for green zones (Pallikaranai, Adyar) + ward labels
+  const treeGroup=new THREE.Group(); scene.add(treeGroup); (scene as any).userData.treeGroup=treeGroup;
+  const labelGroup=new THREE.Group(); scene.add(labelGroup); (scene as any).userData.labelGroup=labelGroup;
+  try {
+    const isMarsh=opts.aoi?.id==="velachery"||opts.aoi?.id==="adyar";
+    const treeCount=isMarsh?80:35;
+    const trunkGeo=new THREE.CylinderGeometry(0.02,0.03,0.18,6);
+    const crownGeo=new THREE.ConeGeometry(0.09,0.22,6);
+    const trunkMat=new THREE.MeshStandardMaterial({ color:0x5A3E1B, roughness:0.9 });
+    const crownMat=new THREE.MeshStandardMaterial({ color:isMarsh?0x4a7c59:0x6b8e6b, roughness:0.85 });
+    for(let i=0;i<treeCount;i++){
+      const rx=(Math.random()-0.5)*size*0.85, rz=(Math.random()-0.5)*size*0.85;
+      if(Math.hypot(rx,rz)>size*0.42) continue;
+      const h=getTerrainHeightAt(terrain, rx, rz);
+      const trunk=new THREE.Mesh(trunkGeo, trunkMat); trunk.position.set(rx, h+0.09, rz); trunk.castShadow=true; treeGroup.add(trunk);
+      const crown=new THREE.Mesh(crownGeo, crownMat); crown.position.set(rx, h+0.28, rz); crown.castShadow=true; treeGroup.add(crown);
+    }
+    // Ward/road labels as sprites (canvas)
+    const makeLabel=(text:string, x:number, z:number, bg:string)=>{
+      const c=document.createElement("canvas"); c.width=256; c.height=64; const ctx2=c.getContext("2d")!; ctx2.fillStyle=bg; ctx2.fillRect(0,0,256,64); ctx2.strokeStyle="#111210"; ctx2.strokeRect(0,0,256,64); ctx2.fillStyle="#111210"; ctx2.font="600 18px IBM Plex Mono"; ctx2.fillText(text, 12, 28); ctx2.font="400 11px IBM Plex Mono"; ctx2.fillStyle="#6B6B63"; ctx2.fillText("WARD · CHENNAI", 12, 44);
+      const tex=new THREE.CanvasTexture(c); tex.colorSpace=THREE.SRGBColorSpace;
+      const mat=new THREE.SpriteMaterial({ map:tex, transparent:true, opacity:0.92, depthWrite:false });
+      const s=new THREE.Sprite(mat); s.position.set(x, getTerrainHeightAt(terrain,x,z)+1.1, z); s.scale.set(1.4,0.35,1); labelGroup.add(s);
+    };
+    const wardName=opts.aoi?.name||"CHENNAI"; const [cx,cz]=[0,0];
+    makeLabel(wardName.toUpperCase().slice(0,18), cx, cz, "#FFFFFF");
+    if(opts.aoi?.id==="central") makeLabel("ANNA SALAI", 1.2, 0.8, "#F8F6F1");
+    if(opts.aoi?.id==="adyar") makeLabel("ADYAR RIVER", -0.8, -1.1, "#E8F0F2");
+  } catch {}
   const wSeg=opts.viewMode==="depth_heatmap"?64:40; const wgeo=new THREE.PlaneGeometry(13.4,13.4,wSeg,wSeg);
   const waterMat=new THREE.ShaderMaterial({
     uniforms:{ time:{value:0}, depth:{value:opts.d??0.5}, opacity:{value:opts.viewMode==="depth_heatmap"?0.72:0.54}, rippleCenter:{value:new THREE.Vector2(0.5,0.5)}, rippleTime:{value:10} },
