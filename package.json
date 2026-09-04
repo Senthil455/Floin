@@ -11,6 +11,7 @@
     "test": "python scripts/preprocess.py && python scripts/simulate.py --P 120 --CN 78 --t 45 && echo \"All module tests passed\""
   },
   "dependencies": {
+    "geotiff": "^3.0.5",
     "leaflet": "^1.9.4",
     "next": "^16.3.3",
     "react": "^19.2.8",
