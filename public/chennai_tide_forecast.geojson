@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_tide_forecast 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.20674613872166,
+          13.106664151176263
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_tide_forecast 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.19320472713625,
+          13.06984273512101
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_tide_forecast 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.26045545298338,
+          13.080205642222259
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_tide_forecast 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.28916780980484,
+          13.056571231222776
+        ]
+      }
+    }
+  ]
+}

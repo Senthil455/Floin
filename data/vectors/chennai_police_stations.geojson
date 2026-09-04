@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_police_stations 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.28099560270996,
+          13.064672375276977
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_police_stations 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.21306882895658,
+          13.10149076224362
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_police_stations 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.2007921950612,
+          13.061904135070787
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_police_stations 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.25880792084908,
+          13.032045452264608
+        ]
+      }
+    }
+  ]
+}

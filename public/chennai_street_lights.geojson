@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_street_lights 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.25132641068264,
+          13.024132965358044
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_street_lights 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.20988611987374,
+          13.049670005456239
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_street_lights 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.28422344603415,
+          13.049284691076203
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_street_lights 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.19044238245753,
+          13.119112399964997
+        ]
+      }
+    }
+  ]
+}

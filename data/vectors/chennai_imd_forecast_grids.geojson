@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_imd_forecast_grids 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.22383351212456,
+          13.073461192996302
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_imd_forecast_grids 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.25719582612939,
+          13.077589551420248
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_imd_forecast_grids 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.26917298030921,
+          13.08355112769886
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_imd_forecast_grids 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.27450381384651,
+          13.031014764329258
+        ]
+      }
+    }
+  ]
+}

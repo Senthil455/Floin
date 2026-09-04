@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_water_tanks 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.22365086977445,
+          13.07495813817164
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_water_tanks 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.23909070316795,
+          13.039360908891654
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_water_tanks 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.28245980533562,
+          13.105245728823226
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_water_tanks 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.20730752115952,
+          13.078195309460023
+        ]
+      }
+    }
+  ]
+}

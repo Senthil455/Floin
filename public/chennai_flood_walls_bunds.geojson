@@ -1,0 +1,81 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_flood_walls_bunds 1"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.2,
+            13.02
+          ],
+          [
+            80.22,
+            13.04
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_flood_walls_bunds 2"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.2,
+            13.02
+          ],
+          [
+            80.22,
+            13.04
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_flood_walls_bunds 3"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.2,
+            13.02
+          ],
+          [
+            80.22,
+            13.04
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_flood_walls_bunds 4"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.2,
+            13.02
+          ],
+          [
+            80.22,
+            13.04
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_borewells 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.27924044802562,
+          13.039852879753408
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_borewells 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.27983531237395,
+          13.103409190303035
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_borewells 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.27949168722104,
+          13.119116048828523
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_borewells 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.22007650768177,
+          13.042153562770944
+        ]
+      }
+    }
+  ]
+}

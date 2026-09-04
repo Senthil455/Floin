@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_fire_stations 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.28499767263224,
+          13.087831555020864
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_fire_stations 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.26186281575988,
+          13.108251197137712
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_fire_stations 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.23199244070702,
+          13.026112033398261
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_fire_stations 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.27326472868462,
+          13.041823596084852
+        ]
+      }
+    }
+  ]
+}

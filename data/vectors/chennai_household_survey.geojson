@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_household_survey 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.22945821250141,
+          13.117949144343857
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_household_survey 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.25960419628652,
+          13.095095373796392
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_household_survey 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.24483058683107,
+          13.027089702704465
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_household_survey 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.24029647493384,
+          13.09761661207016
+        ]
+      }
+    }
+  ]
+}

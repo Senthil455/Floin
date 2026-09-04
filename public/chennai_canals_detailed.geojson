@@ -1,0 +1,81 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_canals_detailed 1"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.2,
+            13.02
+          ],
+          [
+            80.22,
+            13.04
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_canals_detailed 2"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.2,
+            13.02
+          ],
+          [
+            80.22,
+            13.04
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_canals_detailed 3"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.2,
+            13.02
+          ],
+          [
+            80.22,
+            13.04
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_canals_detailed 4"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.2,
+            13.02
+          ],
+          [
+            80.22,
+            13.04
+          ]
+        ]
+      }
+    }
+  ]
+}
