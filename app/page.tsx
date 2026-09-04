@@ -336,13 +336,16 @@ export default function Page() {
           )}
 
           {activeWorkspace === "evacuation" && (
-            <div>
-              <div style={{ display:"flex", alignItems:"baseline", gap:12, borderBottom:"1px solid var(--ink)", paddingBottom:8, marginBottom:12 }}>
-                <span style={{ fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:"0.12em", fontWeight:600 }}>05 // EVACUATION</span>
-                <span style={{ fontFamily:"var(--font-display)", fontSize:18 }}>Safe Corridor Routing</span>
-                <span style={{ marginLeft:"auto", fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>&gt;0.3m detour · 18 km/h</span>
+            <div style={{ display:"grid", gap:12 }}>
+              <CrisisCommandCenter selectedArea={selectedArea} rainfall={rainfall} />
+              <div>
+                <div style={{ display:"flex", alignItems:"baseline", gap:12, borderBottom:"1px solid var(--ink)", paddingBottom:8, marginBottom:12 }}>
+                  <span style={{ fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:"0.12em", fontWeight:600 }}>05 // EVACUATION</span>
+                  <span style={{ fontFamily:"var(--font-display)", fontSize:18 }}>Safe Corridor Routing</span>
+                  <span style={{ marginLeft:"auto", fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>&gt;0.3m detour · 18 km/h</span>
+                </div>
+                <EvacuationRouting currentLocation={{ lat: selectedArea.center[1], lng: selectedArea.center[0], name: selectedArea.name }} floodDepth={+economicLoss.depthVal} onFocusShelter={(sh:any)=>pushToast(sh.name)} />
               </div>
-              <EvacuationRouting currentLocation={{ lat: selectedArea.center[1], lng: selectedArea.center[0], name: selectedArea.name }} floodDepth={+economicLoss.depthVal} onFocusShelter={(sh:any)=>pushToast(sh.name)} />
             </div>
           )}
 
