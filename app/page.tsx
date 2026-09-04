@@ -12,6 +12,7 @@ import RegistryWorkspace from "@/app/lib/workspaces/RegistryWorkspace";
 import CrisisCommandCenter from "@/components/CrisisCommandCenter";
 import FloodMLAnalytics from "@/components/FloodMLAnalytics";
 import WebFloodEngine from "@/components/WebFloodEngine";
+import AnalyticsSuite from "@/components/AnalyticsSuite";
 
 const ChennaiMap = dynamic(() => import("@/components/ChennaiMap"), {
   ssr: false,
@@ -48,6 +49,9 @@ export default function Page() {
   const [activeScenarioId, setActiveScenarioId] = useState("s2");
   const [search, setSearch] = useState("");
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [selectedWard, setSelectedWard] = useState<string | null>(null);
+  const [showHelp, setShowHelp] = useState(false);
+  const [showOnboard, setShowOnboard] = useState(false);
   const pushToast = (msg: string) => { const id = Date.now()+Math.floor(Math.random()*1000); setToasts((t) => [...t, { id, msg }]); setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3000); };
   const live = useChennaiLive(rainfall);
   const blendedP = useMemo(()=> Math.round((rainfall*0.6 + live.precipitation*0.4)*10)/10, [rainfall, live.precipitation]);
@@ -63,6 +67,11 @@ export default function Page() {
     const id = setInterval(() => setCurrentHour((p) => (p >= 6 ? 0 : p + 1)), 1800 / playbackSpeed);
     return () => clearInterval(id);
   }, [isPlaying, playbackSpeed]);
+  useEffect(() => {
+    try { if(!localStorage.getItem("floin_onboard_v2")) { setShowOnboard(true); localStorage.setItem("floin_onboard_v2","1"); } } catch {}
+    const h = (e: KeyboardEvent) => { if(e.key==="?" || (e.key==="/" && e.shiftKey)) setShowHelp(v=>!v); if(e.key==="Escape") { setShowHelp(false); setShowOnboard(false); } };
+    window.addEventListener("keydown", h); return () => window.removeEventListener("keydown", h);
+  }, []);
 
   const handleMapClick = (lat: number, lng: number) => {
     const d = aoiKm / 111;
@@ -121,6 +130,7 @@ export default function Page() {
           )}
         </div>
         <div className="ml-auto flex items-center gap-2 px-3 shrink-0">
+          <button onClick={()=>setShowHelp(!showHelp)} title="Keyboard help (?)" style={{ height:28, width:28, display:"grid", placeItems:"center", border:"1px solid var(--rule-strong)", background:"var(--surface)", fontFamily:"var(--font-mono)", fontSize:12, fontWeight:600 }}>?</button>
           <button onClick={() => setRainOverlayEnabled(!rainOverlayEnabled)} style={{ height: 28, padding:"0 10px", border:`1px solid ${rainOverlayEnabled?"var(--ink)":"var(--rule-strong)"}`, background: rainOverlayEnabled?"var(--ink)":"var(--surface)", color: rainOverlayEnabled?"var(--paper)":"var(--muted2)", fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:"0.08em", fontWeight:600 }}>STORM {rainOverlayEnabled?"ON":"OFF"}</button>
           <button onClick={handleExportReport} style={{ height:28, padding:"0 12px", border:"1px solid var(--ink)", background:"var(--surface)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>BRIEF</button>
           <button onClick={handleExportGeoJSON} style={{ height:28, padding:"0 12px", background:"var(--ink)", color:"var(--paper)", border:"1px solid var(--ink)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>EXPORT GEOJSON</button>
@@ -268,7 +278,7 @@ export default function Page() {
             </div>
           )}
 
-          {activeWorkspace === "hydrology" && <div style={{ display:"grid", gap:12 }}><HydrologyWorkspace S={S} Ia={Ia} Q={Q} rainfall={rainfall} cn={cn} /><WebFloodEngine rainfall={rainfall} cn={cn} aoi={selectedArea} viewMode={viewMode} /><FloodMLAnalytics rainfall={rainfall} cn={cn} /></div>}
+          {activeWorkspace === "hydrology" && <div style={{ display:"grid", gap:12 }}><HydrologyWorkspace S={S} Ia={Ia} Q={Q} rainfall={rainfall} cn={cn} /><AnalyticsSuite rainfall={rainfall} cn={cn} duration={duration} currentHour={currentHour} onHourChange={setCurrentHour} selectedWard={selectedWard} onSelectWard={(id)=>{ setSelectedWard(id); const w={ tondiarpet:[80.286,13.122], anna_nagar:[80.209,13.085], adyar:[80.257,13.006], velachery:[80.22,12.975], saidapet:[80.224,13.02], ennore:[80.32,13.214], perungudi:[80.24,12.961], thurai:[80.248,12.942] } as any; const c=w[id]; if(c){ const d=1.2/111; setSelectedArea({ id:`ward-${id}`, name: id.toUpperCase(), basin: id, bounds:{ xmin:c[0]-d, xmax:c[0]+d, ymin:c[1]-d, ymax:c[1]+d }, center:c }); setActiveWorkspace("digital_twin"); pushToast(id.toUpperCase()+" → 3D FLY"); } }} /><WebFloodEngine rainfall={rainfall} cn={cn} aoi={selectedArea} viewMode={viewMode} /></div>}
           {activeWorkspace === "impact" && (
             <div>
               <div style={{ display:"flex", alignItems:"baseline", gap:12, borderBottom:"1px solid var(--ink)", paddingBottom:8, marginBottom:12 }}>
@@ -380,6 +390,39 @@ export default function Page() {
         <span>FLOIN · CHENNAI FLOOD LEDGER · REV 06D9C60 · 2026-09-04</span><span>OKLCH · IBM PLEX · ZERO RADIUS · RULES NOT SHADOWS</span>
       </footer>
 
+      {showHelp && (
+        <div style={{ position:"fixed", inset:0, background:"oklch(0.15 0.01 100 / 0.42)", zIndex:60, display:"grid", placeItems:"center", padding:16 }} onClick={()=>setShowHelp(false)}>
+          <div onClick={(e)=>e.stopPropagation()} style={{ width:"min(560px, 96vw)", background:"var(--paper)", border:"1px solid var(--ink)", boxShadow:"var(--shadow)" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"12px 14px", borderBottom:"1px solid var(--ink)", background:"var(--surface)" }}>
+              <span style={{ fontFamily:"var(--font-mono)", fontSize:11, fontWeight:700, letterSpacing:"0.08em" }}>SHORTCUTS — PRESS ? TO TOGGLE · ESC TO CLOSE</span>
+              <button onClick={()=>setShowHelp(false)} style={{ border:"1px solid var(--ink)", background:"var(--paper)", padding:"4px 8px", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>✕</button>
+            </div>
+            <div style={{ padding:14, display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, fontFamily:"var(--font-mono)", fontSize:11 }} className="max-[600px]:!grid-cols-1">
+              <div><div style={{ fontWeight:700, borderBottom:"1px solid var(--rule)", paddingBottom:4 }}>3D VIEW</div><div style={{ marginTop:6, display:"grid", gap:4, color:"var(--muted2)" }}><div><span className="kbd">DRAG</span> orbit · <span className="kbd">WHEEL</span> zoom · <span className="kbd">SHIFT+DRAG</span> pan</div><div><span className="kbd">DBL-CLICK</span> focus terrain · <span className="kbd">M</span> measure · <span className="kbd">R</span> reset · <span className="kbd">F</span> AOI</div><div><span className="kbd">⛶ FULL</span> fullscreen · <span className="kbd">◰ PNG</span> screenshot</div></div></div>
+              <div><div style={{ fontWeight:700, borderBottom:"1px solid var(--rule)", paddingBottom:4 }}>TIME & DATA</div><div style={{ marginTop:6, display:"grid", gap:4, color:"var(--muted2)" }}><div><span className="kbd">SPACE</span> +1H · <span className="kbd">←</span><span className="kbd">→</span> scrub · 6H hydrograph linked to water</div><div><span className="kbd">CLICK</span> building/terrain → inspector · water ripple</div><div>Ward bars ↔ 3D fly · Hydrograph ↔ velocity</div></div></div>
+            </div>
+            <div style={{ padding:"8px 14px", borderTop:"1px solid var(--rule)", fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", display:"flex", justifyContent:"space-between" }}><span>REV 06D9C60 · EPSG:4326 · NSE 0.892</span><span>press ? again to close</span></div>
+          </div>
+        </div>
+      )}
+      {showOnboard && (
+        <div style={{ position:"fixed", inset:0, background:"oklch(0.15 0.01 100 / 0.38)", zIndex:61, display:"grid", placeItems:"center", padding:16 }} onClick={()=>setShowOnboard(false)}>
+          <div onClick={(e)=>e.stopPropagation()} style={{ width:"min(520px,96vw)", background:"var(--paper)", border:"1px solid var(--ink)", boxShadow:"var(--shadow)" }}>
+            <div style={{ padding:"14px 16px", borderBottom:"1px solid var(--ink)", background:"var(--surface)" }}>
+              <div style={{ fontFamily:"var(--font-display)", fontSize:18 }}>FLOIN — Field Instrument</div>
+              <div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)", marginTop:4 }}>01 click map to retarget AOI · 02 scrub hydrograph · 03 inspect building</div>
+            </div>
+            <div style={{ padding:14, display:"grid", gap:10, fontFamily:"var(--font-mono)", fontSize:11, lineHeight:1.5 }}>
+              <div style={{ border:"1px solid var(--rule)", background:"var(--paper)", padding:10 }}><span style={{ fontWeight:700 }}>01 // DIGITAL TWIN</span> — 3D terrain + shader water + BatchedMesh buildings. Hover emissive, click ripple + inspector. Depth legend bottom-left, cross-section on measure.</div>
+              <div style={{ border:"1px solid var(--rule)", background:"var(--paper)", padding:10 }}><span style={{ fontWeight:700 }}>02 // HYDROLOGY</span> — SCS-CN + ward damage bars + hydrograph. Tap a ward bar to fly 3D there. Scrub 0–6H updates water + velocity together.</div>
+              <div style={{ border:"1px solid var(--rule)", background:"var(--paper)", padding:10 }}><span style={{ fontWeight:700 }}>05 // EVACUATION</span> — detour-sorted shelters, dry-access flag, 0.3m road closure logic.</div>
+            </div>
+            <div style={{ padding:"10px 14px", display:"flex", justifyContent:"flex-end", gap:8, borderTop:"1px solid var(--rule)" }}>
+              <button onClick={()=>setShowOnboard(false)} style={{ padding:"8px 14px", border:"1px solid var(--ink)", background:"var(--ink)", color:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:11, fontWeight:600 }}>ENTER LEDGER →</button>
+            </div>
+          </div>
+        </div>
+      )}
       <div style={{ position:"fixed", bottom:12, right:12, display:"grid", gap:6, zIndex:50, pointerEvents:"none" }}>
         {toasts.map((t)=> <div key={t.id} style={{ pointerEvents:"auto", background:"var(--ink)", color:"var(--paper)", border:"1px solid var(--ink)", padding:"8px 12px", fontFamily:"var(--font-mono)", fontSize:11, fontWeight:600 }}>{t.msg}</div>)}
       </div>

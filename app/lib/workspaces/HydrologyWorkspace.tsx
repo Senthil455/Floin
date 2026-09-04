@@ -1,5 +1,13 @@
 "use client";
 import { RESERVOIRS } from "@/app/lib/chennai-data";
+const CN_TABLE = [
+  { cover: "High-density residential (impervious 85%)", hs: "D", cn: 92 },
+  { cover: "Medium-density residential", hs: "C", cn: 84 },
+  { cover: "Industrial / paved", hs: "D", cn: 90 },
+  { cover: "Wetland marsh (Pallikaranai)", hs: "A", cn: 62 },
+  { cover: "Vegetation / park", hs: "B", cn: 68 },
+  { cover: "Water bodies", hs: "—", cn: 98 },
+];
 export default function HydrologyWorkspace({ S, Ia, Q, rainfall, cn }: { S: number; Ia: number; Q: number; rainfall: number; cn: number }) {
   return (
     <div>
@@ -17,7 +25,14 @@ export default function HydrologyWorkspace({ S, Ia, Q, rainfall, cn }: { S: numb
               <div><span style={{ color:"var(--muted)" }}>02 ABSTRACTION</span> <span style={{ float:"right", fontWeight:700 }}>Ia = 0.2S = {Ia.toFixed(2)}mm</span></div>
               <div style={{ borderTop:"1px solid var(--ink)", paddingTop:6, marginTop:2 }}><span style={{ color:"var(--muted)" }}>03 RUNOFF</span> <span style={{ float:"right", fontWeight:700, color:"var(--hydro)" }}>Q = (P−Ia)²/(P+0.8S) = {Q.toFixed(2)}mm</span></div>
             </div>
-            <div style={{ fontFamily:"var(--font-body)", fontSize:12, color:"var(--muted2)", lineHeight:1.5 }}>USDA SCS Curve Number. Excess precipitation for P {rainfall}mm, CN {cn} (urban imperviousness). Printed mono, right-aligned, hairline rules.</div>
+            <div style={{ fontFamily:"var(--font-body)", fontSize:12, color:"var(--muted2)", lineHeight:1.5 }}>USDA SCS Curve Number. Excess precipitation for P {rainfall}mm, CN {cn} (urban imperviousness). Ia = 0.2S abstraction, 0.8S retention. Printed mono, right-aligned, hairline rules.</div>
+            <div style={{ marginTop:8, border:"1px solid var(--rule)", background:"var(--paper)", padding:8 }}>
+              <div style={{ fontFamily:"var(--font-mono)", fontSize:9, fontWeight:700, letterSpacing:"0.08em", borderBottom:"1px solid var(--rule)", paddingBottom:4 }}>CN LOOKUP — CHENNAI LULC</div>
+              <table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--font-mono)", fontSize:10, marginTop:6 }}>
+                <thead><tr style={{ color:"var(--muted)", fontSize:9 }}><th style={{ textAlign:"left", padding:"3px 0" }}>COVER</th><th style={{ textAlign:"center" }}>HSG</th><th style={{ textAlign:"right" }}>CN</th></tr></thead>
+                <tbody>{CN_TABLE.map((r)=> <tr key={r.cover} style={{ borderTop:"1px solid var(--rule)" }}><td style={{ padding:"4px 0" }}>{r.cover}</td><td style={{ textAlign:"center" }}>{r.hs}</td><td style={{ textAlign:"right", fontWeight: r.cn===cn?700:400, color: r.cn===cn?"var(--ink)":"var(--muted)" }}>{r.cn}</td></tr>)}</tbody>
+              </table>
+            </div>
           </div>
         </div>
         <div style={{ border:"1px solid var(--ink)", background:"var(--surface)" }}>

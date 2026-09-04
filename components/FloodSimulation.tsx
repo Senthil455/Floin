@@ -17,6 +17,34 @@ import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
 
 const CHENNAI_BOUNDS = { xmin: 80.10, xmax: 80.35, ymin: 12.88, ymax: 13.25 };
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
+function accentForDepth(d: number) { return d > 0.8 ? "var(--vermillion)" : d > 0.32 ? "#B45309" : "var(--hydro)"; }
+function CrossSectionChart({ pts, terrain, depth }: { pts: THREE.Vector3[]; terrain: any; depth: number }) {
+  if (!terrain || pts.length !== 2) return <div style={{ marginTop: 6, height: 48, border: "1px solid var(--rule)", display: "grid", placeItems: "center", fontFamily: "var(--font-mono)", fontSize: 8, color: "var(--muted)" }}>—</div>;
+  const N = 28;
+  const samples: number[] = [];
+  for (let i = 0; i < N; i++) {
+    const t = i / (N - 1);
+    const x = pts[0].x + (pts[1].x - pts[0].x) * t;
+    const z = pts[0].z + (pts[1].z - pts[0].z) * t;
+    try { const h = (terrain.geometry.attributes.position as any); const seg = Math.round(Math.sqrt(h.count)) - 1; const fx = (x + 7) / 14 * seg, fz = (z + 7) / 14 * seg; const x0 = Math.max(0, Math.min(seg - 1, Math.floor(fx))), z0 = Math.max(0, Math.min(seg - 1, Math.floor(fz))); const xi = z0 * (seg + 1) + x0; samples.push(h.getZ(xi)); } catch { samples.push(-0.9); }
+  }
+  const lo = Math.min(...samples), hi = Math.max(...samples);
+  const W = 158, H = 48, pad = 4;
+  const x = (i: number) => pad + (i / (N - 1)) * (W - pad * 2);
+  const y = (v: number) => pad + H - pad * 2 - ((v - lo) / Math.max(0.08, hi - lo)) * (H - pad * 2 - 10);
+  const d = samples.map((v, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+  const waterY = y(Math.min(hi, lo + depth * 0.35));
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: 48, display: "block", marginTop: 6, border: "1px solid var(--rule)", background: "var(--paper)" }}>
+      <path d={`${d} L${x(N - 1).toFixed(1)},${(H - pad).toFixed(1)} L${x(0).toFixed(1)},${(H - pad).toFixed(1)} Z`} fill="var(--ink)" opacity={0.08} />
+      <path d={d} fill="none" stroke="var(--ink)" strokeWidth={1.15} />
+      <line x1={pad} x2={W - pad} y1={waterY} y2={waterY} stroke="var(--hydro)" strokeWidth={1} strokeDasharray="3 3" opacity={0.9} />
+      <text x={pad + 2} y={waterY - 2} fontFamily="var(--font-mono)" fontSize={6} fill="var(--hydro)">water {depth.toFixed(2)}m</text>
+      <text x={pad} y={H - 2} fontFamily="var(--font-mono)" fontSize={6} fill="var(--muted)">A</text>
+      <text x={W - pad - 6} y={H - 2} fontFamily="var(--font-mono)" fontSize={6} fill="var(--muted)">A′</text>
+    </svg>
+  );
+}
 
 export type ViewMode = "digital_twin" | "progression" | "depth_heatmap" | "velocity_field" | "infrastructure_impact" | "hydrology" | "data_quality";
 
@@ -397,8 +425,8 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
             </div>
           )}
         </div>
-        {debug && (
-          <div style={{ position:"absolute", bottom:8, left:8, background:"var(--paper)", border:"1px solid var(--ink)", padding:"6px 10px", fontFamily:"var(--font-mono)", fontSize:9, lineHeight:1.4, maxWidth:"58%", zIndex:6 }}>
+        {debug && measurePts.length !== 2 && (
+          <div style={{ position:"absolute", bottom:8, left: 184, background:"var(--paper)", border:"1px solid var(--ink)", padding:"6px 10px", fontFamily:"var(--font-mono)", fontSize:9, lineHeight:1.4, maxWidth:"38%", zIndex:6 }}>
             <div style={{ fontWeight:700, display:"flex", gap:6 }}><span>{(selectedArea?.name || debug.aoi?.id || "").toUpperCase()}</span><span style={{ color:"var(--muted)" }}>[{viewMode.toUpperCase()}]</span></div>
             <div style={{ color:"var(--muted2)", marginTop:2 }}>{debug.location} · DEM {debug.terrain?.min?.toFixed(2)}–{debug.terrain?.max?.toFixed(2)}m · {debug.counts?.buildings||0} bldgs · {debug.counts?.roads||0} roads</div>
           </div>
@@ -600,6 +628,9 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
   const geo=new THREE.PlaneGeometry(size,size,seg,seg); const satTex=createSatelliteDrapeTexture(); const tmat=new THREE.MeshStandardMaterial({ vertexColors:true, map: satTex, roughness:0.88, metalness:0.02 }); const terrain=new THREE.Mesh(geo,tmat); terrain.rotation.x=-Math.PI/2; terrain.position.y=-1.2; terrain.receiveShadow=true; scene.add(terrain);
   if(opts.aoi) generateTerrainForAOI(terrain,opts.aoi,opts.viewMode);
   const grid=new THREE.GridHelper(size,28,0x1e3a5a,0x0f1e2e); (grid as any).position.y=-1.19; (grid as any).material.opacity=0.14; (grid as any).material.transparent=true; (grid as any).material.depthWrite=false; scene.add(grid);
+  const contactGeo=new THREE.CircleGeometry(size*0.62, 48);
+  const contactMat=new THREE.MeshBasicMaterial({ color:0x060d1a, transparent:true, opacity:0.28, depthWrite:false });
+  const contact=new THREE.Mesh(contactGeo, contactMat); contact.rotation.x=-Math.PI/2; contact.position.y=-1.195; scene.add(contact); (scene as any).userData.contact=contact;
   const contourGroup=new THREE.Group(); scene.add(contourGroup); (scene as any).userData.contourGroup=contourGroup; (terrain as any).__contourGroup=contourGroup; (terrain as any).__sceneRef=scene;
   // Detail: instanced tree layer for green zones (Pallikaranai, Adyar) + ward labels
   const treeGroup=new THREE.Group(); scene.add(treeGroup); (scene as any).userData.treeGroup=treeGroup;
@@ -754,10 +785,15 @@ function buildBuildings(group:THREE.Group,features:any[],viewMode:ViewMode,aoi?:
   });
   geosLoop: for(let i=0;i<3;i++){ const k=(["base","alt","dark"] as const)[i]; buckets[k].forEach(g=>g.dispose()); }
   if(viewMode==="velocity_field" && capped.length>0){
-    const arrowGeo=new THREE.ConeGeometry(0.06,0.18,6); const arrowMat=new THREE.MeshBasicMaterial({ color:0x0E7490 });
-    for(let i=0;i<Math.min(18, capped.length); i+=3){
+    const arrowGeo=new THREE.ConeGeometry(0.05,0.16,5); const stemGeo=new THREE.CylinderGeometry(0.012,0.012,0.22,6);
+    const arrowMat=new THREE.MeshStandardMaterial({ color:0x0E7490, emissive:0x083344, emissiveIntensity:0.35 });
+    for(let i=0;i<Math.min(22, capped.length); i+=2){
       const f=capped[i]; const c=(f as any).geometry?.coordinates?.[0]?.[0] || (f as any).geometry?.coordinates?.[0]?.[0]?.[0];
-      if(!c) continue; const [x,z]=lngLatToXZ(c[0],c[1]); const arrow=new THREE.Mesh(arrowGeo,arrowMat); arrow.position.set(x, -0.88, z); arrow.rotation.z=Math.PI/2; arrow.rotation.y=Math.random()*Math.PI; group.add(arrow);
+      if(!c) continue; const [x,z]=lngLatToXZ(c[0],c[1]);
+      const ang=Math.atan2(Math.sin(c[0]*2.1), Math.cos(c[1]*1.7));
+      const g=new THREE.Group(); const stem=new THREE.Mesh(stemGeo, arrowMat); stem.rotation.z=Math.PI/2; stem.position.y=0;
+      const head=new THREE.Mesh(arrowGeo, arrowMat); head.rotation.z=Math.PI/2; head.position.set(0.14,0,0);
+      g.add(stem); g.add(head); g.position.set(x, -0.86, z); g.rotation.y=ang; group.add(g);
     }
   }
 }
