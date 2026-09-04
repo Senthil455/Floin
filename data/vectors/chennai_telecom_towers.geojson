@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_telecom_towers 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.27287386044169,
+          13.02231873290785
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_telecom_towers 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.20204004059933,
+          13.08460232429033
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_telecom_towers 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.21797507029875,
+          13.024258261998389
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_telecom_towers 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.25087271974805,
+          13.07582184939778
+        ]
+      }
+    }
+  ]
+}

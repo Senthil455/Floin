@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_fishing_harbors 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.26889879120871,
+          13.04544351956041
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_fishing_harbors 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.23283679600057,
+          13.023326036223912
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_fishing_harbors 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.20741412029349,
+          13.051194656146713
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_fishing_harbors 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.27815781487503,
+          13.021441725239454
+        ]
+      }
+    }
+  ]
+}

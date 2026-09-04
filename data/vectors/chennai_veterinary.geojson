@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_veterinary 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.2055331099413,
+          13.101331481586532
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_veterinary 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.23364219421104,
+          13.079949590589703
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_veterinary 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.19408343061384,
+          13.095669220961993
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_veterinary 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.26983075415815,
+          13.074805809336352
+        ]
+      }
+    }
+  ]
+}

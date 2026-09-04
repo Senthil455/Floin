@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_temples 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.24809345498042,
+          13.107345172269861
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_temples 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.26024306026014,
+          13.082203609359313
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_temples 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.27792105680265,
+          13.06958264831229
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_temples 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.21566983542841,
+          13.110963445209006
+        ]
+      }
+    }
+  ]
+}

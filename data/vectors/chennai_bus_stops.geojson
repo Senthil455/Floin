@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_bus_stops 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.26706485183,
+          13.09189099279991
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_bus_stops 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.19068222866328,
+          13.034986748989128
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_bus_stops 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.23431749985403,
+          13.07896236607221
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_bus_stops 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.23797970789113,
+          13.109642858941493
+        ]
+      }
+    }
+  ]
+}

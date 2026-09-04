@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_churches 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.24392847225992,
+          13.102477863969664
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_churches 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.25169751607086,
+          13.113370325948068
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_churches 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.23898595882449,
+          13.060687143536466
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_churches 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.27885439588782,
+          13.119003618498025
+        ]
+      }
+    }
+  ]
+}

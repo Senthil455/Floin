@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_colleges 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.21708366417437,
+          13.10889080330601
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_colleges 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.22900015079662,
+          13.05234460142362
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_colleges 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.19590344956264,
+          13.097846951531011
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_colleges 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.21387161204993,
+          13.110228046322248
+        ]
+      }
+    }
+  ]
+}

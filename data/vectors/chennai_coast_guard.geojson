@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_coast_guard 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.23749533528388,
+          13.034522547338065
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_coast_guard 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.23582820133839,
+          13.029355548376323
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_coast_guard 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.25349878013935,
+          13.050692362596005
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_coast_guard 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.19877248022759,
+          13.038460386602546
+        ]
+      }
+    }
+  ]
+}

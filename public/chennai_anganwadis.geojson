@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_anganwadis 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.28840748459312,
+          13.068553817037413
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_anganwadis 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.19714015466646,
+          13.10316542780596
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_anganwadis 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.23496724259766,
+          13.113182364545894
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_anganwadis 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.21858948505717,
+          13.095436465751726
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_mosques 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.22953630305805,
+          13.045494609447543
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_mosques 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.26814265398649,
+          13.079814739992681
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_mosques 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.26187458159536,
+          13.033140023475884
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_mosques 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.23764337463622,
+          13.034819329871386
+        ]
+      }
+    }
+  ]
+}

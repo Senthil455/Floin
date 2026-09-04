@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_cyclone_shelters 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.22122372245151,
+          13.066354225042987
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_cyclone_shelters 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.25484168305665,
+          13.06219871458247
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_cyclone_shelters 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.24043325763589,
+          13.087793992188246
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_cyclone_shelters 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.23893705033791,
+          13.045800056139656
+        ]
+      }
+    }
+  ]
+}

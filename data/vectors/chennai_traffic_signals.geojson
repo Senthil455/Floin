@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_traffic_signals 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.2334986401125,
+          13.079997610430508
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_traffic_signals 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.19127117584964,
+          13.054917101437544
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_traffic_signals 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.22926276260195,
+          13.059542488421094
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_traffic_signals 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.23753236137756,
+          13.113554841870407
+        ]
+      }
+    }
+  ]
+}

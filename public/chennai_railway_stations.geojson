@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_railway_stations 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.19051594520879,
+          13.097565826603587
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_railway_stations 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.23236125553473,
+          13.021022263266705
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_railway_stations 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.25834505498892,
+          13.033484079341257
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_railway_stations 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.19645534531007,
+          13.078911974952737
+        ]
+      }
+    }
+  ]
+}

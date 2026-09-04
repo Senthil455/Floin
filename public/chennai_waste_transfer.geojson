@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_waste_transfer 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.26433576798927,
+          13.05989085313749
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_waste_transfer 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.22438798786855,
+          13.059682118385155
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_waste_transfer 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.23674418318114,
+          13.043905207917934
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_waste_transfer 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.25531262312413,
+          13.088720557816638
+        ]
+      }
+    }
+  ]
+}

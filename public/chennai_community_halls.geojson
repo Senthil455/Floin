@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_community_halls 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.25445153484635,
+          13.06925862070685
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_community_halls 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.25713300278514,
+          13.057941798051095
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_community_halls 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.23498799712581,
+          13.048926495836561
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_community_halls 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.2405631771097,
+          13.08846929063108
+        ]
+      }
+    }
+  ]
+}

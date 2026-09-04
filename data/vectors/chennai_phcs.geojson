@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_phcs 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.253770796891,
+          13.117450919223684
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_phcs 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.19911420944257,
+          13.023883003064547
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_phcs 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.21910470162311,
+          13.084595459689675
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_phcs 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.22106919081597,
+          13.106050286452037
+        ]
+      }
+    }
+  ]
+}

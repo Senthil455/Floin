@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_banks_atms 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.27988298117971,
+          13.020551216751016
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_banks_atms 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.20490626043379,
+          13.031692633977366
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_banks_atms 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.25494774359784,
+          13.027493825653682
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_banks_atms 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.25462912634451,
+          13.050367946432997
+        ]
+      }
+    }
+  ]
+}

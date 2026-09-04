@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_sewage_outfalls 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.20625411588088,
+          13.10815446977725
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_sewage_outfalls 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.25389232183005,
+          13.072103957876973
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_sewage_outfalls 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.27663860537231,
+          13.075499313340542
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_sewage_outfalls 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.20507140944203,
+          13.0933626017026
+        ]
+      }
+    }
+  ]
+}

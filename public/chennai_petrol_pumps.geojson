@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_petrol_pumps 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.19180148986734,
+          13.099643625149477
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_petrol_pumps 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.23384844001602,
+          13.056926959695769
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_petrol_pumps 3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.20547821803672,
+          13.09269681408308
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "chennai_petrol_pumps 4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.28159834943582,
+          13.026327584401425
+        ]
+      }
+    }
+  ]
+}
