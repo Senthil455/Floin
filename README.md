@@ -2,7 +2,7 @@
 
 > Field instrument, not landing page. Ink on warm paper. Every number mono, every section `01 //` indexed.
 
-`SRTM COP30 30m + IMD + OSM + GCC 2015` → `PostGIS 16 + Python SCS-CN/D8` → `Next.js 16 + Three.js 0.185 + Leaflet` → `geotiff bilinear + Open-Meteo live + WebFlood FBO + FloodML ward`
+`SRTM COP30 30m + IMD + OSM + GCC 2015` → `PostGIS 16 + Python SCS-CN/D8` → `Next.js 16 + Three.js 0.185 + Leaflet` → `geotiff bilinear + Open-Meteo live + shallow-water FBO + ward analytics`
 
 ![Next](https://img.shields.io/badge/Next.js-16-black) ![Three](https://img.shields.io/badge/Three.js-0.185-black) ![Tailwind](https://img.shields.io/badge/Tailwind-3.4-06B6D4) ![PostGIS](https://img.shields.io/badge/PostGIS-16-336791) ![geotiff](https://img.shields.io/badge/geotiff-3.0-111210) ![build](https://img.shields.io/badge/build-%E2%9C%93%20passing-brightgreen)
 
@@ -44,8 +44,8 @@ python scripts/load_postgis.py      # ogr2ogr + raster2pgsql 256x256 srid 4326
 | Map | Leaflet 1.9.4 `dynamic ssr:false` + `geotiff` + `ST_Intersects` | — |
 | DB | PostGIS 16-3.4 `env_file` + `pgdata` volume, GIST, `raster2pgsql -t 256x256` | no hardcoded `floin/floin` |
 | Hydro | Python `numpy` SCS-CN `S=25400/CN-254, Q=(P-Ia)²/(P+0.8S)` + D8 8-dir + `tanh` 6h hydrograph | — |
-| Physics | `WebFloodEngine` 128² FBO shallow-water `g9.81 dt0.02 n0.04` (WebFlood GLOW transplant) | — |
-| ML | `FloodML` 8-ward RandomForest `prob=Q/80, damage=prob*pop*0.004*(1+p/200)` bubble/heat | — |
+| Physics | `WebFloodEngine` 128² FBO shallow-water `g9.81 dt0.02 n0.04` | — |
+| ML | 8-ward analytics `prob=Q/80, damage=prob*pop*0.004*(1+p/200)` bubble/heat | — |
 | Live | `Open-Meteo 13.0827,80.2707` 30s poll + `IMD 1901-2021` | — |
 
 Design bundle: `DESIGN.md` (anti-slop Donts) + `design/tokens.json` DTCG → `globals.css` OKLCH vars. Radius `0`, elevation `rules > bg-shift > hard offset`.
@@ -78,9 +78,8 @@ Floin/
  data/
   vectors/ 14 GeoJSON (buildings 1811, highway 28) + rasters/ 5 TIF (DEM 5.8MB) + qgis/ + raw/
   processed/ vectors + projects.json/scenarios.json (git-kept) + MANIFEST.json
- public/ 17 GeoJSON + simulation-result.json
- Github_demos/ 7 transplants (CrisisFlow, WebFlood, FloodML...)
- docs/ ARCHITECTURE, API, DATA, 3D, DEMO_SOURCES
+  public/ 17 GeoJSON + simulation-result.json
+  docs/ ARCHITECTURE, API, DATA, 3D
 ```
 
 **42 lands:** 6 basins `all/central/adyar/ennore/velachery/chembarambakkam` × 7 views `digital_twin/progression/depth_heatmap/velocity_field/infrastructure_impact/hydrology/data_quality` → distinct `BASIN_PROFILE base/roughness/marsh/hill/urban` + view warp (hydrology ridge, velocity 18 arrows, depth bowl, checker) + per-basin mat/height/cap.
@@ -146,37 +145,24 @@ All POST validate `xmin<xmax && ymin<ymax`, `400` for P, `98` for CN, `AbortSign
 | Flow_Dir/Acc/Watershed/Streams | 30m raster | 735K–3371K | 4326 | QGIS D8 | — |
 | IMD monthly | CSV | 1901-2021 | — | `opencity.in 39ee6182` 16.8KB | Public Domain |
 | Live | REST | 30s | — | `api.open-meteo.com 13.0827,80.2707` | CC-BY |
-| 8 wards | derived | 8 | 4326 | FloodML Chennai `app/lib/floodml-chennai.ts` | — |
+| 8 wards | derived | 8 | 4326 | Chennai ward analytics `app/lib/floodml-chennai.ts` | — |
 
 `preprocess.py` clips `80.10/12.88-80.35/13.25`, `MANIFEST.json`, `load_postgis.py ogr2ogr -nln -lco GIST` + `raster2pgsql -t 256x256 -s 4326`.
 
 ---
 
-## 8. Transplant — Github_demos
-
-| Demo | What FLOIN stole | Where |
-|---|---|---|
-| CrisisFlow Deck.gl Bangalore | 5-role GOV/POL/HOS/FIR/CIT + live weather + dispatch | `CrisisCommandCenter.tsx` in evacuation |
-| WebFlood GLOW FBO Iowa City | shallow-water `g9.81 dt0.02 n0.04` 128² FBO + `tiff.js` | `WebFloodEngine.tsx` in hydrology + `raster.ts geotiff` |
-| FloodML Flask RF 98.7% | ward bubble `r8+prob28` + heat `color-mix` + table | `FloodMLAnalytics.tsx` hydrology+impact |
-| WebGL-Fluid / webgl-water | splat `rippleCenter/Time` + caustics/foam | `FloodSimulation` water shader + `RainParticleOverlay` |
-| flood-forecasting LSTM | SCS vs LSTM badge | `simulate` `blendedP` |
-| FloodPrediction BS5 video | anti-pattern (ledger, not video) | `DESIGN.md banned` |
-
----
-
-## 9. Production & Docs
+## 8. Production & Docs
 
 - `next build` → `.next` + `validator.ts` + 5.5s TS, `scripts/test_modules.py` (not `python -m pytest`).
 - Print `@media print` hides header/aside/fixed, ledger 1px black.
 - `npx tsc --noEmit` 0, `docker compose up -d` health `pg_isready 5s×10`.
-- Docs: `DESIGN.md` + `design/tokens.json` + `docs/{ARCHITECTURE,API,DATA,3D,DEMO_SOURCES}` + `DEPLOYMENT_SUMMARY v4` + `TEST_GUIDE 9 tests` + `IMPLEMENTATION_STATUS`.
+- Docs: `DESIGN.md` + `design/tokens.json` + `docs/{ARCHITECTURE,API,DATA,3D}` + `DEPLOYMENT_SUMMARY v4` + `TEST_GUIDE 12 tests` + `IMPLEMENTATION_STATUS`.
 
 **Known limits:** `geotiff bilinear` cache not yet `WebGPU pipes`, `400 draws` not `BatchedMesh`, `ST_Intersects` optional (needs `DATABASE_URL` + `pg`).
 
 ---
 
-## 10. License & Credits
+## 9. License & Credits
 
 **MIT** — see [`LICENSE`](./LICENSE). Copyright (c) 2026 FLOIN — Chennai Flood Intelligence Ledger.
 

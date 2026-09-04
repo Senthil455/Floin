@@ -13,10 +13,10 @@
 | Flow_Dir/Acc/Watershed/Streams | Raster | 735K-3371K | 4326 | `rasters/*.tif` | QGIS D8 | — |
 | IMD monthly | CSV | 1901-2021 16.8KB | — | `opencity.in 39ee6182` | `Imd.gov.in` public domain | grid `80.25,13.25` |
 | Live | REST 30s | — | — | `api.open-meteo.com 13.0827,80.2707` | CC-BY | `current precip/temp/humidity/wind + daily sum` |
-| 8 wards | derived | 8 | 4326 | `app/lib/floodml-chennai.ts` | FloodML Chennai | `wardFloodProb Q/80` |
+| 8 wards | derived | 8 | 4326 | `app/lib/floodml-chennai.ts` | Chennai ward analytics | `wardFloodProb Q/80` |
 
 `preprocess.py` `CRS84` clip `12292 .DS_Store` ignored, `MANIFEST.json`, `load_postgis.py ogr2ogr -nln -lco GIST` + `raster2pgsql -t 256x256 -s 4326`.
 
-Public `17 GeoJSON` + `simulation-result.json` served. `Github_demos/` 7 transplants ignored via `.gitignore`.
+Public `17 GeoJSON` + `simulation-result.json` served.
 
 PostGIS tables: `buildings,highway,natural_water,waterway,rainfall_stations` + `dem,flow_direction,flow_accumulation,watershed,streams` raster.

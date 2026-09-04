@@ -14,8 +14,8 @@
 | Persist | In-memory Map lost on restart | `data/processed/projects.json / scenarios.json` atomic `tmp→rename` |
 | PostGIS | `load_postgis.py` only | Dual path `ST_Intersects` if `DATABASE_URL` else `fileFallbackQuery` (`app/lib/postgis.ts`) |
 | Live | Static `P` prop | `hooks/useChennaiLive` Open-Meteo `13.0827,80.2707` 30s + `blendedP P*0.6+live*0.4` → SCS |
-| Analytics | SCS only | `FloodML 8 wards` `prob=Q/80, damage=prob*pop*0.004*(1+p/200)` bubble/heat + `WebFlood 128² FBO` |
-| Command | Single map | `CrisisCommandCenter` 5-role GOV/POL/HOS/FIR/CIT + evacuation routing |
+| Analytics | SCS only | `8-ward analytics` `prob=Q/80, damage=prob*pop*0.004*(1+p/200)` bubble/heat + `shallow-water 128² FBO` |
+| Command | Single map | `5-role` command center GOV/POL/HOS/FIR/CIT + evacuation routing |
 | Perf | 2048 shadow, per-line mat, 120 seg | 1024 shadow, shared `LineBasic depthWrite:false`, 72/90 seg, `MAX_CACHE 20 LRU`, `frustumCulled`, `depthWrite false grid 0.18` |
 
 ---
@@ -53,7 +53,7 @@ Click 13.07,80.26 (1.5km) → aoi + blendedP → reqId++ + abort
  → /query ST_Intersects? → /features 600 → /terrain bilinear 12-120 → /simulate SCS blendedP
  → cache 20 LRU id-xmin/xmax/ymin/ymax-P-CN-t-viewMode
  → Three: dispose → OrbitControls → BASIN_PROFILE terrain → cap 90-380 wardProb buildings → shared Line mats → water ripple → hover/M/keys → render
- → Inspector wardProb → risk, Evac detour 1.05-1.45, Crisis 5-role, FloodML bubble/heat, WebFlood 128²
+ → Inspector wardProb → risk, Evac detour 1.05-1.45, 5-role command, ward bubble/heat, 128² FBO
 ```
 
 Cache `key` includes `viewMode`, so `depth_heatmap` ≠ `hydrology`.
@@ -66,8 +66,8 @@ Cache `key` includes `viewMode`, so `depth_heatmap` ≠ `hydrology`.
 - [x] `ST_Intersects` dual
 - [x] 42 lands `6×7`
 - [x] live `Open-Meteo` 30s blended
-- [x] `FloodML` 8 wards + `WebFlood` FBO
-- [x] `CrisisFlow` 5-role
+- [x] 8-ward analytics + shallow-water FBO
+- [x] 5-role command center
 - [x] `OrbitControls` hover/measure/ripple/compass
 - [x] `1024 shadow` + shared mats + `frustumCulled`
 - [x] print + skeleton + empty/error

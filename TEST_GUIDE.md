@@ -33,11 +33,11 @@ docker compose up -d && python scripts/load_postgis.py --dry-run
 - Switch `central → velachery` → terrain bowl -0.4 marsh, buildings 380→160, mat `d6d3c4`
 - Switch `digital_twin → hydrology` → contour 14-band vs `velocity_field` teal arrows 18 cones
 
-## 9. Live — `05 EVACUATION` top shows `CrisisFlow` live `Open-Meteo` 30s `precip/temp/humidity + daily` + 5-role tabs `GOV/POL/HOS/FIR/CIT` → resource ledger
+## 9. Live — `05 EVACUATION` top shows live `Open-Meteo` 30s `precip/temp/humidity + daily` + 5-role tabs `GOV/POL/HOS/FIR/CIT` → resource ledger
 
-## 10. WebFlood + FloodML — `02 HYDROLOGY` → `WebFlood 128²` `g9.81 dt0.02` `max/mean/flooded` live + `FloodML` bubble `r8+prob28` + heat `4×2` + table sorted `damage`
+## 10. Shallow-Water + Ward Analytics — `02 HYDROLOGY` → `shallow-water 128²` `g9.81 dt0.02` `max/mean/flooded` live + `ward` bubble `r8+prob28` + heat `4×2` + table sorted `damage`
 
-## 11. Print — `Ctrl+P` → header/aside/fixed hidden, ledger 1px black, `WebFlood` border avoid
+## 11. Print — `Ctrl+P` → header/aside/fixed hidden, ledger 1px black, `shallow-water` border avoid
 
 ## 12. Race — Rapid 5 clicks → only `REQ #last` renders, `AbortError` silent, cache 20 LRU `id-xmin/xmax/ymin/ymax-P-CN-t-viewMode`
 
@@ -46,7 +46,7 @@ docker compose up -d && python scripts/load_postgis.py --dry-run
 | 1-7 | API 200 + `source` tag |
 | 8 | Hover/ripple/measure/compass `N° km` |
 | 9 | Live tick + 5-role |
-| 10 | WebFlood/FloodML stats |
+| 10 | Shallow-water/ward stats |
 | 11 | Print preview 1px |
 | 12 | No stale render |
 

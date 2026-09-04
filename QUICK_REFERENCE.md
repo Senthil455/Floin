@@ -4,13 +4,13 @@
 
 **01 Twin:** click map (1.5km AOI 0.5-3KM) → `VIEW 7` ink toggles → `03 WEBGL` drag orbit/wheel/shift-pan, hover `E6B422` tooltip, click ripple, `M` measure, `R/F`, `0-6H` hydrograph, `P/CN/t` sliders, `Q/depth/velocity/bldgs` ledgers.
 
-**02 Hydro:** `S=25400/CN-254, Q=(P-Ia)²/(P+0.8S)` mono + `RESERVOIR 4` + `WebFlood 128²` + `FloodML bubble/heat`.
+**02 Hydro:** `S=25400/CN-254, Q=(P-Ia)²/(P+0.8S)` mono + `RESERVOIR 4` + `shallow-water 128²` + `ward bubble/heat`.
 
 **03 Scenarios:** `+ SAVE` → rail 280px + `DELTA MATRIX` `P/CN/Q/depth` `SIM 3D`.
 
-**04 Impact:** `LOSS ₹Cr` vermillion + `FloodML` + `ASSET INVENTORY` `FOCUS →`.
+**04 Impact:** `LOSS ₹Cr` vermillion + `ward analytics` + `ASSET INVENTORY` `FOCUS →`.
 
-**05 Evac:** `Crisis 5-role` live `Open-Meteo 30s` + `Evac` detour `1.05-1.45`.
+**05 Evac:** `5-role command` live `Open-Meteo 30s` + `Evac` detour `1.05-1.45`.
 
 **06 Valid:** `327 hotspots 7,894 streets NSE 0.892` ledger `4` 0.892 hydro.
 
@@ -24,4 +24,4 @@
 
 **Perf:** `400 cap per basin`, `1024 shadow`, `shared Line`.
 
-**Docs:** `README` `DESIGN.md` `docs/ARCHITECTURE,API,DATA,3D,DEMO_SOURCES` `DEPLOYMENT v4` `TEST_GUIDE 12` `IMPLEMENTATION v4`.
+**Docs:** `README` `DESIGN.md` `docs/ARCHITECTURE,API,DATA,3D` `DEPLOYMENT v4` `TEST_GUIDE 12` `IMPLEMENTATION v4`.

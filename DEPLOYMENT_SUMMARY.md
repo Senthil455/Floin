@@ -13,7 +13,7 @@
 | Static P | `blendedP P*0.6+live*0.4` `Open-Meteo 13.0827,80.2707 30s` |
 | Manual yaw/pitch, JS water `pos.setZ` | `OrbitControls damping 0.08` + hover `E6B422` tooltip + ripple `rippleCenter/Time` + measure `M` + compass/scale |
 | Per-line `LineBasic` + 2048 shadow | Shared `LineBasic depthWrite:false` + 1024 shadow + `frustumCulled` |
-| SCS only | + `WebFlood 128² FBO` + `FloodML 8 wards` + `Crisis 5-role` |
+| SCS only | + `shallow-water 128² FBO` + `8-ward analytics` + `5-role command` |
 | No print | `@media print` ledger 1px black + skeleton shimmer |
 
 ## Build
@@ -40,4 +40,4 @@ docker compose up -d -- health pg_isready 5s×10, raster2pgsql 256x256
 
 ## Next
 
-`BatchedMesh` + `Line2` + `WebGPURenderer TSL` + `3D Tiles LOD` (Kempsey).
+`BatchedMesh` + `Line2` + `WebGPURenderer TSL` + `3D Tiles LOD`.
