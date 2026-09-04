@@ -120,11 +120,14 @@ export default function Page() {
         </div>
         <div className="relative hidden md:block ml-2 md:ml-4 flex-1 max-w-[320px] min-w-[180px]">
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="SEARCH LANDMARK / RESERVOIR / IMD…" aria-label="Search landmarks" style={{ width: "100%", height: 28, border: "1px solid var(--rule-strong)", background: "var(--surface)", padding: "0 10px", fontFamily: "var(--font-mono)", fontSize: 11, outline: "none" }} />
+          {search.trim() && searchResults.length===0 && (
+            <div style={{ position:"absolute", top:32, left:0, right:0, background:"var(--surface)", border:"1px solid var(--ink)", zIndex:50, padding:"8px 10px", fontFamily:"var(--font-mono)", fontSize:11, color:"var(--muted)" }}>NO MATCH — try Ripon, Adyar, Puzhal</div>
+          )}
           {searchResults.length > 0 && (
             <div style={{ position: "absolute", top: 32, left: 0, right: 0, background: "var(--surface)", border: "1px solid var(--ink)", zIndex: 50, maxHeight: 260, overflowY:"auto" }}>
               {searchResults.map((it) => (
                 <button key={it.name} onClick={() => { const d=aoiKm/111; setSelectedArea({ id:`search-${it.name.slice(0,8)}`, name: it.name, basin: it.basin, bounds:{xmin:it.coords[0]-d,xmax:it.coords[0]+d,ymin:it.coords[1]-d,ymax:it.coords[1]+d}, center: it.coords as any}); setSearch(""); pushToast(it.name); }} style={{ display:"flex", justifyContent:"space-between", gap:8, width:"100%", padding:"8px 10px", fontFamily:"var(--font-mono)", fontSize:11, borderBottom:"1px solid var(--rule)", textAlign:"left" }}>
-                  <span style={{ fontWeight:600, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{it.name}</span><span style={{ color:"var(--muted)", fontSize:10, shrink:0 }}>{it.type}</span>
+                  <span style={{ fontWeight:600, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{it.name}</span><span style={{ color:"var(--muted)", fontSize:10, flexShrink:0 }}>{it.type}</span>
                 </button>
               ))}
             </div>

@@ -447,7 +447,8 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
             <span><span style={{ display:"inline-block", width:12, height:6, background:"#E6B422", verticalAlign:"middle", marginRight:4 }} />0.3-0.8</span>
             <span><span style={{ display:"inline-block", width:12, height:6, background:"var(--vermillion)", verticalAlign:"middle", marginRight:4 }} />&gt;0.8</span>
           </div>
-          <div style={{ color:"var(--muted)", fontSize:8, marginTop:4 }}>DBL-CLICK FOCUS · M MEASURE · R RESET · ←→ HOUR</div>
+            <div style={{ color:"var(--muted)", fontSize:8, marginTop:4 }}>DBL-CLICK FOCUS · M MEASURE · R RESET · ←→ HOUR</div>
+          </div>
         </div>
       </div>
 
