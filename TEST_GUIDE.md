@@ -10,13 +10,13 @@ python scripts/preprocess.py && python scripts/simulate.py --P 160 --CN 84 --t 6
 docker compose up -d && python scripts/load_postgis.py --dry-run
 ```
 
-## 1. Datasets — `GET /api/datasets` → 14, buildings 1811, wards 201, `byCategory`, `featureCount`
+## 1. Datasets — `GET /api/datasets` → 18, buildings 1,811, wards 201, soil/LULC/drainage, `byCategory terrain1/vector2/rainfall2/analysis2/reference11`, `featureCount` + `summary`
 
 ## 2. Query — `POST /api/location/query` `{aoi{bounds,center}}` → `covers/featureCount` 7×, `summary` + `source postgis/file`
 
 ## 3. Features — `POST /api/location/features` `{aoi,datasets[buildings,highway],limit600}` → `FeatureCollection` per id, `count`
 
-## 4. Terrain — `GET /api/location/terrain` → 5 rasters `DEM 5802KB`. `POST {aoi}` → `grid 12-120` bilinear `min/max/mean/range` `COP30 bilinear` or fallback.
+## 4. Terrain — `GET /api/location/terrain` → 5 rasters `DEM 5802KB` + `getDemAvailability()` `provenance`. `POST {aoi}` → `sampleDemGrid` `Float32` bilinear cache `grid 12-120` (`COP30 DEM 30m bilinear` or `chennaiTopography procedural` fallback) `min/max/mean/range` `runtime nodejs`.
 
 ## 5. Simulate — `POST /api/simulate` `{aoi,rainfall,cn,duration}` → `blendedP` (live 40%), `S/Ia/Q`, `floodDepth,velocity,affectedBuildings,extent`, `timeSeries 0-6h`
 
@@ -30,8 +30,8 @@ docker compose up -d && python scripts/load_postgis.py --dry-run
 - Hover building → `E6B422` emissive + mono tooltip + `grab/pointer`
 - Click terrain → ripple + inspector `Terrain Cell degE degN` / building `wardProb`
 - `M` measure → 2pt `LineDashed` km, `R` reset, `F` AOI, `Space/←→` hour, double-click focus
-- Switch `central → velachery` → terrain bowl -0.4 marsh, buildings 380→160, mat `d6d3c4`
-- Switch `digital_twin → hydrology` → contour 14-band vs `velocity_field` teal arrows 18 cones
+- Switch `central → velachery` → terrain bowl -0.4 marsh, buildings 520→160 cap, mat `d6d3c4` + dynamic `wardDamage(rainfall,cn)` color
+- Switch `digital_twin → hydrology` → contour 14-band vs `velocity_field` teal arrows 18 cones vs `depth_heatmap` heat
 
 ## 9. Live — `05 EVACUATION` top shows live `Open-Meteo` 30s `precip/temp/humidity + daily` + 5-role tabs `GOV/POL/HOS/FIR/CIT` → resource ledger
 

@@ -14,14 +14,14 @@
 
 **06 Valid:** `327 hotspots 7,894 streets NSE 0.892` ledger `4` 0.892 hydro.
 
-**07 Registry:** `7 datasets` ledger table `type·count·crs / source`.
+**07 Registry:** `18 datasets` ledger table `type·count·crs / source` (wards 201 + soil/LULC/drainage + GCC 2015).
 
-**08 Export:** `OPEN LEDGER` (print ` Ctrl+P` 1px) + `DOWNLOAD GEOJSON` `EPSG:4326`.
+**08 Export:** `OPEN LEDGER` (print `Ctrl+P` 1px) + `DOWNLOAD GEOJSON` `EPSG:4326`.
 
-**API:** `GET /datasets 13` `POST /query ST_Intersects?` `POST /features 600` `GET/POST /terrain geotiff` `POST /simulate blendedP` `projects/scenarios` file.
+**API:** `GET /datasets 18` `POST /query ST_Intersects?` `POST /features 600` `GET/POST /terrain geotiff bilinear Float32` `POST /simulate blendedP` `projects/scenarios` file.
 
-**Live:** `P*0.6+live*0.4` `Open-Meteo 13.0827,80.2707`.
+**Live:** `P*0.6+live*0.4` `Open-Meteo 13.0827,80.2707` 30s.
 
-**Perf:** `400 cap per basin`, `1024 shadow`, `shared Line`.
+**Perf:** `90-520 cap/basin`, `1024 shadow`, `shared Line depthWrite:false`, `frustumCulled`.
 
-**Docs:** `README` `DESIGN.md` `docs/ARCHITECTURE,API,DATA,3D` `DEPLOYMENT v4` `TEST_GUIDE 12` `IMPLEMENTATION v4`.
+**Docs:** `README` `DESIGN.md` `docs/ARCHITECTURE,API,DATA,3D,DEMO_SOURCES` `DEPLOYMENT v4` `TEST_GUIDE 12` `IMPLEMENTATION v4`.

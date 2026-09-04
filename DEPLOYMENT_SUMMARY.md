@@ -6,7 +6,7 @@
 
 | v1 | v4 |
 |---|---|
-| Dark slop `Inter, rounded-2xl, cyan glow` | Swiss ledger `paper/ink/vermillion 0 radius, Instrument+IBM Plex` (`DESIGN.md`) |
+| Generic dark theme `Inter, rounded-2xl, cyan glow` | Swiss ledger `paper/ink/vermillion 0 radius, Instrument+IBM Plex` (`DESIGN.md`) |
 | Procedural terrain same everywhere | `BASIN_PROFILE 6` + `geotiff bilinear Float32 cache` + 42 lands `6×7` |
 | In-memory Map lost on restart | `projects.json / scenarios.json` atomic |
 | No PostGIS at runtime | Dual `ST_Intersects` + `fileFallback` (`postgis.ts`) |
@@ -26,13 +26,13 @@ python scripts/simulate.py --P 160 --CN 84 --t 60 → Q113.72 depth1.76 93.3% 33
 docker compose up -d -- health pg_isready 5s×10, raster2pgsql 256x256
 ```
 
-## API — 7 + Live
+## API — 7 + Live (18 Datasets)
 
-`GET /datasets 13` · `POST /query ST_Intersects?` · `POST /features 600` · `GET /terrain 5 rasters` · `POST /terrain bilinear 12-120` · `POST /simulate blendedP 6h tanh` · `projects/scenarios` file-backed.
+`GET /datasets 18` (terrain1/analysis2/vector2/rainfall2/reference11, wards 201 + soil/LULC/drainage validated) · `POST /query ST_Intersects?/fileFallback` · `POST /features 600` `source postgis/file` · `GET /terrain 5 rasters getRasterMeta` · `POST /terrain geotiff Float32 bilinear 12-120 sampleDemGrid + fallback` · `POST /simulate blendedP 6h tanh dynamic wardDamage` · `projects/scenarios` file-backed atomic.
 
 ## 3D — Instrument
 
-`Plane 14 72|90 + Plane 13.4 64|40` `Shader caustics+foam+ripple` GPU-only, `400 cap per basin` `wardProb` → `infrastructure_impact/depth_heatmap`, `OrbitControls 3-28`, `Rain 600 drops`.
+`Plane 14 72|90 + Plane 13.4 64|40` `Shader caustics+foam+ripple` GPU-only, `90-520 cap/basin` dynamic `wardProb(rainfall,cn)` → `infrastructure_impact/depth_heatmap`, `OrbitControls 3-28 damping 0.08`, `hover E6B422 + measure M + compass/scale`, `Rain 600 drops`, `seg=Math.round(sqrt)`.
 
 ## Env
 

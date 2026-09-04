@@ -33,7 +33,7 @@ python scripts/load_postgis.py      # ogr2ogr + raster2pgsql 256x256 srid 4326
 
 ---
 
-## 2. Stack — No Slop
+## 2. Stack — Principles
 
 | Layer | Choice | Why not default |
 |---|---|---|
@@ -48,7 +48,7 @@ python scripts/load_postgis.py      # ogr2ogr + raster2pgsql 256x256 srid 4326
 | ML | 8-ward analytics `prob=Q/80, damage=prob*pop*0.004*(1+p/200)` bubble/heat | — |
 | Live | `Open-Meteo 13.0827,80.2707` 30s poll + `IMD 1901-2021` | — |
 
-Design bundle: `DESIGN.md` (anti-slop Donts) + `design/tokens.json` DTCG → `globals.css` OKLCH vars. Radius `0`, elevation `rules > bg-shift > hard offset`.
+Design bundle: `DESIGN.md` (design guidelines) + `design/tokens.json` DTCG → `globals.css` OKLCH vars. Radius `0`, elevation `rules > bg-shift > hard offset`.
 
 ---
 
@@ -75,11 +75,11 @@ Floin/
   FloodMLAnalytics.tsx               # bubble r8+prob28 + heat 4×2 + table
   WebFloodEngine.tsx 128²            # shallow-water FBO
  hooks/useChennaiLive.ts · useHydrology.ts
- data/
-  vectors/ 14 GeoJSON (buildings 1811, highway 28) + rasters/ 5 TIF (DEM 5.8MB) + qgis/ + raw/
-  processed/ vectors + projects.json/scenarios.json (git-kept) + MANIFEST.json
-  public/ 17 GeoJSON + simulation-result.json
-  docs/ ARCHITECTURE, API, DATA, 3D
+  data/
+   vectors/ 17 GeoJSON (buildings 1811, highway 28, wards 201, soil/LULC/drainage, GCC 2015) + rasters/ 5 TIF (DEM 5.8MB) + qgis/ + raw/
+   processed/ vectors + projects.json/scenarios.json (git-kept) + MANIFEST.json
+   public/ 17 GeoJSON + simulation-result.json + tiles/ (ignored)
+   docs/ ARCHITECTURE, API, DATA, 3D, DEMO_SOURCES
 ```
 
 **42 lands:** 6 basins `all/central/adyar/ennore/velachery/chembarambakkam` × 7 views `digital_twin/progression/depth_heatmap/velocity_field/infrastructure_impact/hydrology/data_quality` → distinct `BASIN_PROFILE base/roughness/marsh/hill/urban` + view warp (hydrology ridge, velocity 18 arrows, depth bowl, checker) + per-basin mat/height/cap.
@@ -92,8 +92,8 @@ Floin/
 Click 13.07,80.26 (1.5km AOI) → aoi {xmin,xmax,ymin,ymax,center} + blendedP(P*0.6+live*0.4)
  → POST /query ST_Intersects? → counts (buildings 342 etc) [AbortController, reqId++]
  → POST /features limit600 → 400 bldgs (velachery 160/chem 90) via lngLatToXZ 14
- → POST /terrain geotiff bilinear grid 12-120 → {min,max,source COP30 bilinear}
- → POST /simulate SCS blendedP,CN → Q113 + timeSeries 7×tanh
+  → POST /terrain geotiff bilinear Float32 cache grid 12-120 → {min,max,source COP30 bilinear or procedural fallback}
+  → POST /simulate SCS blendedP,CN → Q113 + timeSeries 7×tanh (dynamic wardProb per building)
  → cacheSet 20 LRU key id-xmin/xmax/ymin/ymax-P-CN-t-viewMode
  → Three: disposeScene(controls/renderer/measureLine) → createProScene(OrbitControls) → generateTerrain per basin/view → buildBuildings per basin/wardProb → water rippleTime+caustics → Orbit update → render
  → Inspector: terrain cell | building wardProb → risk, Evac: detour 1.05-1.45 → CIT 23 reports
@@ -117,7 +117,7 @@ Click 13.07,80.26 (1.5km AOI) → aoi {xmin,xmax,ymin,ymax,center} + blendedP(P*
 
 | # | Route | Method | Query | Response |
 |---|---|---|---|---|
-| 1 | `/api/datasets` | GET | — | 14 datasets, `byCategory`, `featureCount` via `fs public/*.geojson` |
+| 1 | `/api/datasets` | GET | — | 18 datasets (3 terrain/analysis, 2 vector, 2 rainfall, 11 reference), `byCategory`, `featureCount` via `fs public/*.geojson` |
 | 2 | `/api/location/query` | POST | `{aoi{bounds,center},requestId}` | `ST_Intersects` if `DATABASE_URL` else `fileFallback`, 7× `covers/featureCount`, `summary` |
 | 3 | `/api/location/features` | POST | `{aoi,datasets[],limit}` | `FeatureCollection` per id, `source postgis/file` |
 | 4 | `/api/location/terrain` | GET | — | `getDemAvailability()` 5 rasters |
@@ -134,18 +134,24 @@ All POST validate `xmin<xmax && ymin<ymax`, `400` for P, `98` for CN, `AbortSign
 
 | Id | Type | Count | CRS | Source | License |
 |---|---|---|---|---|---|
-| buildings | Polygon | 1811 | 4326 | OSM + GCC survey `data/vectors/buildings.geojson` | ODbL |
+| buildings | Polygon | 1,811 | 4326 | OSM + GCC survey `data/vectors/buildings.geojson` | ODbL |
 | highway | LineString | 28 | 4326 | OSM highway | ODbL |
 | natural_water | Polygon | 555 | 4326 | OSM water | ODbL |
-| waterway | LineString | 3-12 | 4326 | Chennai River Auth | — |
+| waterway | LineString | 3–12 | 4326 | Chennai River Auth | — |
 | rainfall_stations | Point | 8 | 4326 | IMD `rainfall_stations.geojson` | — |
+| chennai_wards_200 | Polygon | 201 | 4326 | GCC ward boundaries `chennai_wards_200.geojson` | — |
+| chennai_census_2011 | Point | 200 | 4326 | Census 2011 ward population | — |
+| chennai_soil | Polygon | 3 | 4326 | NBSS soil texture 1:50k | — |
+| chennai_drainage | LineString | 5 | 4326 | Stormwater drainage network | — |
+| chennai_lulc | Polygon | 5 | 4326 | Bhuvan LULC 2015-16 | — |
 | hotspots | Point | 327 | 4326 | GCC 2015 `chennai2015_hotspots` | observed |
-| flooded_streets | LineString | 4001 | 4326 | GCC 2015 | observed |
-| DEM | 30m raster | 5802KB | 4326 | Copernicus GLO-30 `rasters_COP30/DEM.tif` s3://copernicus-dem-30m | Copernicus |
-| Flow_Dir/Acc/Watershed/Streams | 30m raster | 735K–3371K | 4326 | QGIS D8 | — |
+| flooded_streets | LineString | 4,001 | 4326 | GCC 2015 + crowd 1,000 | observed |
+| inundation/stagnation | Polygon | 750 | 4326 | GCC 2015 | observed |
+| DEM | 30m raster | 5,802KB | 4326 | Copernicus GLO-30 `rasters_COP30/DEM.tif` s3://copernicus-dem-30m | Copernicus |
+| Flow_Dir/Acc/Watershed/Streams | 30m raster | 735K–3,371K | 4326 | QGIS D8 | — |
 | IMD monthly | CSV | 1901-2021 | — | `opencity.in 39ee6182` 16.8KB | Public Domain |
 | Live | REST | 30s | — | `api.open-meteo.com 13.0827,80.2707` | CC-BY |
-| 8 wards | derived | 8 | 4326 | Chennai ward analytics `app/lib/floodml-chennai.ts` | — |
+| 8 wards analytics | derived | 8 | 4326 | Chennai ward analytics `app/lib/floodml-chennai.ts` | — |
 
 `preprocess.py` clips `80.10/12.88-80.35/13.25`, `MANIFEST.json`, `load_postgis.py ogr2ogr -nln -lco GIST` + `raster2pgsql -t 256x256 -s 4326`.
 
@@ -153,10 +159,10 @@ All POST validate `xmin<xmax && ymin<ymax`, `400` for P, `98` for CN, `AbortSign
 
 ## 8. Production & Docs
 
-- `next build` → `.next` + `validator.ts` + 5.5s TS, `scripts/test_modules.py` (not `python -m pytest`).
-- Print `@media print` hides header/aside/fixed, ledger 1px black.
-- `npx tsc --noEmit` 0, `docker compose up -d` health `pg_isready 5s×10`.
-- Docs: `DESIGN.md` + `design/tokens.json` + `docs/{ARCHITECTURE,API,DATA,3D}` + `DEPLOYMENT_SUMMARY v4` + `TEST_GUIDE 12 tests` + `IMPLEMENTATION_STATUS`.
+- `next build` → `.next` + 7 routes (datasets, query, features, terrain GET+POST, simulate, projects, scenarios), `validator.ts`, 5.5s TS.
+- Print `@media print` hides header/aside/fixed, ledger 1px black. Skeleton `shimmer 1.2s` + empty/error states.
+- `npx tsc --noEmit` 0, `docker compose up -d` health `pg_isready 5s×10`, `raster2pgsql -t 256x256 -s 4326`.
+- Docs: `DESIGN.md` + `design/tokens.json` DTCG + `docs/{ARCHITECTURE,API,DATA,3D,DEMO_SOURCES}` + `DEPLOYMENT_SUMMARY v4` + `TEST_GUIDE 12 tests` + `IMPLEMENTATION_STATUS v4`.
 
 **Known limits:** `geotiff bilinear` cache not yet `WebGPU pipes`, `400 draws` not `BatchedMesh`, `ST_Intersects` optional (needs `DATABASE_URL` + `pg`).
 
