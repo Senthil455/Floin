@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { ViewMode } from "@/components/FloodSimulation";
 import EvacuationRouting from "@/components/EvacuationRouting";
@@ -11,55 +11,30 @@ import RegistryWorkspace from "@/app/lib/workspaces/RegistryWorkspace";
 
 const ChennaiMap = dynamic(() => import("@/components/ChennaiMap"), {
   ssr: false,
-  loading: () => (
-    <div style={{ height: 410, display: "grid", placeItems: "center", background: "#040a14", borderRadius: 14, border: "1px solid #1e3a5a", color: "#8aa0b8", fontSize: "13px" }}>
-      Initializing Leaflet 2D Geospatial Engine...
-    </div>
-  ),
+  loading: () => <div style={{ height: 380, border: "1px solid #E6E1D8", background: "#FFFFFF", display: "grid", placeItems: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "#6B6B63" }}>MAP ENGINE — LOADING TILES…</div>,
 });
-
 const FloodSimulation = dynamic(() => import("@/components/FloodSimulation"), {
   ssr: false,
-  loading: () => (
-    <div style={{ height: 530, display: "grid", placeItems: "center", background: "#040a14", borderRadius: 16, border: "1px solid #1e3a5a", color: "#8aa0b8", fontSize: "13px" }}>
-      Compiling WebGL 3D Terrain & Hydrology Shaders...
-    </div>
-  ),
+  loading: () => <div style={{ height: 420, border: "1px solid #E6E1D8", background: "#0F1110", display: "grid", placeItems: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "#8B7355" }}>WEBGL TERRAIN — COMPILING SHADERS…</div>,
 });
 
-type Toast = { id: number; msg: string; action?: string };
+type Toast = { id: number; msg: string };
 
 export default function Page() {
-  const [activeWorkspace, setActiveWorkspace] = useState<
-    "digital_twin" | "hydrology" | "scenarios" | "impact" | "evacuation" | "validation" | "registry" | "reports" | "settings"
-  >("digital_twin");
-
+  const [activeWorkspace, setActiveWorkspace] = useState<"digital_twin" | "hydrology" | "scenarios" | "impact" | "evacuation" | "validation" | "registry" | "reports">("digital_twin");
   const [viewMode, setViewMode] = useState<ViewMode>("digital_twin");
-  const [selectedArea, setSelectedArea] = useState(AREAS[1]); // Default Central Chennai
+  const [selectedArea, setSelectedArea] = useState(AREAS[1]);
   const [aoiKm, setAoiKm] = useState(1.5);
   const [rainOverlayEnabled, setRainOverlayEnabled] = useState(true);
-
-  // Simulation Parameters
   const [rainfall, setRainfall] = useState(160);
   const [cn, setCn] = useState(84);
   const [duration, setDuration] = useState(60);
   const [currentHour, setCurrentHour] = useState(2);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState<1 | 2 | 4>(1);
-
-  // Live Inspector Object
   const [inspectedFeature, setInspectedFeature] = useState<any>({
-    name: "Ripon Building (GCC HQ)",
-    type: "Building Footprint (OSM)",
-    featureId: "OSM-208361200",
-    elevation: "6.42m",
-    depth: "0.58m",
-    velocity: "0.48 m/s",
-    risk: "Moderate Inundation",
-    confidence: "High (Surveyed Footprint / SRTM DEM)",
-    basin: "Cooum River Basin",
+    name: "Ripon Building (GCC HQ)", type: "Building Footprint · OSM 208361200", elevation: "6.42 m", depth: "0.58 m", velocity: "0.48 m/s", risk: "MODERATE", confidence: "SURVEYED / SRTM 30m", basin: "Cooum River Basin",
   });
-
   const [scenarios, setScenarios] = useState<Scenario[]>([
     { id: "s1", name: "2015 Historical Peak Monsoon", P: 240, CN: 88, duration: 90, depth: "0.92m", area: "21.4%", buildings: 740, runoff: 168.4, category: "Historical 2015" },
     { id: "s2", name: "50-Year Design Storm Event", P: 160, CN: 84, duration: 60, depth: "0.58m", area: "13.2%", buildings: 420, runoff: 96.8, category: "Design Storm" },
@@ -67,738 +42,317 @@ export default function Page() {
     { id: "s4", name: "Moderate Pre-Monsoon Shower", P: 65, CN: 76, duration: 30, depth: "0.18m", area: "3.8%", buildings: 90, runoff: 22.1, category: "Custom" },
   ]);
   const [activeScenarioId, setActiveScenarioId] = useState("s2");
-
   const [search, setSearch] = useState("");
   const [toasts, setToasts] = useState<Toast[]>([]);
-
-  const pushToast = (msg: string, action?: string) => {
-    const id = Date.now();
-    setToasts((t) => [...t, { id, msg, action }]);
-    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3800);
-  };
-
+  const pushToast = (msg: string) => { const id = Date.now(); setToasts((t) => [...t, { id, msg }]); setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3000); };
   const { S, Ia, Q, economicLoss } = useHydrology(rainfall, cn, duration);
-
   const searchResults = useMemo(() => {
     if (!search.trim()) return [];
     const q = search.toLowerCase();
-    return CHENNAI_SEARCH_INDEX.filter((item) => item.name.toLowerCase().includes(q) || item.type.toLowerCase().includes(q) || item.basin.toLowerCase().includes(q));
+    return CHENNAI_SEARCH_INDEX.filter((i) => i.name.toLowerCase().includes(q) || i.type.toLowerCase().includes(q) || i.basin.toLowerCase().includes(q));
   }, [search]);
 
-  // Timeline Auto-play Effect
   useEffect(() => {
     if (!isPlaying) return;
-    const interval = setInterval(() => {
-      setCurrentHour((prev) => (prev >= 6 ? 0 : prev + 1));
-    }, 1800 / playbackSpeed);
-    return () => clearInterval(interval);
+    const id = setInterval(() => setCurrentHour((p) => (p >= 6 ? 0 : p + 1)), 1800 / playbackSpeed);
+    return () => clearInterval(id);
   }, [isPlaying, playbackSpeed]);
 
-  // Map Click Location -> Location-specific AOI
-  const handleMapClick = async (lat: number, lng: number) => {
-    const delta = aoiKm / 111;
-    const b = { xmin: lng - delta, xmax: lng + delta, ymin: lat - delta, ymax: lat + delta };
-    const area = {
-      id: `aoi-${Date.now()}`,
-      name: `Catchment Clip (${lat.toFixed(3)}°N, ${lng.toFixed(3)}°E)`,
-      basin: lat > 13.15 ? "Kosasthalaiyar Basin" : lat < 13.02 ? "Adyar Basin" : "Cooum Basin",
-      bounds: b,
-      center: [lng, lat] as [number, number],
-      lat,
-      lng,
-    };
-    setSelectedArea(area);
-    pushToast(`Targeting ${area.name} (${aoiKm}km AOI)`, "View 3D");
+  const handleMapClick = (lat: number, lng: number) => {
+    const d = aoiKm / 111;
+    setSelectedArea({ id: `aoi-${Date.now()}`, name: `CLIP ${lat.toFixed(3)}°N ${lng.toFixed(3)}°E`, basin: lat > 13.15 ? "Kosasthalaiyar" : lat < 13.02 ? "Adyar" : "Cooum", bounds: { xmin: lng - d, xmax: lng + d, ymin: lat - d, ymax: lat + d }, center: [lng, lat] as [number, number], lat, lng });
+    pushToast(`CLIP ${lat.toFixed(3)},${lng.toFixed(3)} · ${aoiKm}KM`);
   };
 
-  // Export Executive PDF/HTML Report
   const handleExportReport = () => {
-    const win = window.open("", "_blank");
-    if (!win) return;
-    win.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>FLOIN Flood Intelligence Report - ${selectedArea.name}</title>
-        <style>
-          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #fff; color: #0f172a; padding: 40px; line-height: 1.5; }
-          h1 { color: #0284c7; margin-bottom: 4px; font-size: 24px; }
-          .header { border-bottom: 2px solid #0284c7; padding-bottom: 14px; margin-bottom: 24px; }
-          .meta { font-size: 13px; color: #64748b; }
-          .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 24px; }
-          .card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px; background: #f8fafc; }
-          .card h3 { margin-top: 0; color: #0369a1; font-size: 15px; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; }
-          th, td { border: 1px solid #e2e8f0; padding: 10px 14px; text-align: left; }
-          th { background: #f1f5f9; font-weight: 700; color: #334155; }
-          .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; }
-          .badge-high { background: #fee2e2; color: #991b1b; }
-          .badge-med { background: #fef3c7; color: #92400e; }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>FLOIN — Chennai Flood Intelligence & 3D Digital Twin Report</h1>
-          <div class="meta">
-            <b>Target Study Area:</b> ${selectedArea.name} | <b>Basin:</b> ${selectedArea.basin}<br/>
-            <b>CRS Reference:</b> EPSG:4326 (WGS84) | <b>Generated:</b> ${new Date().toLocaleString()}
-          </div>
-        </div>
-        <div class="grid">
-          <div class="card">
-            <h3>Hydrological Calculation (SCS-CN Model)</h3>
-            <p><b>Rainfall Input (P):</b> ${rainfall} mm</p>
-            <p><b>Catchment Curve Number (CN):</b> ${cn} (Urban Imperviousness)</p>
-            <p><b>Potential Max Retention (S):</b> ${S.toFixed(2)} mm</p>
-            <p><b>Initial Abstraction (Ia = 0.2S):</b> ${Ia.toFixed(2)} mm</p>
-            <p><b>Direct Surface Runoff Volume (Q):</b> <b>${Q.toFixed(2)} mm</b></p>
-            <p><b>Modelled Mean Flood Depth:</b> <b>${economicLoss.depthVal} m</b></p>
-          </div>
-          <div class="card">
-            <h3>Economic Stage-Damage Impact (FloodML)</h3>
-            <p><b>Direct Property Loss:</b> <b>₹ ${economicLoss.directLossCrores} Crores</b></p>
-            <p><b>Estimated Displaced Population:</b> <b>${economicLoss.displacedPop} residents</b></p>
-            <p><b>Inundated Structures:</b> ${economicLoss.affectedBuildings} buildings</p>
-            <p><b>Model Accuracy (NSE):</b> R² = 0.892 (GCC 2015 Validated)</p>
-          </div>
-        </div>
-        <h3>Multi-Scenario Comparative Analysis</h3>
-        <table>
-          <thead>
-            <tr><th>Scenario Name</th><th>Category</th><th>Rainfall P</th><th>CN</th><th>Runoff Q</th><th>Peak Depth</th><th>Asset Risk</th></tr>
-          </thead>
-          <tbody>
-            ${scenarios
-              .map(
-                (s) => `
-              <tr>
-                <td><b>${s.name}</b></td>
-                <td>${s.category}</td>
-                <td>${s.P} mm</td>
-                <td>${s.CN}</td>
-                <td><b>${s.runoff} mm</b></td>
-                <td>${s.depth}</td>
-                <td><span class="badge ${s.P > 200 ? "badge-high" : "badge-med"}">${s.P > 200 ? "Critical Hazard" : "Moderate"}</span></td>
-              </tr>
-            `
-              )
-              .join("")}
-          </tbody>
-        </table>
-        <div style="margin-top: 36px; padding-top: 14px; border-top: 1px solid #cbd5e1; font-size: 11px; color: #64748b; text-align: center;">
-          Produced by FLOIN Flood Intelligence Platform • Authoritative SRTM DEM 30m + GCC 2015 Validation
-        </div>
-      </body>
-      </html>
-    `);
-    win.document.close();
-    pushToast("Generated printable Executive Flood Intelligence Report");
+    const w = window.open("", "_blank"); if (!w) return;
+    w.document.write(`<!DOCTYPE html><html><head><title>FLOIN Ledger — ${selectedArea.name}</title><style>body{font-family:IBM Plex Sans,system-ui;padding:32px;color:#111210}h1{font-family:Instrument Serif,Georgia;font-size:22px;border-bottom:1px solid #111210;padding-bottom:8px}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #E6E1D8;padding:6px 8px;text-align:left}th{background:#F8F6F1;font-family:IBM Plex Mono}</style></head><body><h1>01 // FLOIN LEDGER — ${selectedArea.name}</h1><p style="font:11px IBM Plex Mono">${selectedArea.basin} · P ${rainfall}mm · CN ${cn} · Q ${Q.toFixed(1)}mm · Depth ${economicLoss.depthVal}m · Loss ₹${economicLoss.directLossCrores}Cr</p><table><tr><th>Scenario</th><th>P</th><th>CN</th><th>Q</th><th>Depth</th></tr>${scenarios.map(s=>`<tr><td>${s.name}</td><td>${s.P}</td><td>${s.CN}</td><td>${s.runoff}</td><td>${s.depth}</td></tr>`).join("")}</table><p style="font:10px IBM Plex Mono;color:#6B6B63;margin-top:24px;border-top:1px solid #E6E1D8;padding-top:8px">FLOIN REV 06D9C60 · 2026-09-04 · EPSG:4326 · NSE 0.892</p></body></html>`);
+    w.document.close(); pushToast("LEDGER EXPORTED");
+  };
+  const handleExportGeoJSON = () => {
+    const data = { type: "FeatureCollection", name: selectedArea.id, properties: { basin: selectedArea.basin, P: rainfall, CN: cn, Q: +Q.toFixed(2), depth: +economicLoss.depthVal, loss: +economicLoss.directLossCrores, aoi: selectedArea, crs: "EPSG:4326" }, features: [{ type: "Feature", properties: { id: selectedArea.id }, geometry: { type: "Polygon", coordinates: [[[selectedArea.bounds.xmin, selectedArea.bounds.ymin],[selectedArea.bounds.xmax, selectedArea.bounds.ymin],[selectedArea.bounds.xmax, selectedArea.bounds.ymax],[selectedArea.bounds.xmin, selectedArea.bounds.ymax],[selectedArea.bounds.xmin, selectedArea.bounds.ymin]]] } }] };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href=url; a.download=`floin-${selectedArea.id}.geojson`; a.click(); setTimeout(()=>URL.revokeObjectURL(url),800); pushToast("GEOJSON EXPORTED");
   };
 
-  const handleExportGeoJSON = () => {
-    const data = {
-      type: "FeatureCollection",
-      name: `FLOIN_Catchment_${selectedArea.id}`,
-      properties: {
-        basin: selectedArea.basin,
-        rainfall_mm: rainfall,
-        curveNumber: cn,
-        runoff_mm: +Q.toFixed(2),
-        estimatedDepth_m: +economicLoss.depthVal,
-        estimatedLoss_crores: +economicLoss.directLossCrores,
-        aoi: selectedArea,
-        crs: "EPSG:4326",
-        timestamp: new Date().toISOString(),
-      },
-      features: [
-        {
-          type: "Feature",
-          properties: { name: "Study AOI Boundary Polygon", id: selectedArea.id },
-          geometry: {
-            type: "Polygon",
-            coordinates: [
-              [
-                [selectedArea.bounds.xmin, selectedArea.bounds.ymin],
-                [selectedArea.bounds.xmax, selectedArea.bounds.ymin],
-                [selectedArea.bounds.xmax, selectedArea.bounds.ymax],
-                [selectedArea.bounds.xmin, selectedArea.bounds.ymax],
-                [selectedArea.bounds.xmin, selectedArea.bounds.ymin],
-              ],
-            ],
-          },
-        },
-      ],
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `floin-dataset-${selectedArea.id}.geojson`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    pushToast("Exported GeoJSON Spatial Simulation Dataset");
-  };
+  const workspaces: { id: typeof activeWorkspace; label: string; mono: string }[] = [
+    { id: "digital_twin", label: "Digital Twin", mono: "01" },
+    { id: "hydrology", label: "Hydrology", mono: "02" },
+    { id: "scenarios", label: "Scenarios", mono: "03" },
+    { id: "impact", label: "Impact", mono: "04" },
+    { id: "evacuation", label: "Evacuation", mono: "05" },
+    { id: "validation", label: "Validation", mono: "06" },
+    { id: "registry", label: "Registry", mono: "07" },
+    { id: "reports", label: "Export", mono: "08" },
+  ];
 
   return (
-    <div className="min-h-screen bg-[#040a14] text-[#e6eef8] flex flex-col font-sans selection:bg-cyan-500 selection:text-black">
-      {/* Top Mission HUD & Status Bar */}
-      <header className="sticky top-0 z-40 bg-[#060e1c]/90 backdrop-blur-md border-b border-[#1e3a5a] px-4 py-2.5 flex items-center justify-between gap-4">
-        {/* Branding & Basin */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 font-black tracking-widest text-base">
-            <span className="w-6 h-6 rounded-lg bg-cyan-500/20 border border-cyan-400 grid place-items-center text-cyan-300 text-xs">◈</span>
-            <span>FLOIN</span>
-            <span className="text-[10px] font-mono font-normal bg-[#0f1e2e] text-cyan-300 px-2 py-0.5 rounded-full border border-[#1e3a5a] hidden sm:inline">
-              CHENNAI DIGITAL TWIN
-            </span>
-          </div>
-          <div className="hidden lg:flex items-center gap-2 pl-3 border-l border-[#1e3a5a] text-xs">
-            <span className="text-[#8aa0b8]">Active Basin:</span>
-            <span className="font-semibold text-white">{selectedArea.basin}</span>
-            <span className="text-[#8aa0b8]">•</span>
-            <span className="font-mono text-cyan-300">EPSG:4326</span>
-          </div>
+    <div className="min-h-screen flex flex-col" style={{ background: "var(--paper)", color: "var(--ink)" }}>
+      <header className="sticky top-0 z-40 flex items-center gap-0" style={{ height: 40, borderBottom: "1px solid var(--rule-strong)", background: "var(--paper)" }}>
+        <div className="flex items-center gap-3 px-4 shrink-0" style={{ borderRight: "1px solid var(--rule)", height: "100%" }}>
+          <div className="w-[18px] h-[18px] grid place-items-center" style={{ background: "var(--ink)", color: "var(--paper)", fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600 }}>◈</div>
+          <span style={{ fontFamily: "var(--font-display)", fontSize: 16, letterSpacing: "-0.02em", lineHeight: 1 }}>FLOIN</span>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.12em", border: "1px solid var(--rule-strong)", padding: "2px 6px", background: "var(--surface)" }}>LEDGER · CHENNAI</span>
         </div>
-
-        {/* Global Landmark Search */}
-        <div className="relative hidden md:block w-[320px]">
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search landmarks, reservoirs, stations..."
-            className="w-full bg-[#0a1422] border border-[#1e3a5a] rounded-full px-4 py-1.5 text-xs text-white placeholder:text-[#64748b] focus:outline-none focus:border-cyan-400 font-sans transition"
-          />
+        <div className="hidden lg:flex items-center gap-2 px-4 text-[11px]" style={{ fontFamily: "var(--font-mono)" }}>
+          <span style={{ color: "var(--muted)" }}>BASIN</span><span style={{ fontWeight: 600 }}>{selectedArea.basin}</span>
+          <span style={{ width: 1, height: 12, background: "var(--rule-strong)" }} />
+          <span style={{ color: "var(--muted)" }}>P</span><span style={{ fontWeight: 600 }}>{rainfall}mm</span>
+          <span style={{ color: "var(--hydro)", fontWeight: 600 }}>Q {Q.toFixed(1)}mm</span>
+          <span style={{ color: "var(--vermillion)", fontWeight: 600 }}>₹{economicLoss.directLossCrores}Cr</span>
+          <span style={{ width: 1, height: 12, background: "var(--rule-strong)" }} />
+          <span style={{ color: "var(--muted)" }}>EPSG:4326</span>
+        </div>
+        <div className="relative hidden md:block ml-4 flex-1 max-w-[320px]">
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="SEARCH LANDMARK / RESERVOIR / IMD…" style={{ width: "100%", height: 28, border: "1px solid var(--rule-strong)", background: "var(--surface)", padding: "0 10px", fontFamily: "var(--font-mono)", fontSize: 11, outline: "none" }} />
           {searchResults.length > 0 && (
-            <div className="absolute top-full mt-2 w-full bg-[#0a1422] border border-[#1e3a5a] rounded-xl p-1.5 text-xs shadow-2xl z-50 max-h-64 overflow-y-auto">
-              {searchResults.map((item) => (
-                <div
-                  key={item.name}
-                  onClick={() => {
-                    const delta = aoiKm / 111;
-                    setSelectedArea({
-                      id: `search-${item.name.toLowerCase().replace(/\s+/g, "-")}`,
-                      name: item.name,
-                      basin: item.basin,
-                      bounds: { xmin: item.coords[0] - delta, xmax: item.coords[0] + delta, ymin: item.coords[1] - delta, ymax: item.coords[1] + delta },
-                      center: item.coords as [number, number],
-                    });
-                    setInspectedFeature({
-                      name: item.name,
-                      type: item.type,
-                      basin: item.basin,
-                      elevation: "6.2m",
-                      depth: "0.52m",
-                      velocity: "0.42 m/s",
-                      risk: "Moderate",
-                      confidence: "Observed Chennai Asset",
-                    });
-                    setSearch("");
-                    setActiveWorkspace("digital_twin");
-                    pushToast(`Targeted ${item.name} in Digital Twin`);
-                  }}
-                  className="px-3 py-2 hover:bg-[#12233a] rounded-lg cursor-pointer flex justify-between items-center transition"
-                >
-                  <span className="font-semibold text-white truncate">{item.name}</span>
-                  <span className="text-[10px] text-cyan-300 font-mono ml-2">{item.type}</span>
-                </div>
+            <div style={{ position: "absolute", top: 32, left: 0, right: 0, background: "var(--surface)", border: "1px solid var(--ink)", zIndex: 50 }}>
+              {searchResults.map((it) => (
+                <button key={it.name} onClick={() => { const d=aoiKm/111; setSelectedArea({ id:`search-${it.name.slice(0,8)}`, name: it.name, basin: it.basin, bounds:{xmin:it.coords[0]-d,xmax:it.coords[0]+d,ymin:it.coords[1]-d,ymax:it.coords[1]+d}, center: it.coords as any}); setSearch(""); pushToast(it.name); }} style={{ display:"flex", justifyContent:"space-between", width:"100%", padding:"8px 10px", fontFamily:"var(--font-mono)", fontSize:11, borderBottom:"1px solid var(--rule)", textAlign:"left" }}>
+                  <span style={{ fontWeight:600 }}>{it.name}</span><span style={{ color:"var(--muted)", fontSize:10 }}>{it.type}</span>
+                </button>
               ))}
             </div>
           )}
         </div>
-
-        {/* Rain Storm Overlay & Quick Actions */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setRainOverlayEnabled(!rainOverlayEnabled)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition ${
-              rainOverlayEnabled ? "bg-cyan-500/20 text-cyan-300 border-cyan-400" : "border-[#1e3a5a] text-[#8aa0b8]"
-            }`}
-          >
-            🌧 Storm FX {rainOverlayEnabled ? "ON" : "OFF"}
-          </button>
-          <button
-            onClick={handleExportReport}
-            className="px-3.5 py-1.5 rounded-full bg-[#0f1e2e] border border-[#1e3a5a] text-xs text-[#e6eef8] font-semibold hover:border-cyan-400 hover:text-white transition"
-          >
-            Executive Brief
-          </button>
-          <button
-            onClick={handleExportGeoJSON}
-            className="px-3.5 py-1.5 rounded-full bg-cyan-500 text-black text-xs font-bold hover:bg-cyan-400 transition"
-          >
-            Export GeoJSON
-          </button>
+        <div className="ml-auto flex items-center gap-2 px-3 shrink-0">
+          <button onClick={() => setRainOverlayEnabled(!rainOverlayEnabled)} style={{ height: 28, padding:"0 10px", border:`1px solid ${rainOverlayEnabled?"var(--ink)":"var(--rule-strong)"}`, background: rainOverlayEnabled?"var(--ink)":"var(--surface)", color: rainOverlayEnabled?"var(--paper)":"var(--muted2)", fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:"0.08em", fontWeight:600 }}>STORM {rainOverlayEnabled?"ON":"OFF"}</button>
+          <button onClick={handleExportReport} style={{ height:28, padding:"0 12px", border:"1px solid var(--ink)", background:"var(--surface)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>BRIEF</button>
+          <button onClick={handleExportGeoJSON} style={{ height:28, padding:"0 12px", background:"var(--ink)", color:"var(--paper)", border:"1px solid var(--ink)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>EXPORT GEOJSON</button>
         </div>
       </header>
 
-      {/* Main Workspace Layout */}
-      <div className="flex-1 flex min-h-0">
-        {/* Left Engineering Navigation Bar */}
-        <aside className="w-[230px] shrink-0 bg-[#060e1c] border-r border-[#1e3a5a] flex flex-col justify-between hidden md:flex">
-          <div className="p-3 space-y-1.5">
-            <div className="text-[10px] font-mono font-bold tracking-widest text-[#64748b] px-3 py-1">COMMAND WORKSPACES</div>
-            {[
-              { id: "digital_twin", label: "3D Digital Twin Lab", icon: "◈" },
-              { id: "hydrology", label: "Hydrology Pipeline", icon: "∿" },
-              { id: "scenarios", label: "Scenario Laboratory", icon: "≡" },
-              { id: "impact", label: "Economic Damage (ML)", icon: "₹" },
-              { id: "evacuation", label: "Evacuation Routing", icon: "🛡" },
-              { id: "validation", label: "2015 Historical Ground", icon: "✓" },
-              { id: "registry", label: "Dataset Provenance", icon: "🗃" },
-              { id: "reports", label: "Briefing & Export", icon: "⤓" },
-            ].map((ws) => (
-              <button
-                key={ws.id}
-                onClick={() => setActiveWorkspace(ws.id as any)}
-                className={`w-full text-left px-3 py-2 rounded-xl text-xs flex items-center gap-2.5 transition ${
-                  activeWorkspace === ws.id
-                    ? "bg-[#12233a] text-cyan-300 font-bold border border-[#1e3a5a]"
-                    : "text-[#8aa0b8] hover:bg-[#0a1422] hover:text-white"
-                }`}
-              >
-                <span className="text-cyan-400 font-mono">{ws.icon}</span>
-                <span>{ws.label}</span>
+      <div className="flex flex-1 min-h-0">
+        <aside className="hidden md:flex flex-col shrink-0" style={{ width: 220, borderRight:"1px solid var(--rule-strong)", background:"var(--paper)" }}>
+          <div style={{ padding:"12px 12px 8px", borderBottom:"1px solid var(--rule)", fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:"0.14em", color:"var(--muted)", fontWeight:600 }}>INDEX</div>
+          <nav style={{ padding: 8, display:"grid", gap:2 }}>
+            {workspaces.map((w) => (
+              <button key={w.id} onClick={() => setActiveWorkspace(w.id)} style={{ textAlign:"left", display:"flex", gap:10, alignItems:"center", padding:"8px 10px", border:"1px solid", borderColor: activeWorkspace===w.id?"var(--ink)":"transparent", background: activeWorkspace===w.id?"var(--surface)":"transparent", borderLeftWidth: activeWorkspace===w.id?2:1, borderLeftColor: activeWorkspace===w.id?"var(--vermillion)":"transparent" }}>
+                <span style={{ fontFamily:"var(--font-mono)", fontSize:10, color: activeWorkspace===w.id?"var(--ink)":"var(--muted)", fontWeight:600 }}>{w.mono}</span>
+                <span style={{ fontFamily:"var(--font-body)", fontSize:13, fontWeight: activeWorkspace===w.id?600:400, color: activeWorkspace===w.id?"var(--ink)":"var(--muted2)" }}>{w.label}</span>
               </button>
             ))}
-          </div>
-
-          {/* Basin Telemetry Box */}
-          <div className="p-3 border-t border-[#1e3a5a] bg-[#040a14]/60">
-            <div className="text-[10px] font-mono text-[#8aa0b8]">HYDROLOGY TELEMETRY</div>
-            <div className="font-mono text-xs font-bold text-white mt-1">P: {rainfall}mm | CN: {cn}</div>
-            <div className="font-mono text-[11px] text-cyan-300 mt-0.5">Direct Q: {Q.toFixed(1)} mm</div>
-            <div className="font-mono text-[10px] text-amber-300 mt-0.5">Est. Loss: ₹{economicLoss.directLossCrores} Cr</div>
-            <div className="w-full h-1 bg-[#0f1e2e] rounded-full mt-2 overflow-hidden">
-              <div className="h-full bg-cyan-500 rounded-full" style={{ width: `${Math.min(100, (rainfall / 300) * 100)}%` }} />
+          </nav>
+          <div style={{ marginTop:"auto", borderTop:"1px solid var(--rule-strong)", padding:12, background:"var(--surface)" }}>
+            <div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.12em", color:"var(--muted)", fontWeight:600 }}>TELEMETRY</div>
+            <div style={{ fontFamily:"var(--font-mono)", fontSize:11, marginTop:6, lineHeight:1.5 }}>
+              <div>P <span style={{ fontWeight:600 }}>{rainfall}mm</span> · CN <span style={{ fontWeight:600 }}>{cn}</span> · t <span style={{ fontWeight:600 }}>{duration}m</span></div>
+              <div style={{ color:"var(--hydro)", fontWeight:600 }}>Q {Q.toFixed(1)}mm · {economicLoss.depthVal}m</div>
+              <div style={{ color:"var(--vermillion)", fontWeight:600 }}>LOSS ₹{economicLoss.directLossCrores}Cr · {economicLoss.displacedPop}</div>
             </div>
+            <div style={{ marginTop:8, height:2, background:"var(--rule)", position:"relative" }}><div style={{ position:"absolute", left:0, top:0, bottom:0, width:`${Math.min(100, rainfall/300*100)}%`, background:"var(--ink)" }} /></div>
+            <div style={{ marginTop:8, fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)" }}>REV 06D9C60 · 2026-09-04 · NSE 0.892</div>
           </div>
         </aside>
 
-        {/* Dynamic Workspace Canvas */}
-        <main className="flex-1 p-4 lg:p-5 overflow-y-auto space-y-4">
-          {/* WORKSPACE 1: 3D DIGITAL TWIN & GEOSPATIAL MAP */}
+        <main className="flex-1 min-w-0" style={{ background:"var(--paper)", padding: 16 }}>
           {activeWorkspace === "digital_twin" && (
-            <div className="space-y-4">
-              {/* Top View Mode & AOI Selector Strip */}
-              <div className="flex flex-wrap items-center justify-between gap-3 bg-[#060e1c] p-2.5 rounded-2xl border border-[#1e3a5a]">
-                {/* 7 Analytical View Modes */}
-                <div className="flex gap-1.5 flex-wrap">
-                  {[
-                    { id: "digital_twin", label: "Digital Twin" },
-                    { id: "progression", label: "Progression" },
-                    { id: "depth_heatmap", label: "Depth Heatmap" },
-                    { id: "velocity_field", label: "Velocity Field" },
-                    { id: "infrastructure_impact", label: "Asset Risk" },
-                    { id: "hydrology", label: "Hydrology Contours" },
-                    { id: "data_quality", label: "Data Quality" },
-                  ].map((m) => (
-                    <button
-                      key={m.id}
-                      onClick={() => setViewMode(m.id as ViewMode)}
-                      className={`px-3 py-1 rounded-full text-xs font-medium transition ${
-                        viewMode === m.id ? "bg-cyan-500 text-black font-bold" : "bg-[#0a1422] text-[#8aa0b8] hover:text-white border border-[#1e3a5a]"
-                      }`}
-                    >
-                      {m.label}
-                    </button>
-                  ))}
-                </div>
-
-                {/* AOI Bounding Radius */}
-                <div className="flex items-center gap-1.5 bg-[#0a1422] p-1 rounded-full border border-[#1e3a5a] text-xs">
-                  <span className="text-[#8aa0b8] px-2">AOI Extent:</span>
-                  {[0.5, 1.0, 1.5, 3.0].map((km) => (
-                    <button
-                      key={km}
-                      onClick={() => {
-                        setAoiKm(km);
-                        pushToast(`AOI extent set to ${km}km`);
-                      }}
-                      className={`px-2.5 py-0.5 rounded-full ${aoiKm === km ? "bg-cyan-500 text-black font-bold" : "text-[#8aa0b8] hover:text-white"}`}
-                    >
-                      {km}km
-                    </button>
-                  ))}
-                </div>
+            <div>
+              <div style={{ display:"flex", alignItems:"baseline", gap:12, borderBottom:"1px solid var(--ink)", paddingBottom:8, marginBottom:12 }}>
+                <span style={{ fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:"0.12em", fontWeight:600 }}>01 // DIGITAL TWIN</span>
+                <span style={{ fontFamily:"var(--font-display)", fontSize:18 }}>{selectedArea.name}</span>
+                <span style={{ marginLeft:"auto", fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>SHADER {viewMode.toUpperCase()} · {selectedArea.center[1].toFixed(3)}°N {selectedArea.center[0].toFixed(3)}°E</span>
               </div>
 
-              {/* Fast Preset Catchments */}
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                {AREAS.map((a) => (
-                  <button
-                    key={a.id}
-                    onClick={() => {
-                      setSelectedArea(a);
-                      pushToast(`Loaded Catchment: ${a.name}`);
-                    }}
-                    className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap border transition ${
-                      selectedArea.id === a.id ? "bg-cyan-500 text-black font-bold border-cyan-500 shadow-md" : "bg-[#060e1c] border-[#1e3a5a] text-[#8aa0b8] hover:text-white"
-                    }`}
-                  >
-                    {a.name}
+              <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:10, border:"1px solid var(--rule)", background:"var(--surface)", padding:6 }}>
+                <span style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:"0.08em", color:"var(--muted)", padding:"4px 6px" }}>VIEW</span>
+                {(["digital_twin","progression","depth_heatmap","velocity_field","infrastructure_impact","hydrology","data_quality"] as ViewMode[]).map((m) => (
+                  <button key={m} onClick={() => setViewMode(m)} style={{ padding:"4px 8px", border:"1px solid", borderColor: viewMode===m?"var(--ink)":"var(--rule)", background: viewMode===m?"var(--ink)":"var(--surface)", color: viewMode===m?"var(--paper)":"var(--muted2)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.06em" }}>{m.toUpperCase().replace("_"," ")}</button>
+                ))}
+                <span style={{ marginLeft:"auto", display:"flex", gap:4, alignItems:"center", fontFamily:"var(--font-mono)", fontSize:10 }}>
+                  <span style={{ color:"var(--muted)" }}>AOI</span>
+                  {[0.5,1,1.5,3].map((k)=> <button key={k} onClick={()=>{setAoiKm(k); pushToast(`${k}KM`);}} style={{ padding:"2px 6px", border:"1px solid var(--rule-strong)", background: aoiKm===k?"var(--ink)":"var(--paper)", color: aoiKm===k?"var(--paper)":"var(--ink)", fontWeight:600 }}>{k}KM</button>)}
+                </span>
+              </div>
+
+              <div style={{ display:"flex", gap:6, overflowX:"auto", paddingBottom:6, marginBottom:10 }}>
+                {AREAS.map((a)=> (
+                  <button key={a.id} onClick={()=>{setSelectedArea(a); pushToast(a.name);}} style={{ whiteSpace:"nowrap", padding:"5px 10px", border:"1px solid", borderColor: selectedArea.id===a.id?"var(--ink)":"var(--rule-strong)", background: selectedArea.id===a.id?"var(--ink)":"var(--surface)", color: selectedArea.id===a.id?"var(--paper)":"var(--ink)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>
+                    {a.name.toUpperCase()}
                   </button>
                 ))}
               </div>
 
-              {/* Dual Surface Workspace: 3D Viewport + Leaflet 2D Map */}
-              <div className="grid lg:grid-cols-12 gap-4">
-                {/* 3D WebGL Digital Twin (7 cols) */}
-                <div className="lg:col-span-7 bg-[#060e1c] border border-[#1e3a5a] rounded-2xl p-3.5 flex flex-col">
-                  <div className="flex justify-between items-center mb-2 px-1">
-                    <span className="text-xs font-mono font-bold text-cyan-300 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                      3D DIGITAL TWIN • {selectedArea.name}
-                    </span>
-                    <span className="text-[11px] font-mono text-[#8aa0b8]">
-                      Shader: {viewMode.toUpperCase()}
-                    </span>
+              <div style={{ display:"grid", gridTemplateColumns:"1.55fr 0.85fr", gap:12 }} className="max-[1024px]:!grid-cols-1">
+                <div style={{ border:"1px solid var(--ink)", background:"var(--surface)" }}>
+                  <div style={{ height:28, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 10px", borderBottom:"1px solid var(--rule)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>
+                    <span>03 // WEBGL DIGITAL TWIN</span><span style={{ color:"var(--muted)" }}>{selectedArea.name}</span>
                   </div>
-                  <FloodSimulation
-                    selectedArea={selectedArea}
-                    rainfall={rainfall}
-                    cn={cn}
-                    duration={duration}
-                    viewMode={viewMode}
-                    currentHour={currentHour}
-                    isPlaying={isPlaying}
-                    rainOverlayEnabled={rainOverlayEnabled}
-                    onTimeChange={(h) => setCurrentHour(h)}
-                    onSelectObject={(obj) => {
-                      setInspectedFeature(obj);
-                      pushToast(`Inspecting ${obj.name}`);
-                    }}
-                  />
+                  <div style={{ padding:8, background:"#0F1110" }}>
+                    <FloodSimulation selectedArea={selectedArea} rainfall={rainfall} cn={cn} duration={duration} viewMode={viewMode} currentHour={currentHour} isPlaying={isPlaying} rainOverlayEnabled={rainOverlayEnabled} onTimeChange={setCurrentHour} onSelectObject={(o:any)=>{setInspectedFeature(o); pushToast(o.name);}} />
+                  </div>
+                  <div style={{ display:"flex", gap:12, padding:"6px 10px", borderTop:"1px solid var(--rule)", fontFamily:"var(--font-mono)", fontSize:10 }}>
+                    <span><span style={{ display:"inline-block", width:14, height:6, background:"var(--hydro)", verticalAlign:"middle", marginRight:4 }} />&lt;0.3 LOW</span>
+                    <span><span style={{ display:"inline-block", width:14, height:6, background:"#E6B422", verticalAlign:"middle", marginRight:4 }} />0.3-0.8 MED</span>
+                    <span><span style={{ display:"inline-block", width:14, height:6, background:"var(--vermillion)", verticalAlign:"middle", marginRight:4 }} />&gt;0.8 HIGH</span>
+                    <span style={{ marginLeft:"auto", color:"var(--muted)" }}>EPSG:4326 · SCS-CN</span>
+                  </div>
                 </div>
 
-                {/* 2D Geospatial Control Map & Telemetry (5 cols) */}
-                <div className="lg:col-span-5 space-y-4">
-                  <div className="bg-[#060e1c] border border-[#1e3a5a] rounded-2xl p-3.5">
-                    <div className="flex justify-between items-center mb-2 px-1">
-                      <span className="text-xs font-mono font-bold text-[#8aa0b8]">GEOSPATIAL CONTROL SURFACE</span>
-                      <span className="text-[10px] text-cyan-300 font-mono font-bold">CLICK TO RETARGET</span>
+                <div style={{ display:"grid", gap:12 }}>
+                  <div style={{ border:"1px solid var(--ink)", background:"var(--surface)" }}>
+                    <div style={{ height:28, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 10px", borderBottom:"1px solid var(--rule)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>
+                      <span>02 // GEOSPATIAL CONTROL</span><span style={{ color:"var(--hydro)", fontWeight:700 }}>CLICK TO RETARGET</span>
                     </div>
-                    <ChennaiMap
-                      selectedArea={selectedArea}
-                      aoiSizeKm={aoiKm}
-                      onMapClick={handleMapClick}
-                      onSelectArea={(a) => setSelectedArea(a)}
-                      onSelectFeature={(f) => {
-                        setInspectedFeature(f);
-                        pushToast(`Selected ${f.name}`);
-                      }}
-                    />
+                    <div style={{ padding:8 }}><ChennaiMap selectedArea={selectedArea} aoiSizeKm={aoiKm} onMapClick={handleMapClick} onSelectArea={setSelectedArea} onSelectFeature={(f:any)=>{setInspectedFeature(f); pushToast(f.name);}} /></div>
                   </div>
 
-                  {/* Precision Object Inspector & Telemetry HUD */}
-                  <div className="bg-[#060e1c] border border-[#1e3a5a] rounded-2xl p-4 space-y-3">
-                    <div className="flex justify-between items-center">
-                      <h4 className="text-xs font-mono font-bold text-cyan-300">ASSET & HYDROLOGY INSPECTOR</h4>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-mono font-bold">
-                        {inspectedFeature?.type || "Urban Asset"}
-                      </span>
+                  <div style={{ border:"1px solid var(--ink)", background:"var(--surface)" }}>
+                    <div style={{ height:28, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 10px", borderBottom:"1px solid var(--rule)", background:"var(--paper)" }}>
+                      <span style={{ fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>04 // INSPECTOR</span>
+                      <span style={{ fontFamily:"var(--font-mono)", fontSize:9, border:"1px solid var(--rule-strong)", padding:"2px 6px", background:"var(--paper)" }}>{inspectedFeature?.type || "ASSET"}</span>
                     </div>
-                    <div className="font-bold text-sm text-white">{inspectedFeature?.name}</div>
-                    <div className="grid grid-cols-3 gap-2 text-xs">
-                      <div className="p-2.5 rounded-xl bg-[#040a14] border border-[#1e3a5a]">
-                        <div className="text-[10px] text-[#8aa0b8]">Inundation Depth</div>
-                        <div className="font-mono font-bold text-amber-300 mt-0.5">{inspectedFeature?.depth || "0.52m"}</div>
+                    <div style={{ padding:12 }}>
+                      <div style={{ fontFamily:"var(--font-display)", fontSize:15, lineHeight:1.2 }}>{inspectedFeature?.name}</div>
+                      <table style={{ width:"100%", marginTop:10, borderCollapse:"collapse", fontFamily:"var(--font-mono)", fontSize:11 }}>
+                        <tbody>
+                          <tr style={{ borderTop:"1px solid var(--rule)" }}><td style={{ padding:"6px 0", color:"var(--muted)" }}>DEPTH</td><td style={{ textAlign:"right", fontWeight:600, color: inspectedFeature?.depth?.includes("0.8")||inspectedFeature?.depth?.includes("0.9")?"var(--vermillion)":"var(--ink)" }}>{inspectedFeature?.depth || "0.58m"}</td></tr>
+                          <tr style={{ borderTop:"1px solid var(--rule)" }}><td style={{ padding:"6px 0", color:"var(--muted)" }}>VELOCITY</td><td style={{ textAlign:"right", fontWeight:600, color:"var(--hydro)" }}>{inspectedFeature?.velocity || "0.48 m/s"}</td></tr>
+                          <tr style={{ borderTop:"1px solid var(--rule)" }}><td style={{ padding:"6px 0", color:"var(--muted)" }}>RISK</td><td style={{ textAlign:"right", fontWeight:600 }}>{inspectedFeature?.risk || "MODERATE"}</td></tr>
+                          <tr style={{ borderTop:"1px solid var(--rule)", borderBottom:"1px solid var(--rule)" }}><td style={{ padding:"6px 0", color:"var(--muted)" }}>BASIN</td><td style={{ textAlign:"right" }}>{inspectedFeature?.basin || selectedArea.basin}</td></tr>
+                        </tbody>
+                      </table>
+                      <div style={{ marginTop:8, fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)", display:"flex", justifyContent:"space-between" }}>
+                        <span>ELEV {inspectedFeature?.elevation || "6.42m"}</span><span style={{ color:"var(--signal)", fontWeight:600 }}>{inspectedFeature?.confidence || "SURVEYED"}</span>
                       </div>
-                      <div className="p-2.5 rounded-xl bg-[#040a14] border border-[#1e3a5a]">
-                        <div className="text-[10px] text-[#8aa0b8]">Flow Velocity</div>
-                        <div className="font-mono font-bold text-cyan-300 mt-0.5">{inspectedFeature?.velocity || "0.45 m/s"}</div>
-                      </div>
-                      <div className="p-2.5 rounded-xl bg-[#040a14] border border-[#1e3a5a]">
-                        <div className="text-[10px] text-[#8aa0b8]">Vulnerability</div>
-                        <div className="font-mono font-bold text-red-400 mt-0.5">{inspectedFeature?.risk || "Moderate"}</div>
-                      </div>
-                    </div>
-                    <div className="text-[11px] text-[#8aa0b8] pt-1 flex justify-between border-t border-[#1e3a5a]/60">
-                      <span>Catchment: <b>{inspectedFeature?.basin || selectedArea.basin}</b></span>
-                      <span>Confidence: <b className="text-emerald-400">{inspectedFeature?.confidence || "Surveyed"}</b></span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* 6-Hour Timeline & Playback Controller */}
-              <div className="bg-[#060e1c] border border-[#1e3a5a] rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setIsPlaying(!isPlaying)}
-                    className="px-5 py-2 rounded-full bg-cyan-500 text-black font-bold text-xs hover:bg-cyan-400 transition"
-                  >
-                    {isPlaying ? "⏸ Pause Progression" : "▶ Play 6-Hour Simulation"}
-                  </button>
-                  <div className="flex gap-1 bg-[#040a14] p-1 rounded-full border border-[#1e3a5a]">
-                    {([1, 2, 4] as const).map((s) => (
-                      <button
-                        key={s}
-                        onClick={() => setPlaybackSpeed(s)}
-                        className={`px-2.5 py-0.5 rounded-full text-xs font-mono ${playbackSpeed === s ? "bg-cyan-500 text-black font-bold" : "text-[#8aa0b8]"}`}
-                      >
-                        {s}x
-                      </button>
-                    ))}
+              <div style={{ marginTop:12, border:"1px solid var(--ink)", background:"var(--surface)", padding:10, display:"flex", gap:12, alignItems:"center", flexWrap:"wrap" }}>
+                <button onClick={()=>setIsPlaying(!isPlaying)} style={{ height:28, padding:"0 14px", background: isPlaying?"var(--vermillion)":"var(--ink)", color:"var(--paper)", border:"1px solid var(--ink)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:700, letterSpacing:"0.08em" }}>{isPlaying?"■ PAUSE":"▶ PLAY 6H"}</button>
+                <div style={{ display:"flex", gap:2, border:"1px solid var(--rule-strong)", padding:2 }}>
+                  {([1,2,4] as const).map((s)=> <button key={s} onClick={()=>setPlaybackSpeed(s)} style={{ padding:"2px 8px", background: playbackSpeed===s?"var(--ink)":"var(--paper)", color: playbackSpeed===s?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>{s}×</button>)}
+                </div>
+                <div style={{ flex:1, minWidth:160, display:"flex", alignItems:"center", gap:8 }}>
+                  <span style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>{currentHour}H</span>
+                  <input type="range" min={0} max={6} value={currentHour} onChange={(e)=>{setCurrentHour(+e.target.value); setIsPlaying(false);}} style={{ flex:1, accentColor:"var(--ink)" }} />
+                  <span style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>6H</span>
+                </div>
+                <div style={{ display:"flex", gap:2 }}>
+                  {[0,1,2,3,4,5,6].map((h)=> <button key={h} onClick={()=>setCurrentHour(h)} style={{ width:28, height:28, border:"1px solid", borderColor: currentHour===h?"var(--ink)":"var(--rule)", background: currentHour===h?"var(--ink)":"var(--paper)", color: currentHour===h?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>{h}</button>)}
+                </div>
+                <button onClick={()=>{setCurrentHour(3); pushToast("PEAK 3H");}} style={{ height:28, padding:"0 10px", border:"1px solid var(--vermillion)", color:"var(--vermillion)", background:"var(--surface)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:700 }}>PEAK 3H</button>
+              </div>
+
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr 1fr", gap:8, marginTop:12 }} className="max-[640px]:!grid-cols-2">
+                {[
+                  { k:"P / CN", v:`${rainfall}mm / ${cn}`, sub:`S ${S.toFixed(1)} · Ia ${Ia.toFixed(1)}` },
+                  { k:"RUNOFF Q", v:`${Q.toFixed(1)} mm`, sub:"SCS-CN", accent:"var(--hydro)" },
+                  { k:"MEAN DEPTH", v:`${economicLoss.depthVal} m`, sub:`${economicLoss.affectedBuildings} bldgs`, accent: +economicLoss.depthVal>0.8?"var(--vermillion)":"var(--ink)" },
+                  { k:"LOSS / POP", v:`₹${economicLoss.directLossCrores}Cr`, sub: economicLoss.displacedPop, accent:"var(--vermillion)" },
+                ].map((s)=> (
+                  <div key={s.k} style={{ border:"1px solid var(--rule)", background:"var(--surface)", padding:"10px 12px", borderLeft:`2px solid ${s.accent||"var(--rule-strong)"}` }}>
+                    <div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.1em", color:"var(--muted)" }}>{s.k}</div>
+                    <div style={{ fontFamily:"var(--font-mono)", fontSize:14, fontWeight:700, marginTop:4, color: s.accent||"var(--ink)" }}>{s.v}</div>
+                    <div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)", marginTop:2 }}>{s.sub}</div>
                   </div>
-                </div>
+                ))}
+              </div>
 
-                <div className="flex-1 max-w-md flex items-center gap-3">
-                  <span className="text-xs font-mono text-[#8aa0b8]">Timeline:</span>
-                  <input
-                    type="range"
-                    min={0}
-                    max={6}
-                    value={currentHour}
-                    onChange={(e) => {
-                      setCurrentHour(+e.target.value);
-                      setIsPlaying(false);
-                    }}
-                    className="w-full accent-cyan-500"
-                  />
-                  <span className="text-xs font-mono text-cyan-300 font-bold min-w-[32px]">{currentHour}h</span>
-                </div>
-
-                <button
-                  onClick={() => {
-                    setCurrentHour(3);
-                    pushToast("Jumped to Peak Hydrograph Inundation (Hour 3)");
-                  }}
-                  className="px-3.5 py-1.5 rounded-full border border-amber-500/50 text-amber-300 text-xs font-semibold hover:bg-amber-500/10 transition"
-                >
-                  ⚡ Jump to Peak Inundation
-                </button>
+              <div style={{ marginTop:8, fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", borderTop:"1px solid var(--rule)", paddingTop:8, display:"flex", justifyContent:"space-between" }}>
+                <span>REV 06D9C60 · 2026-09-04 · EPSG:4326</span><span>CHENNAI LEDGER · NSE 0.892 · SRTM 30m</span>
               </div>
             </div>
           )}
 
           {activeWorkspace === "hydrology" && <HydrologyWorkspace S={S} Ia={Ia} Q={Q} rainfall={rainfall} cn={cn} />}
-
-          {/* WORKSPACE 3: SCENARIO LABORATORY */}
-          {activeWorkspace === "scenarios" && (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h1 className="text-xl font-extrabold text-white">Scenario Laboratory & Multi-Run Matrix</h1>
-                  <p className="text-xs text-[#8aa0b8]">Compare precipitation scenarios side-by-side with live computed hydrodynamics.</p>
-                </div>
-                <button
-                  onClick={() => {
-                    const newSc: Scenario = {
-                      id: `sc-${Date.now()}`,
-                      name: `Scenario ${scenarios.length + 1}`,
-                      P: rainfall,
-                      CN: cn,
-                      duration: duration,
-                      depth: `${(Math.min(Q / 120, 1) * 2.2 * (0.3 + 0.7 * (duration / 100))).toFixed(2)}m`,
-                      area: "14.2%",
-                      buildings: Math.round(80 + (Q / 120) * 700),
-                      runoff: +Q.toFixed(1),
-                      category: "Custom",
-                    };
-                    setScenarios([...scenarios, newSc]);
-                    pushToast(`Saved ${newSc.name}`);
-                  }}
-                  className="px-4 py-2 rounded-full bg-cyan-500 text-black text-xs font-bold"
-                >
-                  + Save Current Scenario
-                </button>
-              </div>
-
-              <div className="grid lg:grid-cols-3 gap-4">
-                {/* Scenario Cards */}
-                <div className="lg:col-span-1 space-y-2">
-                  {scenarios.map((sc) => (
-                    <div
-                      key={sc.id}
-                      onClick={() => {
-                        setActiveScenarioId(sc.id);
-                        setRainfall(sc.P);
-                        setCn(sc.CN);
-                        setDuration(sc.duration);
-                        pushToast(`Loaded ${sc.name}`);
-                      }}
-                      className={`p-3.5 rounded-xl border cursor-pointer transition ${
-                        activeScenarioId === sc.id ? "bg-[#12233a] border-cyan-500 shadow-lg" : "bg-[#060e1c] border-[#1e3a5a] hover:border-cyan-500/40"
-                      }`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div className="font-bold text-sm text-white">{sc.name}</div>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-mono">{sc.category}</span>
-                      </div>
-                      <div className="text-xs text-[#8aa0b8] mt-1 font-mono">
-                        P: {sc.P}mm • CN: {sc.CN} • Runoff: {sc.runoff}mm
-                      </div>
-                      <div className="flex justify-between items-center mt-3 pt-2 border-t border-[#1e3a5a]/60 text-xs font-mono">
-                        <span className="text-amber-300 font-bold">{sc.depth} max depth</span>
-                        <span className="text-[#8aa0b8]">{sc.buildings} buildings hit</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Scenario Comparison Table */}
-                <div className="lg:col-span-2 bg-[#060e1c] border border-[#1e3a5a] rounded-2xl p-4">
-                  <h3 className="font-mono font-bold text-sm text-cyan-300 mb-3">Multi-Run Delta Matrix</h3>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs">
-                      <thead className="text-[#8aa0b8] border-b border-[#1e3a5a]">
-                        <tr>
-                          <th className="text-left py-2.5">Scenario</th>
-                          <th>Rainfall P</th>
-                          <th>Curve No.</th>
-                          <th>Runoff Q</th>
-                          <th>Peak Depth</th>
-                          <th>Vulnerable Assets</th>
-                          <th>Action</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#1e3a5a]/60">
-                        {scenarios.map((sc) => (
-                          <tr key={sc.id} className="hover:bg-[#12233a]/50">
-                            <td className="py-3 font-bold text-white">{sc.name}</td>
-                            <td className="text-center font-mono">{sc.P} mm</td>
-                            <td className="text-center font-mono">{sc.CN}</td>
-                            <td className="text-center font-mono text-cyan-300 font-bold">{sc.runoff} mm</td>
-                            <td className="text-center font-mono text-amber-300">{sc.depth}</td>
-                            <td className="text-center font-mono">{sc.buildings}</td>
-                            <td className="text-center">
-                              <button
-                                onClick={() => {
-                                  setActiveScenarioId(sc.id);
-                                  setRainfall(sc.P);
-                                  setCn(sc.CN);
-                                  setDuration(sc.duration);
-                                  setActiveWorkspace("digital_twin");
-                                  pushToast(`Loaded & switched to ${sc.name}`);
-                                }}
-                                className="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500 hover:text-black font-semibold transition"
-                              >
-                                Simulate 3D
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* WORKSPACE 4: ECONOMIC DAMAGE & INFRASTRUCTURE IMPACT (from FloodML) */}
-          {activeWorkspace === "impact" && (
-            <div className="space-y-4">
-              <h1 className="text-xl font-extrabold text-white">Stage-Damage Economic Loss & Infrastructure Vulnerability</h1>
-              <div className="grid sm:grid-cols-4 gap-3">
-                <div className="p-4 rounded-2xl bg-[#060e1c] border border-cyan-500/40">
-                  <div className="text-xs text-[#8aa0b8]">Est. Economic Loss</div>
-                  <div className="text-2xl font-black text-cyan-300 font-mono mt-1">₹ {economicLoss.directLossCrores} Cr</div>
-                  <div className="text-xs text-[#8aa0b8] mt-1">Direct structural & asset loss</div>
-                </div>
-                <div className="p-4 rounded-2xl bg-[#060e1c] border border-[#1e3a5a]">
-                  <div className="text-xs text-[#8aa0b8]">Displaced Population</div>
-                  <div className="text-2xl font-black text-amber-300 font-mono mt-1">{economicLoss.displacedPop}</div>
-                  <div className="text-xs text-[#8aa0b8] mt-1">Residents requiring shelter</div>
-                </div>
-                <div className="p-4 rounded-2xl bg-[#060e1c] border border-[#1e3a5a]">
-                  <div className="text-xs text-[#8aa0b8]">Inundated Buildings</div>
-                  <div className="text-2xl font-black text-red-400 font-mono mt-1">{economicLoss.affectedBuildings}</div>
-                  <div className="text-xs text-[#8aa0b8] mt-1">Depth &gt; 0.15m boundary</div>
-                </div>
-                <div className="p-4 rounded-2xl bg-[#060e1c] border border-[#1e3a5a]">
-                  <div className="text-xs text-[#8aa0b8]">Arterial Road Closure</div>
-                  <div className="text-2xl font-black text-white font-mono mt-1">16.4 km</div>
-                  <div className="text-xs text-[#8aa0b8] mt-1">Corridors impassable</div>
-                </div>
-              </div>
-
-              {/* Filterable Asset Table */}
-              <div className="bg-[#060e1c] border border-[#1e3a5a] rounded-2xl p-4">
-                <h3 className="font-mono font-bold text-sm text-cyan-300 mb-3">Critical Infrastructure Asset Inventory</h3>
-                <div className="divide-y divide-[#1e3a5a]/60">
-                  {CHENNAI_SEARCH_INDEX.map((asset) => (
-                    <div key={asset.name} className="py-3 flex items-center justify-between text-xs">
-                      <div>
-                        <div className="font-bold text-white">{asset.name}</div>
-                        <div className="text-[#8aa0b8]">{asset.type} • Basin: {asset.basin}</div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="font-mono text-amber-300 font-bold">0.52m Inundation</span>
-                        <button
-                          onClick={() => {
-                            const delta = aoiKm / 111;
-                            setSelectedArea({
-                              id: `asset-${asset.name.toLowerCase().replace(/\s+/g, "-")}`,
-                              name: asset.name,
-                              basin: asset.basin,
-                              bounds: { xmin: asset.coords[0] - delta, xmax: asset.coords[0] + delta, ymin: asset.coords[1] - delta, ymax: asset.coords[1] + delta },
-                              center: asset.coords as [number, number],
-                            });
-                            setActiveWorkspace("digital_twin");
-                            pushToast(`Focused ${asset.name} in Digital Twin`);
-                          }}
-                          className="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500 hover:text-black font-semibold transition"
-                        >
-                          Focus in 3D →
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* WORKSPACE 5: EMERGENCY EVACUATION & SAFE ROUTING (from CrisisFlow) */}
-          {activeWorkspace === "evacuation" && (
-            <div className="space-y-4">
-              <EvacuationRouting
-                currentLocation={{
-                  lat: selectedArea.center[1],
-                  lng: selectedArea.center[0],
-                  name: selectedArea.name,
-                }}
-                floodDepth={+economicLoss.depthVal}
-                onFocusShelter={(sh) => {
-                  pushToast(`Selected Evacuation Shelter: ${sh.name}`);
-                }}
-              />
-            </div>
-          )}
-
           {activeWorkspace === "validation" && <ValidationWorkspace />}
           {activeWorkspace === "registry" && <RegistryWorkspace />}
 
-          {/* WORKSPACE 8: BRIEFING & EXPORT */}
-          {activeWorkspace === "reports" && (
-            <div className="space-y-4">
-              <h1 className="text-xl font-extrabold text-white">Intelligence Briefing & Spatial Export</h1>
-              <div className="grid lg:grid-cols-2 gap-4">
-                <div className="bg-[#060e1c] border border-[#1e3a5a] rounded-2xl p-5 space-y-4">
-                  <h3 className="font-bold text-sm text-cyan-300">Executive Flood Intelligence Report</h3>
-                  <p className="text-xs text-[#8aa0b8]">
-                    Generates a formal executive decision brief with hydrological calculations, AOI boundary definitions, asset vulnerability counts, economic stage-damage loss, and multi-scenario comparison matrices.
-                  </p>
-                  <button
-                    onClick={handleExportReport}
-                    className="px-5 py-2.5 rounded-full bg-cyan-500 text-black font-bold text-xs hover:bg-cyan-400 transition"
-                  >
-                    Open Printable Executive Brief →
-                  </button>
+          {activeWorkspace === "scenarios" && (
+            <div>
+              <div style={{ display:"flex", alignItems:"baseline", gap:12, borderBottom:"1px solid var(--ink)", paddingBottom:8, marginBottom:12 }}>
+                <span style={{ fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:"0.12em", fontWeight:600 }}>03 // SCENARIOS</span>
+                <span style={{ fontFamily:"var(--font-display)", fontSize:18 }}>Laboratory Matrix</span>
+                <button onClick={()=>{ const sc:Scenario={ id:`sc-${Date.now()}`, name:`Scenario ${scenarios.length+1}`, P:rainfall, CN:cn, duration, depth:`${(Math.min(Q/120,1)*2.2*(0.3+0.7*duration/100)).toFixed(2)}m`, area:"14.2%", buildings: Math.round(80+(Q/120)*700), runoff:+Q.toFixed(1), category:"Custom"}; setScenarios([...scenarios, sc]); pushToast(sc.name);}} style={{ marginLeft:"auto", height:28, padding:"0 12px", background:"var(--ink)", color:"var(--paper)", border:"1px solid var(--ink)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:700 }}>+ SAVE CURRENT</button>
+              </div>
+              <div style={{ display:"grid", gridTemplateColumns:"280px 1fr", gap:12 }} className="max-[900px]:!grid-cols-1">
+                <div style={{ display:"grid", gap:6, alignContent:"start" }}>
+                  {scenarios.map((sc)=> (
+                    <button key={sc.id} onClick={()=>{setActiveScenarioId(sc.id); setRainfall(sc.P); setCn(sc.CN); setDuration(sc.duration); pushToast(sc.name);}} style={{ textAlign:"left", padding:"10px 12px", border:"1px solid", borderColor: activeScenarioId===sc.id?"var(--ink)":"var(--rule)", background: activeScenarioId===sc.id?"var(--surface)":"var(--paper)", borderLeftWidth:2, borderLeftColor: activeScenarioId===sc.id?"var(--vermillion)":"transparent" }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", gap:8 }}><span style={{ fontFamily:"var(--font-body)", fontSize:13, fontWeight:600 }}>{sc.name}</span><span style={{ fontFamily:"var(--font-mono)", fontSize:9, border:"1px solid var(--rule)", padding:"2px 4px", background:"var(--paper)" }}>{sc.category}</span></div>
+                      <div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)", marginTop:4 }}>P {sc.P} · CN {sc.CN} · Q {sc.runoff}mm</div>
+                      <div style={{ display:"flex", justifyContent:"space-between", marginTop:6, paddingTop:6, borderTop:"1px solid var(--rule)", fontFamily:"var(--font-mono)", fontSize:10 }}><span style={{ fontWeight:700, color:"var(--vermillion)" }}>{sc.depth}</span><span style={{ color:"var(--muted)" }}>{sc.buildings} bldgs</span></div>
+                    </button>
+                  ))}
                 </div>
+                <div style={{ border:"1px solid var(--ink)", background:"var(--surface)", overflow:"auto" }}>
+                  <div style={{ padding:"8px 12px", borderBottom:"1px solid var(--rule)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>03.1 // DELTA MATRIX</div>
+                  <table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--font-mono)", fontSize:11 }}>
+                    <thead><tr style={{ background:"var(--paper)", borderBottom:"1px solid var(--rule-strong)", color:"var(--muted)", fontSize:10 }}><th style={{ textAlign:"left", padding:"8px 10px" }}>SCENARIO</th><th>P</th><th>CN</th><th>Q</th><th>DEPTH</th><th></th></tr></thead>
+                    <tbody>
+                      {scenarios.map((sc)=> (
+                        <tr key={sc.id} style={{ borderBottom:"1px solid var(--rule)" }}>
+                          <td style={{ padding:"8px 10px", fontWeight:600 }}>{sc.name}</td><td style={{ textAlign:"right", padding:"8px 6px" }}>{sc.P}</td><td style={{ textAlign:"right", padding:"8px 6px" }}>{sc.CN}</td><td style={{ textAlign:"right", padding:"8px 6px", color:"var(--hydro)", fontWeight:700 }}>{sc.runoff}</td><td style={{ textAlign:"right", padding:"8px 6px", color:"var(--vermillion)" }}>{sc.depth}</td>
+                          <td style={{ padding:"6px 10px" }}><button onClick={()=>{setActiveScenarioId(sc.id); setRainfall(sc.P); setCn(sc.CN); setDuration(sc.duration); setActiveWorkspace("digital_twin"); pushToast(sc.name);}} style={{ padding:"4px 8px", border:"1px solid var(--ink)", background:"var(--ink)", color:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>SIM 3D</button></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
 
-                <div className="bg-[#060e1c] border border-[#1e3a5a] rounded-2xl p-5 space-y-4">
-                  <h3 className="font-bold text-sm text-cyan-300">Spatial GeoJSON Dataset Export</h3>
-                  <p className="text-xs text-[#8aa0b8]">
-                    Download standardized GeoJSON feature collections with full hydrological attributes, economic loss calculations, AOI polygons, and runoff properties for GIS systems (QGIS / ArcGIS).
-                  </p>
-                  <button
-                    onClick={handleExportGeoJSON}
-                    className="px-5 py-2.5 rounded-full border border-cyan-500 text-cyan-300 font-bold text-xs hover:bg-[#12233a] transition"
-                  >
-                    Download GeoJSON Package
-                  </button>
+          {activeWorkspace === "impact" && (
+            <div>
+              <div style={{ display:"flex", alignItems:"baseline", gap:12, borderBottom:"1px solid var(--ink)", paddingBottom:8, marginBottom:12 }}>
+                <span style={{ fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:"0.12em", fontWeight:600 }}>04 // IMPACT</span>
+                <span style={{ fontFamily:"var(--font-display)", fontSize:18 }}>Stage-Damage Ledger</span>
+                <span style={{ marginLeft:"auto", fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>FloodML · Lc 75+</span>
+              </div>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8 }} className="max-[800px]:!grid-cols-2">
+                <div style={{ border:"1px solid var(--ink)", background:"var(--surface)", padding:12, borderLeft:"2px solid var(--vermillion)" }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.1em", color:"var(--muted)" }}>LOSS</div><div style={{ fontFamily:"var(--font-mono)", fontSize:18, fontWeight:700, color:"var(--vermillion)" }}>₹{economicLoss.directLossCrores}Cr</div><div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>direct · stage-damage</div></div>
+                <div style={{ border:"1px solid var(--rule)", background:"var(--surface)", padding:12 }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.1em", color:"var(--muted)" }}>DISPLACED</div><div style={{ fontFamily:"var(--font-mono)", fontSize:18, fontWeight:700 }}>{economicLoss.displacedPop}</div><div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>residents</div></div>
+                <div style={{ border:"1px solid var(--rule)", background:"var(--surface)", padding:12 }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.1em", color:"var(--muted)" }}>BLDGS &gt;0.15m</div><div style={{ fontFamily:"var(--font-mono)", fontSize:18, fontWeight:700 }}>{economicLoss.affectedBuildings}</div><div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>footprints</div></div>
+                <div style={{ border:"1px solid var(--rule)", background:"var(--surface)", padding:12 }}><div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:"0.1em", color:"var(--muted)" }}>ROAD CLOSURE</div><div style={{ fontFamily:"var(--font-mono)", fontSize:18, fontWeight:700 }}>16.4 km</div><div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>impassable</div></div>
+              </div>
+              <div style={{ marginTop:12, border:"1px solid var(--ink)", background:"var(--surface)" }}>
+                <div style={{ padding:"8px 12px", borderBottom:"1px solid var(--rule)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>04.1 // ASSET INVENTORY — RIGHT-ALIGNED MONO</div>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--font-mono)", fontSize:11 }}>
+                  <thead><tr style={{ background:"var(--paper)", color:"var(--muted)", fontSize:10 }}><th style={{ textAlign:"left", padding:"6px 12px" }}>ASSET</th><th style={{ textAlign:"right", padding:"6px 12px" }}>INUND</th><th style={{ textAlign:"right", padding:"6px 12px" }}></th></tr></thead>
+                  <tbody>
+                    {CHENNAI_SEARCH_INDEX.map((a)=> (
+                      <tr key={a.name} style={{ borderTop:"1px solid var(--rule)" }}>
+                        <td style={{ padding:"8px 12px" }}><div style={{ fontWeight:600, fontFamily:"var(--font-body)", fontSize:12 }}>{a.name}</div><div style={{ color:"var(--muted)", fontSize:10 }}>{a.type} · {a.basin}</div></td>
+                        <td style={{ padding:"8px 12px", textAlign:"right", color:"var(--vermillion)", fontWeight:600 }}>0.52m</td>
+                        <td style={{ padding:"8px 12px", textAlign:"right" }}><button onClick={()=>{ const d=aoiKm/111; setSelectedArea({ id:`asset-${a.name.slice(0,6)}`, name:a.name, basin:a.basin, bounds:{xmin:a.coords[0]-d,xmax:a.coords[0]+d,ymin:a.coords[1]-d,ymax:a.coords[1]+d}, center: a.coords as any}); setActiveWorkspace("digital_twin"); pushToast(a.name);}} style={{ padding:"4px 8px", border:"1px solid var(--ink)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>FOCUS →</button></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {activeWorkspace === "evacuation" && (
+            <div>
+              <div style={{ display:"flex", alignItems:"baseline", gap:12, borderBottom:"1px solid var(--ink)", paddingBottom:8, marginBottom:12 }}>
+                <span style={{ fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:"0.12em", fontWeight:600 }}>05 // EVACUATION</span>
+                <span style={{ fontFamily:"var(--font-display)", fontSize:18 }}>Safe Corridor Routing</span>
+                <span style={{ marginLeft:"auto", fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)" }}>&gt;0.3m detour · 18 km/h</span>
+              </div>
+              <EvacuationRouting currentLocation={{ lat: selectedArea.center[1], lng: selectedArea.center[0], name: selectedArea.name }} floodDepth={+economicLoss.depthVal} onFocusShelter={(sh:any)=>pushToast(sh.name)} />
+            </div>
+          )}
+
+          {activeWorkspace === "reports" && (
+            <div>
+              <div style={{ display:"flex", alignItems:"baseline", gap:12, borderBottom:"1px solid var(--ink)", paddingBottom:8, marginBottom:12 }}>
+                <span style={{ fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:"0.12em", fontWeight:600 }}>08 // EXPORT</span>
+                <span style={{ fontFamily:"var(--font-display)", fontSize:18 }}>Ledger & Spatial Package</span>
+              </div>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }} className="max-[700px]:!grid-cols-1">
+                <div style={{ border:"1px solid var(--ink)", background:"var(--surface)", padding:16 }}>
+                  <div style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:"0.1em", fontWeight:600 }}>08.1 // EXECUTIVE BRIEF</div>
+                  <div style={{ fontFamily:"var(--font-body)", fontSize:13, marginTop:6, color:"var(--muted2)" }}>Printable ledger with hydrology, AOI, loss, and matrix. Ink on paper, 1px rules.</div>
+                  <button onClick={handleExportReport} style={{ marginTop:12, height:32, padding:"0 14px", background:"var(--ink)", color:"var(--paper)", border:"1px solid var(--ink)", fontFamily:"var(--font-mono)", fontSize:11, fontWeight:600 }}>OPEN LEDGER →</button>
+                </div>
+                <div style={{ border:"1px solid var(--ink)", background:"var(--surface)", padding:16 }}>
+                  <div style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:"0.1em", fontWeight:600 }}>08.2 // GEOJSON PACKAGE</div>
+                  <div style={{ fontFamily:"var(--font-body)", fontSize:13, marginTop:6, color:"var(--muted2)" }}>EPSG:4326 feature collection with runoff, depth, loss. QGIS/ArcGIS ready.</div>
+                  <button onClick={handleExportGeoJSON} style={{ marginTop:12, height:32, padding:"0 14px", background:"var(--paper)", color:"var(--ink)", border:"1px solid var(--ink)", fontFamily:"var(--font-mono)", fontSize:11, fontWeight:600 }}>DOWNLOAD GEOJSON</button>
                 </div>
               </div>
             </div>
@@ -806,21 +360,12 @@ export default function Page() {
         </main>
       </div>
 
-      {/* Floating Toast Alerts */}
-      <div className="fixed bottom-4 right-4 space-y-2 z-50 pointer-events-none">
-        {toasts.map((t) => (
-          <div key={t.id} className="pointer-events-auto px-4 py-2.5 rounded-full bg-[#060e1c] border border-cyan-500/40 text-xs shadow-2xl flex items-center gap-3">
-            <span className="text-white font-medium">{t.msg}</span>
-            {t.action && (
-              <button
-                onClick={() => setActiveWorkspace("digital_twin")}
-                className="text-cyan-300 underline font-bold"
-              >
-                {t.action}
-              </button>
-            )}
-          </div>
-        ))}
+      <footer style={{ borderTop:"1px solid var(--rule-strong)", background:"var(--paper)", padding:"8px 16px", display:"flex", justifyContent:"space-between", fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", letterSpacing:"0.06em" }}>
+        <span>FLOIN · CHENNAI FLOOD LEDGER · REV 06D9C60 · 2026-09-04</span><span>OKLCH · IBM PLEX · ZERO RADIUS · RULES NOT SHADOWS</span>
+      </footer>
+
+      <div style={{ position:"fixed", bottom:12, right:12, display:"grid", gap:6, zIndex:50, pointerEvents:"none" }}>
+        {toasts.map((t)=> <div key={t.id} style={{ pointerEvents:"auto", background:"var(--ink)", color:"var(--paper)", border:"1px solid var(--ink)", padding:"8px 12px", fontFamily:"var(--font-mono)", fontSize:11, fontWeight:600 }}>{t.msg}</div>)}
       </div>
     </div>
   );
