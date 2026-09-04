@@ -366,6 +366,21 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
           <button onClick={()=>{ if(simCtxRef.current){ simCtxRef.current.controls.reset(); setCameraPreset("3d"); } }} style={{ padding:"4px 8px", border:"1px solid var(--ink)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600 }}>RESET</button>
         </div>
         <canvas ref={simRef} id="sim" aria-label="Chennai 3D Digital Twin Simulation Canvas" style={{ width:"100%", height:440, display:"block", cursor:"grab" }} />
+        {/* Detail: mini-map satellite inset + cross-section */}
+        <div style={{ position:"absolute", bottom:8, left:"50%", transform:"translateX(-50%)", zIndex:6, display:"flex", gap:6, pointerEvents:"none" }}>
+          <div style={{ width:96, height:96, border:"1px solid var(--ink)", background:"var(--paper)", padding:4, display:"grid", placeItems:"center", fontFamily:"var(--font-mono)", fontSize:8, color:"var(--muted)" }}>
+            <div style={{ width:"100%", height:"100%", background:"repeating-linear-gradient(45deg, #E8E0D0 0 4px, #F8F6F1 4px 8px)", border:"1px solid var(--rule)", display:"grid", placeItems:"center" }}>MINI-MAP<br/>TOP-DOWN<br/>{selectedArea?.id?.slice(0,6).toUpperCase()}</div>
+          </div>
+          {measurePts.length===2 && (
+            <div style={{ width:140, height:96, border:"1px solid var(--ink)", background:"var(--paper)", padding:6, pointerEvents:"auto" }}>
+              <div style={{ fontFamily:"var(--font-mono)", fontSize:8, fontWeight:700, letterSpacing:"0.06em", borderBottom:"1px solid var(--rule)", paddingBottom:4 }}>CROSS-SECTION A—A′</div>
+              <div style={{ marginTop:6, height:48, background:"var(--paper)", border:"1px solid var(--rule)", display:"grid", placeItems:"center", fontFamily:"var(--font-mono)", fontSize:8, color:"var(--muted)" }}>
+                ELEV {getTerrainHeightAt(simCtxRef.current?.terrain, measurePts[0].x, measurePts[0].z).toFixed(1)}m → {getTerrainHeightAt(simCtxRef.current?.terrain, measurePts[1].x, measurePts[1].z).toFixed(1)}m<br/>{Math.hypot((measurePts[1].x-measurePts[0].x)*111, (measurePts[1].z-measurePts[0].z)*111).toFixed(2)} km
+              </div>
+              <div style={{ fontFamily:"var(--font-mono)", fontSize:7, color:"var(--muted)", marginTop:4 }}>WARD {wardForLngLat(selectedArea.center[0], selectedArea.center[1]).name}</div>
+            </div>
+          )}
+        </div>
         {debug && (
           <div style={{ position:"absolute", bottom:8, left:8, background:"var(--paper)", border:"1px solid var(--ink)", padding:"6px 10px", fontFamily:"var(--font-mono)", fontSize:9, lineHeight:1.4, maxWidth:"58%", zIndex:6 }}>
             <div style={{ fontWeight:700, display:"flex", gap:6 }}><span>{(selectedArea?.name || debug.aoi?.id || "").toUpperCase()}</span><span style={{ color:"var(--muted)" }}>[{viewMode.toUpperCase()}]</span></div>
@@ -550,12 +565,20 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
   const renderer=new THREE.WebGLRenderer({ canvas, antialias:true, alpha:false, powerPreference:"high-performance" });
   renderer.setPixelRatio(Math.min(typeof window!=="undefined"?window.devicePixelRatio:1,2)); renderer.setSize(w,h,false); renderer.setClearColor(0x060d1a,1); renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.05;
   // WebGPU TSL ready: for r171+ replace with `import { WebGPURenderer } from "three/webgpu"` + `await renderer.init()` + TSL nodes, auto-fallback to WebGL2
+  // Skybox HDR — inverted sphere with vertical gradient (Hosek-Wilkie approx)
+  const skyCanvas=document.createElement("canvas"); skyCanvas.width=512; skyCanvas.height=512;
+  const sCtx=skyCanvas.getContext("2d")!; const g=sCtx.createLinearGradient(0,0,0,512);
+  g.addColorStop(0, "#0a1a2e"); g.addColorStop(0.35, "#1e3a5a"); g.addColorStop(0.65, "#8BB4D9"); g.addColorStop(1, "#E8E0D0");
+  sCtx.fillStyle=g; sCtx.fillRect(0,0,512,512);
+  const skyTex=new THREE.CanvasTexture(skyCanvas); skyTex.colorSpace=THREE.SRGBColorSpace;
+  const skyGeo=new THREE.SphereGeometry(68,32,32); const skyMat=new THREE.MeshBasicMaterial({ map:skyTex, side:THREE.BackSide, depthWrite:false, fog:false }); const sky=new THREE.Mesh(skyGeo,skyMat); scene.add(sky); (scene as any).userData.sky=sky;
   const hemi=new THREE.HemisphereLight(0xdbeafe,0x0a1a2e,0.92); scene.add(hemi);
   const dir=new THREE.DirectionalLight(0xffffff,0.9); dir.position.set(8,12,6); dir.castShadow=true; dir.shadow.mapSize.set(1024,1024); dir.shadow.camera.near=0.5; dir.shadow.camera.far=30; dir.shadow.camera.left=-10; dir.shadow.camera.right=10; dir.shadow.camera.top=10; dir.shadow.camera.bottom=-10; dir.shadow.bias=-0.0005; scene.add(dir);
   const fill=new THREE.DirectionalLight(0x7dd3fc,0.35); fill.position.set(-6,5,-4); scene.add(fill);
-  // Detail: sun sphere + volumetric fog (survey map atmosphere)
   const sunGeo=new THREE.SphereGeometry(0.35,16,16); const sunMat=new THREE.MeshBasicMaterial({ color:0xFFF4D6, transparent:true, opacity:0.9 }); const sun=new THREE.Mesh(sunGeo,sunMat); sun.position.set(6,9,-4); scene.add(sun); (scene as any).userData.sun=sun;
-  scene.fog=new THREE.FogExp2(0xE8E0D0, 0.018);
+  scene.fog=new THREE.FogExp2(0xE8E0D0, 0.014);
+  // Volumetric light rays (god rays) — 4 cones from sun
+  for(let i=0;i<3;i++){ const rayGeo=new THREE.ConeGeometry(0.8+ i*0.4, 12, 8, 1, true); const rayMat=new THREE.MeshBasicMaterial({ color:0xFFE8A0, transparent:true, opacity:0.03 - i*0.008, side:THREE.DoubleSide, depthWrite:false }); const ray=new THREE.Mesh(rayGeo, rayMat); ray.position.set(6,9,-4); ray.lookAt(0,0,0); ray.rotateX(Math.PI); (ray as any).userData.isRay=true; scene.add(ray); }
   const aoiW=opts.aoi?.bounds?Math.abs(opts.aoi.bounds.xmax-opts.aoi.bounds.xmin):0.25; const seg=aoiW>0.15?140:110; const size=14;
   const geo=new THREE.PlaneGeometry(size,size,seg,seg); const satTex=createSatelliteDrapeTexture(); const tmat=new THREE.MeshStandardMaterial({ vertexColors:true, map: satTex, roughness:0.88, metalness:0.02 }); const terrain=new THREE.Mesh(geo,tmat); terrain.rotation.x=-Math.PI/2; terrain.position.y=-1.2; terrain.receiveShadow=true; scene.add(terrain);
   if(opts.aoi) generateTerrainForAOI(terrain,opts.aoi,opts.viewMode);
@@ -575,8 +598,10 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
       const rx=(Math.random()-0.5)*size*0.85, rz=(Math.random()-0.5)*size*0.85;
       if(Math.hypot(rx,rz)>size*0.42) continue;
       const h=getTerrainHeightAt(terrain, rx, rz);
-      const trunk=new THREE.Mesh(trunkGeo, trunkMat); trunk.position.set(rx, h+0.09, rz); trunk.castShadow=true; treeGroup.add(trunk);
-      const crown=new THREE.Mesh(crownGeo, crownMat); crown.position.set(rx, h+0.28, rz); crown.castShadow=true; treeGroup.add(crown);
+      const s=0.85+Math.random()*0.35;
+      const trunk=new THREE.Mesh(trunkGeo, trunkMat); trunk.position.set(rx, h+0.09*s, rz); trunk.scale.set(s,s,s); trunk.castShadow=true; treeGroup.add(trunk);
+      const crownG=Math.random()>0.5? crownGeo : new THREE.SphereGeometry(0.11,6,6);
+      const crown=new THREE.Mesh(crownG, crownMat); crown.position.set(rx, h+0.28*s, rz); crown.scale.set(s,s,s); crown.castShadow=true; treeGroup.add(crown);
     }
     // Ward/road labels as sprites (canvas)
     const makeLabel=(text:string, x:number, z:number, bg:string)=>{
@@ -593,8 +618,42 @@ function createProScene(canvas:HTMLCanvasElement, opts:{ isHero?:boolean; d?:num
   const wSeg=opts.viewMode==="depth_heatmap"?64:40; const wgeo=new THREE.PlaneGeometry(13.4,13.4,wSeg,wSeg);
   const waterMat=new THREE.ShaderMaterial({
     uniforms:{ time:{value:0}, depth:{value:opts.d??0.5}, opacity:{value:opts.viewMode==="depth_heatmap"?0.72:0.54}, rippleCenter:{value:new THREE.Vector2(0.5,0.5)}, rippleTime:{value:10} },
-    vertexShader:`uniform float time; uniform float rippleTime; uniform vec2 rippleCenter; varying vec2 vUv; varying float vWave; varying float vRipple; void main(){ vUv=uv; vec3 p=position; float w=sin(p.x*1.1+time*2.2)*0.035+cos(p.y*0.95+time*1.6)*0.025; float dist=distance(uv, rippleCenter); float ripple=0.0; if(rippleTime<3.0){ float t=rippleTime*2.5; float wave=sin(dist*28.0 - t*8.0)*exp(-dist*6.0)*exp(-t*0.8)*0.12*(1.0-smoothstep(2.5,3.0,t)); ripple=wave; } p.z+=w+ripple; vWave=w; vRipple=ripple; gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0); }`,
-    fragmentShader:`uniform float depth; uniform float opacity; uniform float rippleTime; varying vec2 vUv; varying float vWave; varying float vRipple; void main(){ float d=clamp(depth/2.5,0.0,1.0); vec3 shallow=vec3(0.06,0.65,0.91); vec3 mid=vec3(0.96,0.62,0.07); vec3 deep=vec3(0.94,0.27,0.27); vec3 col=mix(shallow,mid,smoothstep(0.0,0.45,d)); col=mix(col,deep,smoothstep(0.45,0.95,d)); float c1=sin(vUv.x*32.0+vWave*45.0)*cos(vUv.y*32.0-vWave*35.0); float c2=cos(vUv.x*24.0-vWave*20.0)*sin(vUv.y*24.0+vWave*25.0); float caustics=clamp(pow(max(0.0,c1+c2),3.0)*0.35,0.0,0.4); col+=caustics*(1.0-d*0.5); float foam=smoothstep(0.48,0.52,fract(vUv.x*6.0+vWave*2.0))*0.12*(1.0-d*0.5); col+=foam; col+=vRipple*0.6; gl_FragColor=vec4(col, opacity+d*0.22); }`,
+    vertexShader:`uniform float time; uniform float rippleTime; uniform vec2 rippleCenter; varying vec2 vUv; varying float vWave; varying float vRipple; varying vec3 vNormal;
+      float gerstner(vec2 p, float f, float amp, vec2 dir, float t){ float k=f; float c=cos(dot(dir,p)*k + t); return amp*c; }
+      void main(){
+        vUv=uv; vec3 p=position;
+        float w=0.0;
+        w+=gerstner(p.xy, 1.1, 0.035, vec2(1.0,0.3), time*2.2);
+        w+=gerstner(p.xy, 0.95, 0.025, vec2(-0.4,1.0), time*1.6);
+        w+=gerstner(p.xy, 2.1, 0.012, vec2(0.7,-0.7), time*3.1);
+        w+=gerstner(p.xy, 3.4, 0.006, vec2(0.2,1.0), time*4.2);
+        float dist=distance(uv, rippleCenter); float ripple=0.0;
+        if(rippleTime<3.0){ float t=rippleTime*2.5; float wave=sin(dist*28.0 - t*8.0)*exp(-dist*6.0)*exp(-t*0.8)*0.12*(1.0-smoothstep(2.5,3.0,t)); ripple=wave; }
+        p.z+=w+ripple; vWave=w; vRipple=ripple;
+        // normal from Gerstner derivatives
+        float ddx=cos(dot(vec2(1.0,0.3),p.xy)*1.1+time*2.2)*0.035*1.1*1.0 + cos(dot(vec2(-0.4,1.0),p.xy)*0.95+time*1.6)*0.025*0.95*(-0.4);
+        float ddy=cos(dot(vec2(1.0,0.3),p.xy)*1.1+time*2.2)*0.035*1.1*0.3 + cos(dot(vec2(-0.4,1.0),p.xy)*0.95+time*1.6)*0.025*0.95*1.0;
+        vNormal=normalize(vec3(-ddx, 1.0, -ddy));
+        gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);
+      }`,
+    fragmentShader:`uniform float depth; uniform float opacity; varying vec2 vUv; varying float vWave; varying float vRipple; varying vec3 vNormal;
+      void main(){
+        float d=clamp(depth/2.5,0.0,1.0);
+        vec3 shallow=vec3(0.06,0.65,0.91); vec3 mid=vec3(0.96,0.62,0.07); vec3 deep=vec3(0.94,0.27,0.27);
+        vec3 col=mix(shallow,mid,smoothstep(0.0,0.45,d)); col=mix(col,deep,smoothstep(0.45,0.95,d));
+        float c1=sin(vUv.x*32.0+vWave*45.0)*cos(vUv.y*32.0-vWave*35.0);
+        float c2=cos(vUv.x*24.0-vWave*20.0)*sin(vUv.y*24.0+vWave*25.0);
+        float caustics=clamp(pow(max(0.0,c1+c2),3.0)*0.35,0.0,0.4); col+=caustics*(1.0-d*0.5);
+        float foam=smoothstep(0.48,0.52,fract(vUv.x*6.0+vWave*2.0))*0.12*(1.0-d*0.5); col+=foam;
+        col+=vRipple*0.6;
+        // Fresnel + specular from Gerstner normal (Hosek sky)
+        vec3 viewDir=normalize(vec3(0.0,1.0,0.5));
+        float fresnel=pow(1.0 - max(0.0, dot(vNormal, viewDir)), 3.0)*0.35;
+        vec3 sky=vec3(0.55,0.68,0.85); col=mix(col, sky, fresnel*0.45);
+        float spec=pow(max(0.0, dot(reflect(-viewDir, vNormal), vec3(0.3,0.8,0.2))), 64.0)*0.18;
+        col+=spec;
+        gl_FragColor=vec4(col, opacity+d*0.22);
+      }`,
     transparent:true, side:THREE.DoubleSide,
   });
   const water=new THREE.Mesh(wgeo, waterMat as any); water.rotation.x=-Math.PI/2; water.position.y=-0.88; scene.add(water);
@@ -639,7 +698,7 @@ function buildBuildings(group:THREE.Group,features:any[],viewMode:ViewMode,aoi?:
   const capped=features.length>cap?features.filter((_,i)=>i%Math.ceil(features.length/cap)===0).slice(0,cap):features;
   const isVelachery=basin==="velachery", isEnnore=basin==="ennore", isChem=basin==="chembarambakkam";
   const winTex=viewMode==="digital_twin"?createWindowTexture():null;
-  const matBase=new THREE.MeshStandardMaterial({ color: isEnnore?0xb8c0c8:isVelachery?0xd6d3c4:isChem?0xc2b8a3:0xe2e8f0, roughness: isEnnore?0.85:isChem?0.88:0.78, metalness: isEnnore?0.18:0.04, map: (viewMode==="digital_twin" && !isEnnore)?winTex as any : null });
+  const matBase=new THREE.MeshStandardMaterial({ color: isEnnore?0xb8c0c8:isVelachery?0xd6d3c4:isChem?0xc2b8a3:0xe2e8f0, roughness: isEnnore?0.85:isChem?0.88:0.78, metalness: isEnnore?0.18:0.04, map: (viewMode==="digital_twin" && !isEnnore)?winTex as any : null, emissive: (viewMode==="digital_twin" && !isEnnore)?new THREE.Color(0x1a2733):new THREE.Color(0x000000), emissiveMap: (viewMode==="digital_twin" && !isEnnore)?winTex as any : null, emissiveIntensity: 0.22 });
   const matAlt=new THREE.MeshStandardMaterial({ color: isEnnore?0x9aa3ad:isVelachery?0xc2beb0:0xcbd5e1, roughness:0.72, metalness: isEnnore?0.22:0.06, map: null });
   const matDark=new THREE.MeshStandardMaterial({ color: isVelachery?0xa8a49a:isChem?0x8b7355:0x94a3b8, roughness:0.85, metalness: isEnnore?0.25:0.02 });
   if(viewMode==="data_quality"){ matBase.transparent=true; matBase.opacity=0.55; matAlt.transparent=true; matAlt.opacity=0.55; matDark.transparent=true; matDark.opacity=0.55; }
@@ -688,6 +747,7 @@ function buildBuildings(group:THREE.Group,features:any[],viewMode:ViewMode,aoi?:
 function buildRoads(group:THREE.Group,features:any[],viewMode:ViewMode){
   group.clear(); if(!features||features.length===0) return;
   const colorHex=viewMode==="velocity_field"?0x06b6d4:0xfacc15;
+  const casingHex=0x111210;
   features.forEach((f:any)=>{
     const g=f.geometry; if(!g) return;
     const lines=g.type==="LineString"?[g.coordinates]:g.type==="MultiLineString"?g.coordinates:g.type==="Polygon"?[g.coordinates[0]]:g.type==="MultiPolygon"?g.coordinates.map((p:any)=>p[0]):[];
@@ -695,8 +755,13 @@ function buildRoads(group:THREE.Group,features:any[],viewMode:ViewMode){
       if(!coords||coords.length<2) return;
       const positions:number[]=[];
       coords.forEach(([lng,lat]:any)=>{ const [x,z]=lngLatToXZ(lng,lat); positions.push(x,-0.91,z); });
+      // casing (detailed map)
+      const geoC=new LineGeometry(); geoC.setPositions(positions);
+      const matC=new LineMaterial({ color: casingHex, linewidth: 3.5, transparent:true, opacity:0.55, depthWrite:false, resolution: new THREE.Vector2(800,600) });
+      // @ts-ignore
+      const casing=new Line2(geoC, matC as any); (casing as any).computeLineDistances(); casing.frustumCulled=true; group.add(casing as any);
       const geo=new LineGeometry(); geo.setPositions(positions);
-      const mat=new LineMaterial({ color: colorHex, linewidth: 2, transparent:true, opacity:0.82, depthWrite:false, resolution: new THREE.Vector2(800,600) });
+      const mat=new LineMaterial({ color: colorHex, linewidth: 2, transparent:true, opacity:0.92, depthWrite:false, resolution: new THREE.Vector2(800,600) });
       // @ts-ignore
       const line=new Line2(geo, mat as any); (line as any).computeLineDistances(); line.frustumCulled=true;
       line.userData={ name:f.properties?.name||f.properties?.highway||"Chennai Road Arterial", type:"Transportation Corridor", featureId:f.properties?.osm_id||"osm-road" };
