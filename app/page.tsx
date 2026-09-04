@@ -195,27 +195,29 @@ export default function Page() {
                 ))}
               </div>
 
-              <div style={{ display:"grid", gridTemplateColumns:"1.55fr 0.85fr", gap:12 }} className="max-[1024px]:!grid-cols-1">
-                <div style={{ border:"1px solid var(--ink)", background:"var(--surface)" }}>
-                  <div style={{ height:28, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 10px", borderBottom:"1px solid var(--rule)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>
-                    <span>03 // WEBGL DIGITAL TWIN</span><span style={{ color:"var(--muted)" }}>{selectedArea.name}</span>
+              <div style={{ display:"grid", gridTemplateColumns:"1.55fr 0.85fr", gap:12, alignItems:"start" }} className="max-[1024px]:!grid-cols-1">
+                <div style={{ display:"grid", gap:12 }}>
+                  <div style={{ border:"1px solid var(--ink)", background:"var(--surface)" }}>
+                    <div style={{ height:28, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 10px", borderBottom:"1px solid var(--rule)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>
+                      <span>03 // WEBGL DIGITAL TWIN — LEFT</span><span style={{ color:"var(--muted)" }}>{selectedArea.name}</span>
+                    </div>
+                    <div style={{ padding:8, background:"#0F1110" }}>
+                      <FloodSimulation selectedArea={selectedArea} rainfall={rainfall} cn={cn} duration={duration} viewMode={viewMode} currentHour={currentHour} isPlaying={isPlaying} rainOverlayEnabled={rainOverlayEnabled} onTimeChange={setCurrentHour} onSelectObject={(o:any)=>{setInspectedFeature(o); pushToast(o.name);}} />
+                    </div>
+                    <div style={{ display:"flex", gap:12, padding:"6px 10px", borderTop:"1px solid var(--rule)", fontFamily:"var(--font-mono)", fontSize:10 }}>
+                      <span><span style={{ display:"inline-block", width:14, height:6, background:"var(--hydro)", verticalAlign:"middle", marginRight:4 }} />&lt;0.3 LOW</span>
+                      <span><span style={{ display:"inline-block", width:14, height:6, background:"#E6B422", verticalAlign:"middle", marginRight:4 }} />0.3-0.8 MED</span>
+                      <span><span style={{ display:"inline-block", width:14, height:6, background:"var(--vermillion)", verticalAlign:"middle", marginRight:4 }} />&gt;0.8 HIGH</span>
+                      <span style={{ marginLeft:"auto", color:"var(--muted)" }}>EPSG:4326 · SCS-CN · ward choropleth</span>
+                    </div>
                   </div>
-                  <div style={{ padding:8, background:"#0F1110" }}>
-                    <FloodSimulation selectedArea={selectedArea} rainfall={rainfall} cn={cn} duration={duration} viewMode={viewMode} currentHour={currentHour} isPlaying={isPlaying} rainOverlayEnabled={rainOverlayEnabled} onTimeChange={setCurrentHour} onSelectObject={(o:any)=>{setInspectedFeature(o); pushToast(o.name);}} />
-                  </div>
-                  <div style={{ display:"flex", gap:12, padding:"6px 10px", borderTop:"1px solid var(--rule)", fontFamily:"var(--font-mono)", fontSize:10 }}>
-                    <span><span style={{ display:"inline-block", width:14, height:6, background:"var(--hydro)", verticalAlign:"middle", marginRight:4 }} />&lt;0.3 LOW</span>
-                    <span><span style={{ display:"inline-block", width:14, height:6, background:"#E6B422", verticalAlign:"middle", marginRight:4 }} />0.3-0.8 MED</span>
-                    <span><span style={{ display:"inline-block", width:14, height:6, background:"var(--vermillion)", verticalAlign:"middle", marginRight:4 }} />&gt;0.8 HIGH</span>
-                    <span style={{ marginLeft:"auto", color:"var(--muted)" }}>EPSG:4326 · SCS-CN · ward choropleth</span>
-                  </div>
+                  <InsightStrip rainfall={rainfall} cn={cn} duration={duration} currentHour={currentHour} selectedArea={selectedArea} />
                 </div>
-                <div style={{ marginTop:12 }}><InsightStrip rainfall={rainfall} cn={cn} duration={duration} currentHour={currentHour} selectedArea={selectedArea} /></div>
 
                 <div style={{ display:"grid", gap:12 }}>
                   <div style={{ border:"1px solid var(--ink)", background:"var(--surface)" }}>
                     <div style={{ height:28, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 10px", borderBottom:"1px solid var(--rule)", background:"var(--paper)", fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600, letterSpacing:"0.08em" }}>
-                      <span>02 // GEOSPATIAL CONTROL</span><span style={{ color:"var(--hydro)", fontWeight:700 }}>CLICK TO RETARGET</span>
+                      <span>02 // GEOSPATIAL CONTROL — RIGHT</span><span style={{ color:"var(--hydro)", fontWeight:700 }}>CLICK TO RETARGET</span>
                     </div>
                     <div style={{ padding:8 }}><ChennaiMap selectedArea={selectedArea} aoiSizeKm={aoiKm} rainfall={rainfall} cn={cn} onMapClick={handleMapClick} onSelectArea={setSelectedArea} onSelectFeature={(f:any)=>{setInspectedFeature(f); pushToast(f.name);}} /></div>
                   </div>
