@@ -84,44 +84,46 @@ export default function ChennaiMap({
         shelters: "#10b981",
       };
 
+      const geoCache = new Map<string, any>();
       async function loadGeoJson(name: string, file: string, style: any, pointHandler?: any) {
         try {
+          if (geoCache.has(file)) {
+            const j = geoCache.get(file);
+            const l = L.geoJSON(j, { style, pointToLayer: pointHandler,
+              onEachFeature: (f: any, ly: any) => {
+                ly.on("click", (e: any) => {
+                  L.DomEvent.stopPropagation(e);
+                  const props = f.properties || {};
+                  const nameStr = props.name || props.Location || props.station || props.highway || props.waterway || name;
+                  onSelectFeature?.({ name: nameStr, type: f.geometry.type, properties: props, depth: props.rainfall_mm ? `${(props.rainfall_mm / 120).toFixed(2)}m` : "0.52m" });
+                  const b = (ly as any).getBounds?.();
+                  if (b && onSelectArea) { const c = b.getCenter(); onSelectArea({ id: `sel-${Date.now()}`, name: nameStr, bounds: { xmin: b.getWest(), xmax: b.getEast(), ymin: b.getSouth(), ymax: b.getNorth() }, center: [c.lng, c.lat] }); }
+                });
+                ly.bindPopup(`<b>${f.properties?.name || f.properties?.Location || f.properties?.station || "Chennai Asset"}</b><br><small>${name} • Click to focus</small>`);
+              },
+            }).addTo(map);
+            layers[name] = l; return j.features.length;
+          }
           const r = await fetch("/" + file);
           if (!r.ok) return 0;
           const j = await r.json();
+          geoCache.set(file, j);
           const l = L.geoJSON(j, {
-            style,
-            pointToLayer: pointHandler,
+            style, pointToLayer: pointHandler,
             onEachFeature: (f: any, ly: any) => {
               ly.on("click", (e: any) => {
                 L.DomEvent.stopPropagation(e);
                 const props = f.properties || {};
                 const nameStr = props.name || props.Location || props.station || props.highway || props.waterway || name;
-                onSelectFeature?.({
-                  name: nameStr,
-                  type: f.geometry.type,
-                  properties: props,
-                  depth: props.rainfall_mm ? `${(props.rainfall_mm / 120).toFixed(2)}m` : "0.52m",
-                });
+                onSelectFeature?.({ name: nameStr, type: f.geometry.type, properties: props, depth: props.rainfall_mm ? `${(props.rainfall_mm / 120).toFixed(2)}m` : "0.52m" });
                 const b = (ly as any).getBounds?.();
-                if (b && onSelectArea) {
-                  const c = b.getCenter();
-                  onSelectArea({
-                    id: `sel-${Date.now()}`,
-                    name: nameStr,
-                    bounds: { xmin: b.getWest(), xmax: b.getEast(), ymin: b.getSouth(), ymax: b.getNorth() },
-                    center: [c.lng, c.lat],
-                  });
-                }
+                if (b && onSelectArea) { const c = b.getCenter(); onSelectArea({ id: `sel-${Date.now()}`, name: nameStr, bounds: { xmin: b.getWest(), xmax: b.getEast(), ymin: b.getSouth(), ymax: b.getNorth() }, center: [c.lng, c.lat] }); }
               });
               ly.bindPopup(`<b>${f.properties?.name || f.properties?.Location || f.properties?.station || "Chennai Asset"}</b><br><small>${name} • Click to focus</small>`);
             },
           }).addTo(map);
-          layers[name] = l;
-          return j.features.length;
-        } catch {
-          return 0;
-        }
+          layers[name] = l; return j.features.length;
+        } catch { return 0; }
       }
 
       const cBld = await loadGeoJson("buildings", "buildings.geojson", { color: colors.buildings, weight: 1, fillOpacity: 0.35 });
