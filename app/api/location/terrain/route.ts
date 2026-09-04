@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from "next/server";
 import { getDemAvailability, sampleDemGrid } from "@/app/lib/raster";
 

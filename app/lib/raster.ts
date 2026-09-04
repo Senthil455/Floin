@@ -31,8 +31,9 @@ export async function loadDem(): Promise<DemCache | null> {
   const full = path.join(/*turbopackIgnore: true*/ process.cwd(), "data/rasters/rasters_COP30/DEM.tif");
   if (!fs.existsSync(full)) return null;
   try {
-    const { fromFile } = await import("geotiff");
-    const tiff = await fromFile(full);
+    const geotiff: any = await import("geotiff");
+    let tiff: any;
+    try { tiff = await geotiff.fromFile(full); } catch { const buf = fs.readFileSync(full); const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength); tiff = await geotiff.fromArrayBuffer(ab as ArrayBuffer); }
     const image = await tiff.getImage();
     const bbox = image.getBoundingBox() as [number, number, number, number];
     const width = image.getWidth(), height = image.getHeight();
@@ -40,7 +41,7 @@ export async function loadDem(): Promise<DemCache | null> {
     const arr = rasters instanceof Float32Array ? rasters : new Float32Array(rasters as any);
     demCache = { width, height, bbox, data: arr, loadedAt: new Date().toISOString() };
     return demCache;
-  } catch (e) { console.warn("DEM geotiff load failed, fallback procedural", e); return null; }
+  } catch (e) { console.warn("DEM geotiff load failed, fallback procedural", (e as Error).message?.slice(0,120)); return null; }
 }
 
 export async function sampleDemBilinear(lng: number, lat: number): Promise<number | null> {

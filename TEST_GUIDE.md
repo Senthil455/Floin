@@ -10,7 +10,7 @@ python scripts/preprocess.py && python scripts/simulate.py --P 160 --CN 84 --t 6
 docker compose up -d && python scripts/load_postgis.py --dry-run
 ```
 
-## 1. Datasets — `GET /api/datasets` → 13, buildings 1811, `byCategory`, `featureCount`
+## 1. Datasets — `GET /api/datasets` → 14, buildings 1811, wards 201, `byCategory`, `featureCount`
 
 ## 2. Query — `POST /api/location/query` `{aoi{bounds,center}}` → `covers/featureCount` 7×, `summary` + `source postgis/file`
 

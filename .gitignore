@@ -19,6 +19,7 @@ public/natural_water.geojson
 public/waterway*.geojson
 public/rainfall_stations.geojson
 public/simulation-result.json
+public/tiles/
 
 # Generated (keep projects/scenarios persistence)
 data/processed/
@@ -41,6 +42,10 @@ Thumbs.db
 Chennai Floods 2015 Data.zip
 data/chennai2015/
 data/arcgis_api/
+
+# Python cache
+__pycache__/
+*.pyc
 
 # Github demos — local reference only, not for deploy (transplanted into Floin)
 Github_demos/

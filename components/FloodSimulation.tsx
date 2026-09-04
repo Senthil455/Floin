@@ -281,7 +281,7 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
         const hotspotFeatures=featuresResponse.features?.chennai2015_hotspots?.features||[];
         const waterwayFeatures=featuresResponse.features?.waterway?.features||[];
         const wardFeatures=featuresResponse.features?.chennai_wards_200?.features||[];
-        buildBuildings(ctx.buildingsGroup,buildingFeatures,viewMode,aoi);
+        buildBuildings(ctx.buildingsGroup,buildingFeatures,viewMode,aoi,blendedP,CN);
         buildRoads(ctx.roadsGroup,roadFeatures,viewMode);
         buildWaterways(ctx.waterwaysGroup,waterwayFeatures);
         buildHotspots(ctx.hotspotsGroup,hotspotFeatures,ctx.terrain);
@@ -437,8 +437,9 @@ function generateTerrainForAOI(terrain: THREE.Mesh, aoi: any, viewMode: ViewMode
     pos.setZ(i,z); zVals.push(z); minZ=Math.min(minZ,z); maxZ=Math.max(maxZ,z);
   }
   // 1-pass erosion+blur (morphological) for DSM towers — if viewMode data_quality, skip
+  // seg2 is dimension = sqrt(pos.count) = seg+1, correct for col/row
   if(viewMode!=="data_quality"){
-    const seg2=Math.sqrt(pos.count);
+    const seg2=Math.round(Math.sqrt(pos.count));
     const copy=zVals.slice();
     for(let i=0;i<pos.count;i++){
       const col=i % seg2, row=Math.floor(i/seg2);
@@ -563,7 +564,7 @@ function updateBuildingImpact(group:THREE.Group,depth:number,viewMode:ViewMode){
     else if(mat.userData.origColor){ mat.color.copy(mat.userData.origColor); mat.emissive=new THREE.Color(0x000000); }
   });
 }
-function buildBuildings(group:THREE.Group,features:any[],viewMode:ViewMode,aoi?:any){
+function buildBuildings(group:THREE.Group,features:any[],viewMode:ViewMode,aoi?:any, rainfall?:number, cn?:number){
   group.clear(); if(!features||features.length===0) return;
   const basin=aoi?.id||"all";
   const cap = basin==="central"?520 : basin==="velachery"?240 : basin==="chembarambakkam"?140 : basin==="ennore"?320 : 480;
@@ -591,7 +592,7 @@ function buildBuildings(group:THREE.Group,features:any[],viewMode:ViewMode,aoi?:
       const mats=["base","alt","dark"]; const bucket=mats[Math.floor(Math.random()*mats.length)];
       // @ts-ignore
       if(viewMode==="hydrology"){ /* hydrology handled via mat */ }
-      const ward=wardForLngLat(outer[0][0], outer[0][1]); const dmg=wardDamage(ward, 160, 84);
+      const ward=wardForLngLat(outer[0][0], outer[0][1]); const dmg=wardDamage(ward, rainfall ?? 160, cn ?? 84);
       (g as any).userData={ name:f.properties?.name||f.properties?.["addr:street"]||`${basin.toUpperCase()} Building`, type:`${ward.name} - Building`, featureId:f.properties?.osm_id||"osm-bld", levels, coords:outer[0], basin, ward:ward.id, wardProb: dmg.prob };
       buckets[bucket].push(g);
       pickData.push({ x: outer[0][0], z: outer[0][1], data: (g as any).userData });

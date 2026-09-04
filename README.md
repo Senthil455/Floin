@@ -117,7 +117,7 @@ Click 13.07,80.26 (1.5km AOI) → aoi {xmin,xmax,ymin,ymax,center} + blendedP(P*
 
 | # | Route | Method | Query | Response |
 |---|---|---|---|---|
-| 1 | `/api/datasets` | GET | — | 13 datasets, `byCategory`, `featureCount` via `fs public/*.geojson` |
+| 1 | `/api/datasets` | GET | — | 14 datasets, `byCategory`, `featureCount` via `fs public/*.geojson` |
 | 2 | `/api/location/query` | POST | `{aoi{bounds,center},requestId}` | `ST_Intersects` if `DATABASE_URL` else `fileFallback`, 7× `covers/featureCount`, `summary` |
 | 3 | `/api/location/features` | POST | `{aoi,datasets[],limit}` | `FeatureCollection` per id, `source postgis/file` |
 | 4 | `/api/location/terrain` | GET | — | `getDemAvailability()` 5 rasters |
