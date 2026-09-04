@@ -59,6 +59,8 @@ export default function Page() {
   const [selectedWard, setSelectedWard] = useState<string | null>(null);
   const [showHelp, setShowHelp] = useState(false);
   const [showOnboard, setShowOnboard] = useState(false);
+  const [activeDatasets, setActiveDatasets] = useState<string[]>(["buildings","chennai_wards_200","chennai2015_hotspots"]);
+  const toggleDataset = (id:string)=> setActiveDatasets(prev=> prev.includes(id)? prev.filter(x=>x!==id) : [...prev, id]);
   const pushToast = (msg: string) => { const id = Date.now()+Math.floor(Math.random()*1000); setToasts((t) => [...t, { id, msg }]); setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3000); };
   const live = useChennaiLive(rainfall);
   const blendedP = useMemo(()=> Math.round((rainfall*0.6 + live.precipitation*0.4)*10)/10, [rainfall, live.precipitation]);
@@ -258,9 +260,9 @@ export default function Page() {
                         {(["osm","topo","imagery","imageryClarity","dark"] as const).map(s=>(
                           <button key={s} onClick={()=>setMapStyle(s)} style={{ padding:"2px 6px", border:"1px solid", borderColor: mapStyle===s?"var(--ink)":"var(--rule)", background: mapStyle===s?"var(--ink)":"var(--paper)", color: mapStyle===s?"var(--paper)":"var(--muted)", fontFamily:"var(--font-mono)", fontSize:9, fontWeight:600 }}>{s==="imageryClarity"?"Imagery Clarity":s.toUpperCase()}</button>
                         ))}
-                        <span style={{ marginLeft:"auto", fontFamily:"var(--font-mono)", fontSize:8, color:"var(--muted)" }}>{mapStyle} · FloodMap.net parity</span>
+                        <span style={{ marginLeft:"auto", fontFamily:"var(--font-mono)", fontSize:8, color:"var(--muted)" }}>{activeDatasets.length} active · {mapStyle} · FloodMap.net parity</span>
                       </div>
-                      <ChennaiMap selectedArea={selectedArea} aoiSizeKm={aoiKm} rainfall={rainfall} cn={cn} floodLevel={floodMode==="bathtub"?floodLevel:null} floodPalette={floodPalette} mapStyle={mapStyle} includeSeaDepth={includeSeaDepth} onMapClick={async (lat,lng)=>{
+                      <ChennaiMap selectedArea={selectedArea} aoiSizeKm={aoiKm} rainfall={rainfall} cn={cn} activeDatasets={activeDatasets} floodLevel={floodMode==="bathtub"?floodLevel:null} floodPalette={floodPalette} mapStyle={mapStyle} includeSeaDepth={includeSeaDepth} onMapClick={async (lat,lng)=>{
                         try{
                           const r=await fetch("/api/location/terrain",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({aoi:{bounds:{xmin:lng-0.001,xmax:lng+0.001,ymin:lat-0.001,ymax:lat+0.001}}})}).then(x=>x.json());
                           const elev=parseFloat(r?.statistics?.meanElevation); if(isFinite(elev)){ setFloodLevel(Math.round(elev*10)/10); pushToast(`CLICK ELEV ${elev.toFixed(1)} m → water level set`); }
@@ -364,7 +366,7 @@ export default function Page() {
             </div>
           )}
           {activeWorkspace === "validation" && <ValidationWorkspace />}
-          {activeWorkspace === "registry" && <RegistryWorkspace />}
+          {activeWorkspace === "registry" && <RegistryWorkspace activeDatasets={activeDatasets} onToggleDataset={toggleDataset} />}
 
           {activeWorkspace === "scenarios" && (
             <div>

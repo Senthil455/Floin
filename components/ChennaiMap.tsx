@@ -35,6 +35,8 @@ export default function ChennaiMap({
   floodPalette="classic",
   mapStyle="osm",
   includeSeaDepth=false,
+  activeDatasets=[],
+  onDatasetsChange,
 }: {
   selectedArea?: any;
   onSelectArea?: (a: any) => void;
@@ -48,6 +50,8 @@ export default function ChennaiMap({
   floodPalette?: "classic" | "rainbow";
   mapStyle?: string;
   includeSeaDepth?: boolean;
+  activeDatasets?: string[];
+  onDatasetsChange?: (ids:string[])=>void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const countRef = useRef<HTMLSpanElement>(null);
