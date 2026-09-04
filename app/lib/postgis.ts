@@ -4,7 +4,8 @@ import path from "path";
 export async function tryPostGISQuery(sql: string, params: any[]): Promise<any[] | null> {
   if (!process.env.DATABASE_URL) return null;
   try {
-    const pg: any = await import("pg").catch(() => null);
+    // @ts-ignore - pg is optional peer, fallback to file if missing
+    const pg: any = await (Function('return import("pg")')() as Promise<any>).catch(() => null);
     if (!pg) return null;
     const { Pool } = pg;
     const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 2, idleTimeoutMillis: 3000, connectionTimeoutMillis: 2000 });
