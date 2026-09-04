@@ -325,6 +325,7 @@ export default function FloodSimulation({ selectedArea, rainfall: externalP, cn:
     return ()=>{ cancelAnimationFrame(raf); canvas.removeEventListener("mousemove", handleMouseMove); canvas.removeEventListener("mouseleave", handleMouseLeave); canvas.removeEventListener("click", handleCanvasClick); canvas.removeEventListener("dblclick", handleDblClick); if(abortControllerRef.current) abortControllerRef.current.abort(); };
   },[selectedArea?.id, selectedArea?.bounds?.xmin, selectedArea?.bounds?.xmax, P, CN, t, d, viewMode, measureMode, measurePts.length]);
 
+  useEffect(()=>{ setMeasureMode(false); setMeasurePts([]); if(simCtxRef.current?.measureLine){ try{ simCtxRef.current.scene.remove(simCtxRef.current.measureLine); simCtxRef.current.measureLine.geometry.dispose(); }catch{} simCtxRef.current.measureLine=null; } },[selectedArea?.id]);
   useEffect(()=>{ if(!simCtxRef.current) return; const ctx=simCtxRef.current; if(ctx.buildingsGroup) ctx.buildingsGroup.visible=showBuildings; if(ctx.roadsGroup) ctx.roadsGroup.visible=showRoads; if(ctx.hotspotsGroup) ctx.hotspotsGroup.visible=showHotspots; if(ctx.waterwaysGroup) ctx.waterwaysGroup.visible=showWaterways; if(ctx.wardsGroup) ctx.wardsGroup.visible=showWards; if(ctx.water) ctx.water.visible=showWater; },[showBuildings,showRoads,showHotspots,showWaterways,showWards,showWater]);
 
   return (
@@ -496,7 +497,19 @@ function applyCachedResult(ctx:any,cached:any,aoi:any,viewMode:ViewMode){
   const boxGeo=new THREE.BoxGeometry(w,0.02,h); const boxMat=new THREE.MeshBasicMaterial({ color:0x06b6d4, transparent:true, opacity:0.18 }); if(ctx.aoiBox){ ctx.scene.remove(ctx.aoiBox); ctx.aoiBox.geometry.dispose(); } const box=new THREE.Mesh(boxGeo,boxMat); box.position.set(cx,-0.88,cz); const edges=new THREE.EdgesGeometry(boxGeo); const lineMat=new THREE.LineBasicMaterial({ color:0x06b6d4, transparent:true, opacity:0.85 }); const wire=new THREE.LineSegments(edges,lineMat); wire.position.copy(box.position); if(ctx.aoiWire) ctx.scene.remove(ctx.aoiWire); ctx.scene.add(box); ctx.scene.add(wire); ctx.aoiBox=box; ctx.aoiWire=wire;
 }
 function getTerrainHeightAt(terrain:THREE.Mesh,x:number,z:number){
-  const geo:any=terrain.geometry; const pos:any=geo.attributes.position; let best=-Infinity,bestDist=Infinity; for(let i=0;i<pos.count;i++){ const dx=pos.getX(i)-x, dz=pos.getY(i)-z; const d=dx*dx+dz*dz; if(d<bestDist){ bestDist=d; best=pos.getZ(i);} } return best===-Infinity?-0.5:best-1.2;
+  const geo:any=terrain.geometry; const pos:any=geo.attributes.position;
+  const seg=Math.round(Math.sqrt(pos.count))-1; const size=14;
+  const fx=(x + size/2)/size * seg; const fz=(z + size/2)/size * seg;
+  const x0=Math.max(0, Math.min(seg-1, Math.floor(fx))), z0=Math.max(0, Math.min(seg-1, Math.floor(fz)));
+  const x1=Math.min(seg, x0+1), z1=Math.min(seg, z0+1);
+  const tx=fx-x0, tz=fz-z0;
+  const idx=(r:number,c:number)=> r*(seg+1)+c;
+  try{
+    const h00=pos.getZ(idx(z0,x0)), h10=pos.getZ(idx(z0,x1)), h01=pos.getZ(idx(z1,x0)), h11=pos.getZ(idx(z1,x1));
+    const top=h00*(1-tx)+h10*tx, bot=h01*(1-tx)+h11*tx;
+    const h=top*(1-tz)+bot*tz;
+    return h-1.2;
+  }catch{ return -0.5; }
 }
 function disposeScene(ctx:any){
   try{

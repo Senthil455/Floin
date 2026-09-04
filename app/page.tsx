@@ -5,6 +5,7 @@ import { ViewMode } from "@/components/FloodSimulation";
 import EvacuationRouting from "@/components/EvacuationRouting";
 import { AREAS, CHENNAI_SEARCH_INDEX, type Scenario } from "@/app/lib/chennai-data";
 import { useHydrology } from "@/hooks/useHydrology";
+import { useChennaiLive } from "@/hooks/useChennaiLive";
 import HydrologyWorkspace from "@/app/lib/workspaces/HydrologyWorkspace";
 import ValidationWorkspace from "@/app/lib/workspaces/ValidationWorkspace";
 import RegistryWorkspace from "@/app/lib/workspaces/RegistryWorkspace";
@@ -47,8 +48,10 @@ export default function Page() {
   const [activeScenarioId, setActiveScenarioId] = useState("s2");
   const [search, setSearch] = useState("");
   const [toasts, setToasts] = useState<Toast[]>([]);
-  const pushToast = (msg: string) => { const id = Date.now(); setToasts((t) => [...t, { id, msg }]); setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3000); };
-  const { S, Ia, Q, economicLoss } = useHydrology(rainfall, cn, duration);
+  const pushToast = (msg: string) => { const id = Date.now()+Math.floor(Math.random()*1000); setToasts((t) => [...t, { id, msg }]); setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3000); };
+  const live = useChennaiLive(rainfall);
+  const blendedP = useMemo(()=> Math.round((rainfall*0.6 + live.precipitation*0.4)*10)/10, [rainfall, live.precipitation]);
+  const { S, Ia, Q, economicLoss } = useHydrology(blendedP, cn, duration);
   const searchResults = useMemo(() => {
     if (!search.trim()) return [];
     const q = search.toLowerCase();

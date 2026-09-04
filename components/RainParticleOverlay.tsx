@@ -32,7 +32,7 @@ export default function RainParticleOverlay({
     };
     window.addEventListener("resize", handleResize);
 
-    // Particle count scaled by rainfall intensity
+    if (rainfall < 5) return;
     const maxDrops = Math.min(600, Math.floor(rainfall * 2.5 + 40));
     const drops: Array<{
       x: number;

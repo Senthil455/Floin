@@ -25,6 +25,7 @@ public/tiles/
 data/processed/
 !data/processed/projects.json
 !data/processed/scenarios.json
+!data/processed/MANIFEST.json
 
 # Env — never commit secrets
 .env

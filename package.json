@@ -4,6 +4,7 @@
   "license": "MIT",
   "private": false,
   "type": "module",
+  "files": ["app","components","hooks","public","data/vectors","data/rasters/rasters_COP30","scripts","next.config.mjs","tailwind.config.js"],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
