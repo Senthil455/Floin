@@ -22,7 +22,12 @@ def clean_geojson(src, dst):
     j=json.load(open(src,encoding='utf-8'))
     feats=[]
     dropped=0
-    for feat in j.get('features',[]):
+    raw_features=j.get('features',[])
+    if isinstance(raw_features, dict) and raw_features.get('type') == 'FeatureCollection':
+        raw_features=raw_features.get('features',[])
+    for feat in raw_features:
+        if not isinstance(feat, dict):
+            dropped+=1; continue
         g=feat.get('geometry')
         if not g or not g.get('coordinates'):
             dropped+=1; continue
@@ -62,11 +67,13 @@ def main():
         log(f"  -> {dst.relative_to(ROOT)}: {kept} kept, {dropped} dropped/out-of-bounds")
     for f in VEC.glob("*.csv"):
         rows=list(csv.DictReader(open(f,encoding='utf-8')))
-        kept=[r for r in rows if CHENNAI_BOUNDS[0]<=float(r['lon'])<=CHENNAI_BOUNDS[2]]
+        has_coordinates=bool(rows) and 'lon' in rows[0]
+        kept=[r for r in rows if not has_coordinates or CHENNAI_BOUNDS[0]<=float(r['lon'])<=CHENNAI_BOUNDS[2]]
         dst=OUT_VEC/f.name
         dst.parent.mkdir(parents=True,exist_ok=True)
         import shutil; shutil.copy(f,dst)
-        log(f"{f.name}: {len(kept)}/{len(rows)} stations in bounds → {dst.name}")
+        detail=f"{len(kept)}/{len(rows)} rows" if not has_coordinates else f"{len(kept)}/{len(rows)} stations in bounds"
+        log(f"{f.name}: {detail} → {dst.name}")
     terrain_summary()
     log("Flow direction (D8): data/rasters/Flow_Direction.tif ✓")
     log("Flow accumulation: data/rasters/Flow_Accumulation.tif ✓")
