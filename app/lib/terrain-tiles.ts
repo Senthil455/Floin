@@ -1,5 +1,6 @@
 const TERRARIUM_TMPL="https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png";
 const CACHE=new Map<string, { elev:number, at:string }>();
+const TILE_CACHE=new Map<string, Promise<{ data: Buffer } | null>>();
 function lngLatToTile(lng:number, lat:number, z:number){
   const n=Math.pow(2,z);
   const x=Math.floor((lng+180)/360*n);
@@ -12,18 +13,30 @@ export async function sampleMapzenTerrarium(lng:number, lat:number): Promise<num
   if(CACHE.has(key)) return CACHE.get(key)!.elev;
   const z=14;
   const {x,y}=lngLatToTile(lng,lat,z);
-  const url=TERRARIUM_TMPL.replace("{z}",String(z)).replace("{x}",String(x)).replace("{y}",String(y));
+  const tileKey=`${z}/${x}/${y}`;
+  let tile=TILE_CACHE.get(tileKey);
+  if(!tile){
+    tile=(async()=>{
+      try{
+        const url=TERRARIUM_TMPL.replace("{z}",String(z)).replace("{x}",String(x)).replace("{y}",String(y));
+        const res=await fetch(url,{ next:{ revalidate: 86400 }, signal:AbortSignal.timeout(5000) } as any);
+        if(!res.ok) return null;
+        const buf=await res.arrayBuffer();
+        const { PNG } = await import("pngjs");
+        const png=PNG.sync.read(Buffer.from(buf));
+        return { data: png.data };
+      }catch{return null;}
+    })();
+    TILE_CACHE.set(tileKey,tile);
+  }
   try{
-    const res=await fetch(url,{ next:{ revalidate: 86400 } } as any);
-    if(!res.ok) return null;
-    const buf=await res.arrayBuffer();
-    const { PNG } = await import("pngjs");
-    const png=PNG.sync.read(Buffer.from(buf));
+    const tileData=await tile;
+    if(!tileData) return null;
     const fx=((lng+180)/360*Math.pow(2,z) - x)*256;
     const fy=((1-Math.log(Math.tan(lat*Math.PI/180)+1/Math.cos(lat*Math.PI/180))/Math.PI)/2*Math.pow(2,z) - y)*256;
     const px=Math.max(0,Math.min(255,Math.floor(fx))), py=Math.max(0,Math.min(255,Math.floor(fy)));
     const idx=(py*256+px)*4;
-    const R=png.data[idx], G=png.data[idx+1], B=png.data[idx+2];
+    const R=tileData.data[idx], G=tileData.data[idx+1], B=tileData.data[idx+2];
     const elev=(R*256 + G + B/256) - 32768;
     if(!isFinite(elev)) return null;
     CACHE.set(key,{elev, at:new Date().toISOString()});
