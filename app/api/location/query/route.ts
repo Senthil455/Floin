@@ -52,39 +52,35 @@ function isInBounds(
   );
 }
 
-// Helper: check if geometry coordinates intersect AOI bounds
-function geometryIntersectsBounds(
-  coordinates: any,
-  geometryType: string,
-  bounds: AOI['bounds']
-): boolean {
-  if (geometryType === 'Point') {
-    return isInBounds(coordinates[0], coordinates[1], bounds);
+// Helper: does a geometry touch the AOI box? Handles every GeoJSON type,
+// including Multi* and GeometryCollection (GCC KML exports mix types per
+// placemark, so GeometryCollection is common in data/vectors).
+function geometryIntersectsAOI(geometry: any, bounds: AOI['bounds']): boolean {
+  if (!geometry?.type) return false;
+  switch (geometry.type) {
+    case 'Point':
+      return isInBounds(geometry.coordinates[0], geometry.coordinates[1], bounds);
+    case 'MultiPoint':
+      return (geometry.coordinates || []).some((c: any) =>
+        Array.isArray(c) && c.length >= 2 && isInBounds(c[0], c[1], bounds));
+    case 'LineString':
+      return (geometry.coordinates || []).some((c: any) =>
+        Array.isArray(c) && c.length >= 2 && isInBounds(c[0], c[1], bounds));
+    case 'MultiLineString':
+      return (geometry.coordinates || []).some((line: any) =>
+        geometryIntersectsAOI({ type: 'LineString', coordinates: line }, bounds));
+    case 'Polygon':
+      return (geometry.coordinates || []).some((ring: any) =>
+        (ring || []).some((c: any) =>
+          Array.isArray(c) && c.length >= 2 && isInBounds(c[0], c[1], bounds)));
+    case 'MultiPolygon':
+      return (geometry.coordinates || []).some((poly: any) =>
+        geometryIntersectsAOI({ type: 'Polygon', coordinates: poly }, bounds));
+    case 'GeometryCollection':
+      return (geometry.geometries || []).some((g: any) => geometryIntersectsAOI(g, bounds));
+    default:
+      return false;
   }
-
-  if (geometryType === 'LineString' || geometryType === 'MultiLineString') {
-    const coords =
-      geometryType === 'LineString' ? coordinates : coordinates.flat(1);
-    return coords.some(
-      (c: any) =>
-        Array.isArray(c) && c.length >= 2 && isInBounds(c[0], c[1], bounds)
-    );
-  }
-
-  if (geometryType === 'Polygon' || geometryType === 'MultiPolygon') {
-    const rings =
-      geometryType === 'Polygon'
-        ? [coordinates[0]]
-        : coordinates.map((p: any) => p[0]);
-    return rings.some((ring: any) =>
-      ring.some(
-        (c: any) =>
-          Array.isArray(c) && c.length >= 2 && isInBounds(c[0], c[1], bounds)
-      )
-    );
-  }
-
-  return false;
 }
 
 const TABLE_MAP: Record<string, string> = { buildings:"buildings", highway:"highway", waterway:"waterway", rainfall_stations:"rainfall_stations", chennai2015_inundation:"chennai2015_inundation", chennai2015_hotspots:"chennai2015_hotspots", chennai2015_flooded_streets:"chennai2015_flooded_streets" };

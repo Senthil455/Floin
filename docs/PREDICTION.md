@@ -1,4 +1,4 @@
-# PREDICTION — Every File Contributes (310 Datasets → One Risk)
+# PREDICTION — Every File Contributes (320+ layers → One Risk)
 
 `POST /api/predict {aoi, rainfall, cn, duration, livePrecip}` → `app/lib/unified-prediction.ts` → weighted ensemble over **every** file in `public/*.geojson` + `data/rasters` + live.
 

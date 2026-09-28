@@ -23,6 +23,28 @@ async function demStats(aoi: any) {
     const vals = g.elevations; const mean = vals.reduce((a, b) => a + b, 0) / vals.length; return { mean, min: Math.min(...vals), max: Math.max(...vals), source: g.source };
   } catch { return { mean: 6.5, min: 1.2, max: 14, source: "fallback" }; }
 }
+function flattenCoords(geom: any): any[] {
+  if (!geom?.type) return [];
+  switch (geom.type) {
+    case "Point": return [geom.coordinates];
+    case "MultiPoint": return geom.coordinates || [];
+    case "LineString": return geom.coordinates || [];
+    case "MultiLineString": return (geom.coordinates || []).flat();
+    case "Polygon": return geom.coordinates?.[0] || [];
+    case "MultiPolygon": return (geom.coordinates || []).flat(2);
+    case "GeometryCollection": return (geom.geometries || []).flatMap((g: any) => flattenCoords(g));
+    default: return [];
+  }
+}
+function firstVertex(geom: any): [number, number] | null {
+  if (!geom?.type) return null;
+  if (geom.type === "GeometryCollection") {
+    for (const g of geom.geometries || []) { const v = firstVertex(g); if (v) return v; }
+    return null;
+  }
+  const c = flattenCoords(geom);
+  return c.length ? (c[0] as [number, number]) : null;
+}
 function countGeoJSON(id: string, aoi: any): number {
   try {
     const p = path.join(process.cwd(), "public", `${id}.geojson`);
@@ -34,9 +56,9 @@ function countGeoJSON(id: string, aoi: any): number {
     for (const f of j.features) {
       const geom = f.geometry;
       if (!geom) continue;
-      const coords = geom.type === "Point" ? [geom.coordinates] : geom.type === "LineString" ? geom.coordinates : geom.type === "Polygon" ? geom.coordinates[0] : [];
-      for (const [lng, lat] of coords) { if (lng >= b.xmin && lng <= b.xmax && lat >= b.ymin && lat <= b.ymax) { c++; break; } }
-      if (geom.type === "Polygon" && c === 0) { const [lng, lat] = geom.coordinates[0][0]; if (lng >= b.xmin - 0.05 && lng <= b.xmax + 0.05 && lat >= b.ymin - 0.05 && lat <= b.ymax + 0.05) c++; }
+      const coords = flattenCoords(geom);
+      for (const v of coords) { if (Array.isArray(v) && v[0] >= b.xmin && v[0] <= b.xmax && v[1] >= b.ymin && v[1] <= b.ymax) { c++; break; } }
+      if (c === 0) { const v = firstVertex(geom); if (v && v[0] >= b.xmin - 0.05 && v[0] <= b.xmax + 0.05 && v[1] >= b.ymin - 0.05 && v[1] <= b.ymax + 0.05) c++; }
     }
     return c;
   } catch { return 0; }
