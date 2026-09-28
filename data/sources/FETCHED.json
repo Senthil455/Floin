@@ -1,0 +1,936 @@
+{
+ "generated": "2026-09-28T00:00:24",
+ "aoi": [
+  80.1,
+  12.88,
+  80.35,
+  13.25
+ ],
+ "count": 154,
+ "items": [
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.01.tif.gz",
+   "status": "cached",
+   "bytes": 3916569
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.02.tif.gz",
+   "status": "cached",
+   "bytes": 3433588
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.03.tif.gz",
+   "status": "cached",
+   "bytes": 3421423
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.04.tif.gz",
+   "status": "cached",
+   "bytes": 3571381
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.05.tif.gz",
+   "status": "cached",
+   "bytes": 3485076
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.06.tif.gz",
+   "status": "cached",
+   "bytes": 2994532
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.07.tif.gz",
+   "status": "cached",
+   "bytes": 2742407
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.08.tif.gz",
+   "status": "cached",
+   "bytes": 2602540
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.09.tif.gz",
+   "status": "cached",
+   "bytes": 2894963
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.10.tif.gz",
+   "status": "cached",
+   "bytes": 3160744
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.11.tif.gz",
+   "status": "cached",
+   "bytes": 3081316
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.12.tif.gz",
+   "status": "cached",
+   "bytes": 3208610
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.13.tif.gz",
+   "status": "cached",
+   "bytes": 2771051
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.14.tif.gz",
+   "status": "cached",
+   "bytes": 3157529
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.15.tif.gz",
+   "status": "cached",
+   "bytes": 3537371
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.16.tif.gz",
+   "status": "cached",
+   "bytes": 3694605
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.17.tif.gz",
+   "status": "cached",
+   "bytes": 3722023
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.18.tif.gz",
+   "status": "cached",
+   "bytes": 3289140
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.19.tif.gz",
+   "status": "cached",
+   "bytes": 3055655
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.20.tif.gz",
+   "status": "cached",
+   "bytes": 2772878
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.21.tif.gz",
+   "status": "cached",
+   "bytes": 3034015
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.22.tif.gz",
+   "status": "cached",
+   "bytes": 2769909
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.23.tif.gz",
+   "status": "cached",
+   "bytes": 2776062
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.24.tif.gz",
+   "status": "cached",
+   "bytes": 2860135
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.25.tif.gz",
+   "status": "cached",
+   "bytes": 3067840
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.26.tif.gz",
+   "status": "cached",
+   "bytes": 3253328
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.27.tif.gz",
+   "status": "cached",
+   "bytes": 3134855
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.28.tif.gz",
+   "status": "cached",
+   "bytes": 3087174
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.29.tif.gz",
+   "status": "cached",
+   "bytes": 2585396
+  },
+  {
+   "id": "chirps_daily_2015_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.11.30.tif.gz",
+   "status": "cached",
+   "bytes": 2671642
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.01.tif.gz",
+   "status": "cached",
+   "bytes": 3184866
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.02.tif.gz",
+   "status": "cached",
+   "bytes": 3506066
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.03.tif.gz",
+   "status": "cached",
+   "bytes": 3429540
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.04.tif.gz",
+   "status": "cached",
+   "bytes": 3175543
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.05.tif.gz",
+   "status": "cached",
+   "bytes": 3056683
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.06.tif.gz",
+   "status": "cached",
+   "bytes": 3132606
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.07.tif.gz",
+   "status": "cached",
+   "bytes": 3199665
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.08.tif.gz",
+   "status": "cached",
+   "bytes": 3256386
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.09.tif.gz",
+   "status": "cached",
+   "bytes": 3278520
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.10.tif.gz",
+   "status": "cached",
+   "bytes": 3259589
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.11.tif.gz",
+   "status": "cached",
+   "bytes": 3635977
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.12.tif.gz",
+   "status": "cached",
+   "bytes": 3410686
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.13.tif.gz",
+   "status": "cached",
+   "bytes": 3348143
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.14.tif.gz",
+   "status": "cached",
+   "bytes": 3215308
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.15.tif.gz",
+   "status": "cached",
+   "bytes": 3116274
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.16.tif.gz",
+   "status": "cached",
+   "bytes": 2613466
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.17.tif.gz",
+   "status": "cached",
+   "bytes": 2776758
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.18.tif.gz",
+   "status": "cached",
+   "bytes": 2752472
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.19.tif.gz",
+   "status": "cached",
+   "bytes": 3015913
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.20.tif.gz",
+   "status": "cached",
+   "bytes": 3744399
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.21.tif.gz",
+   "status": "cached",
+   "bytes": 3582547
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.22.tif.gz",
+   "status": "cached",
+   "bytes": 3621830
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.23.tif.gz",
+   "status": "cached",
+   "bytes": 3343772
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.24.tif.gz",
+   "status": "cached",
+   "bytes": 3440818
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.25.tif.gz",
+   "status": "cached",
+   "bytes": 3072389
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.26.tif.gz",
+   "status": "cached",
+   "bytes": 3137418
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.27.tif.gz",
+   "status": "cached",
+   "bytes": 3418669
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.28.tif.gz",
+   "status": "cached",
+   "bytes": 3560332
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.29.tif.gz",
+   "status": "cached",
+   "bytes": 3313151
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.30.tif.gz",
+   "status": "cached",
+   "bytes": 3022509
+  },
+  {
+   "id": "chirps_daily_2015_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2015.12.31.tif.gz",
+   "status": "cached",
+   "bytes": 3166943
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.01.tif.gz",
+   "status": "cached",
+   "bytes": 3430337
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.02.tif.gz",
+   "status": "cached",
+   "bytes": 3380412
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.03.tif.gz",
+   "status": "cached",
+   "bytes": 3699372
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.04.tif.gz",
+   "status": "cached",
+   "bytes": 3472633
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.05.tif.gz",
+   "status": "cached",
+   "bytes": 2985986
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.06.tif.gz",
+   "status": "cached",
+   "bytes": 3234328
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.07.tif.gz",
+   "status": "cached",
+   "bytes": 3159306
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.08.tif.gz",
+   "status": "cached",
+   "bytes": 3148201
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.09.tif.gz",
+   "status": "cached",
+   "bytes": 3003665
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.10.tif.gz",
+   "status": "cached",
+   "bytes": 3724473
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.11.tif.gz",
+   "status": "cached",
+   "bytes": 3430623
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.12.tif.gz",
+   "status": "cached",
+   "bytes": 2686779
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.13.tif.gz",
+   "status": "cached",
+   "bytes": 3185772
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.14.tif.gz",
+   "status": "cached",
+   "bytes": 3380449
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.15.tif.gz",
+   "status": "cached",
+   "bytes": 3152428
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.16.tif.gz",
+   "status": "cached",
+   "bytes": 2972146
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.17.tif.gz",
+   "status": "cached",
+   "bytes": 3088572
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.18.tif.gz",
+   "status": "cached",
+   "bytes": 3113890
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.19.tif.gz",
+   "status": "cached",
+   "bytes": 2868605
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.20.tif.gz",
+   "status": "cached",
+   "bytes": 2976473
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.21.tif.gz",
+   "status": "cached",
+   "bytes": 3186072
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.22.tif.gz",
+   "status": "cached",
+   "bytes": 3175090
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.23.tif.gz",
+   "status": "cached",
+   "bytes": 3483078
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.24.tif.gz",
+   "status": "cached",
+   "bytes": 3568049
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.25.tif.gz",
+   "status": "cached",
+   "bytes": 3549830
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.26.tif.gz",
+   "status": "cached",
+   "bytes": 3460844
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.27.tif.gz",
+   "status": "cached",
+   "bytes": 3205598
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.28.tif.gz",
+   "status": "cached",
+   "bytes": 3424135
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.29.tif.gz",
+   "status": "cached",
+   "bytes": 3111239
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.30.tif.gz",
+   "status": "cached",
+   "bytes": 3122369
+  },
+  {
+   "id": "chirps_daily_2023_12",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2023.12.31.tif.gz",
+   "status": "cached",
+   "bytes": 3362031
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.01.tif.gz",
+   "status": "cached",
+   "bytes": 2719109
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.02.tif.gz",
+   "status": "cached",
+   "bytes": 2399456
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.03.tif.gz",
+   "status": "cached",
+   "bytes": 2658484
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.04.tif.gz",
+   "status": "cached",
+   "bytes": 2795971
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.05.tif.gz",
+   "status": "cached",
+   "bytes": 2622255
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.06.tif.gz",
+   "status": "cached",
+   "bytes": 2876971
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.07.tif.gz",
+   "status": "cached",
+   "bytes": 2577346
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.08.tif.gz",
+   "status": "cached",
+   "bytes": 2851946
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.09.tif.gz",
+   "status": "cached",
+   "bytes": 2739398
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.10.tif.gz",
+   "status": "cached",
+   "bytes": 2337145
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.11.tif.gz",
+   "status": "cached",
+   "bytes": 2887986
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.12.tif.gz",
+   "status": "cached",
+   "bytes": 2793700
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.13.tif.gz",
+   "status": "cached",
+   "bytes": 2998233
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.14.tif.gz",
+   "status": "cached",
+   "bytes": 3252070
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.15.tif.gz",
+   "status": "cached",
+   "bytes": 3716242
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.16.tif.gz",
+   "status": "cached",
+   "bytes": 3514797
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.17.tif.gz",
+   "status": "cached",
+   "bytes": 3427146
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.18.tif.gz",
+   "status": "cached",
+   "bytes": 3428848
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.19.tif.gz",
+   "status": "cached",
+   "bytes": 3137919
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.20.tif.gz",
+   "status": "cached",
+   "bytes": 3025438
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.21.tif.gz",
+   "status": "cached",
+   "bytes": 3044441
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.22.tif.gz",
+   "status": "cached",
+   "bytes": 2940037
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.23.tif.gz",
+   "status": "cached",
+   "bytes": 2583265
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.24.tif.gz",
+   "status": "cached",
+   "bytes": 2778649
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.25.tif.gz",
+   "status": "cached",
+   "bytes": 3239488
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.26.tif.gz",
+   "status": "cached",
+   "bytes": 3383868
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.27.tif.gz",
+   "status": "cached",
+   "bytes": 3422409
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.28.tif.gz",
+   "status": "cached",
+   "bytes": 3518651
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.29.tif.gz",
+   "status": "cached",
+   "bytes": 2879130
+  },
+  {
+   "id": "chirps_daily_2020_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2020.11.30.tif.gz",
+   "status": "cached",
+   "bytes": 3195110
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.01.tif.gz",
+   "status": "cached",
+   "bytes": 3470273
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.02.tif.gz",
+   "status": "cached",
+   "bytes": 3415374
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.03.tif.gz",
+   "status": "cached",
+   "bytes": 3308749
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.04.tif.gz",
+   "status": "cached",
+   "bytes": 3173973
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.05.tif.gz",
+   "status": "cached",
+   "bytes": 3447868
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.06.tif.gz",
+   "status": "cached",
+   "bytes": 3481500
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.07.tif.gz",
+   "status": "cached",
+   "bytes": 3228191
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.08.tif.gz",
+   "status": "cached",
+   "bytes": 2880612
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.09.tif.gz",
+   "status": "cached",
+   "bytes": 3478959
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.10.tif.gz",
+   "status": "cached",
+   "bytes": 3455152
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.11.tif.gz",
+   "status": "cached",
+   "bytes": 3190132
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.12.tif.gz",
+   "status": "cached",
+   "bytes": 2959215
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.13.tif.gz",
+   "status": "cached",
+   "bytes": 2777404
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.14.tif.gz",
+   "status": "cached",
+   "bytes": 3090723
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.15.tif.gz",
+   "status": "cached",
+   "bytes": 3124483
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.16.tif.gz",
+   "status": "cached",
+   "bytes": 3523942
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.17.tif.gz",
+   "status": "cached",
+   "bytes": 3134951
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.18.tif.gz",
+   "status": "cached",
+   "bytes": 3059087
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.19.tif.gz",
+   "status": "cached",
+   "bytes": 3088482
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.20.tif.gz",
+   "status": "cached",
+   "bytes": 3078363
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.21.tif.gz",
+   "status": "cached",
+   "bytes": 3503514
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.22.tif.gz",
+   "status": "cached",
+   "bytes": 3359825
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.23.tif.gz",
+   "status": "cached",
+   "bytes": 3289385
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.24.tif.gz",
+   "status": "cached",
+   "bytes": 3092161
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.25.tif.gz",
+   "status": "cached",
+   "bytes": 3469206
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.26.tif.gz",
+   "status": "cached",
+   "bytes": 3628776
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.27.tif.gz",
+   "status": "cached",
+   "bytes": 3192737
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.28.tif.gz",
+   "status": "cached",
+   "bytes": 3296144
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.29.tif.gz",
+   "status": "cached",
+   "bytes": 3462509
+  },
+  {
+   "id": "chirps_daily_2021_11",
+   "file": "data/raw/rainfall/chirps/chirps-v2.0.2021.11.30.tif.gz",
+   "status": "cached",
+   "bytes": 3476977
+  },
+  {
+   "id": "unosat_chennai_flood_2015",
+   "file": "data/raw/flood-obs/FL20151123IND_shp.zip",
+   "status": "cached",
+   "bytes": 67271010
+  },
+  {
+   "id": "esa_worldcover_2021_10m",
+   "file": "data/raw/lulc/ESA_WorldCover_10m_2021_v200_N12E078.tif",
+   "status": "cached",
+   "bytes": 119065806
+  }
+ ]
+}

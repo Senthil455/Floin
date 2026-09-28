@@ -1,0 +1,1426 @@
+﻿[
+    {
+        "pkg":  "chennai-microwatersheds-map",
+        "title":  "Chennai Microwatersheds Map",
+        "fmt":  "GeoJSON",
+        "name":  "Chennai Microwatersheds Map",
+        "url":  "https://data.opencity.in/dataset/11fa0892-9c18-4b7c-a6b5-29b2475eb61a/resource/7b39fba4-7d78-473c-be7d-6f7b1421e992/download/chn_micro_watersheds.geojson",
+        "size":  4381254
+    },
+    {
+        "pkg":  "chennai-basin-drainage-maps",
+        "title":  "Chennai Basin Drainage Maps",
+        "fmt":  "KML",
+        "name":  "Chennai Basin Rivers and Streams Map",
+        "url":  "https://data.opencity.in/dataset/2d68c104-a2ad-4640-bfa1-ecd0720bbd34/resource/340a66b6-5e16-4f2e-bf5c-883a0ecd123f/download/9434de03-2238-4d31-9da1-ea3e466c0ca2.kml",
+        "size":  3412201
+    },
+    {
+        "pkg":  "chennai-basin-drainage-maps",
+        "title":  "Chennai Basin Drainage Maps",
+        "fmt":  "KML",
+        "name":  "Chennai Basin Buckingham Canal Map",
+        "url":  "https://data.opencity.in/dataset/2d68c104-a2ad-4640-bfa1-ecd0720bbd34/resource/60608d3a-e466-478d-82f4-eb77b65ea82c/download/1bb30ede-f309-4c16-8ab1-3c1fd211697f.kml",
+        "size":  17687
+    },
+    {
+        "pkg":  "chennai-basin-drainage-maps",
+        "title":  "Chennai Basin Drainage Maps",
+        "fmt":  "KML",
+        "name":  "Chennai Basin Krishna Water Canal Map",
+        "url":  "https://data.opencity.in/dataset/2d68c104-a2ad-4640-bfa1-ecd0720bbd34/resource/6b40c93c-89be-4c3c-8159-1e2414a4b664/download/b5264c56-9c1a-49e3-9f7d-eb8f9b4fb414.kml",
+        "size":  4718
+    },
+    {
+        "pkg":  "chennai-basin-drainage-maps",
+        "title":  "Chennai Basin Drainage Maps",
+        "fmt":  "KML",
+        "name":  "Chennai Basin Macro Drains Map",
+        "url":  "https://data.opencity.in/dataset/2d68c104-a2ad-4640-bfa1-ecd0720bbd34/resource/e8f2e6ae-791f-4c59-8a41-73527daeba46/download/80b07b87-0497-46c6-9168-0452cc67693c.kml",
+        "size":  76214
+    },
+    {
+        "pkg":  "chennai-basin-drainage-maps",
+        "title":  "Chennai Basin Drainage Maps",
+        "fmt":  "KML",
+        "name":  "Chennai Basin Micro Drains Map",
+        "url":  "https://data.opencity.in/dataset/2d68c104-a2ad-4640-bfa1-ecd0720bbd34/resource/e77a86e0-ecf4-4244-aa9a-77475610e35d/download/4d6437e5-0869-4d0a-80ae-2e4f493425fe.kml",
+        "size":  127327
+    },
+    {
+        "pkg":  "chennai-rainfall-data",
+        "title":  "Chennai Rainfall Data",
+        "fmt":  "CSV",
+        "name":  "Chennai Monthly Rainfall Data 1901-2021",
+        "url":  "https://data.opencity.in/dataset/256d1a20-adf5-4e3a-ae18-27664339117a/resource/39ee6182-093f-4eca-a4fc-9a4480baeaa1/download/49853342-d689-4746-af95-5366d08671e3.csv",
+        "size":  17268
+    },
+    {
+        "pkg":  "chennai-rainfall-data",
+        "title":  "Chennai Rainfall Data",
+        "fmt":  "CSV",
+        "name":  "Chennai Daily Rainfall Data from 1991-2023",
+        "url":  "https://data.opencity.in/dataset/256d1a20-adf5-4e3a-ae18-27664339117a/resource/3086f865-a04c-431e-815d-105ae658871f/download/e5c275eb-a4f2-4412-9677-73654e8f5f4d.csv",
+        "size":  894044
+    },
+    {
+        "pkg":  "chennai-rainfall-data",
+        "title":  "Chennai Rainfall Data",
+        "fmt":  "CSV",
+        "name":  "Tamil Nadu Daily Rainfall from 1991 to 2023",
+        "url":  "https://data.opencity.in/dataset/256d1a20-adf5-4e3a-ae18-27664339117a/resource/fd176db8-caca-42e5-b5a0-9dc78a3d73a9/download/4804c971-4f38-40b5-b203-aba08e19b937.csv",
+        "size":  36151382
+    },
+    {
+        "pkg":  "chennai-waterbodies",
+        "title":  "Chennai Waterbodies",
+        "fmt":  "KML",
+        "name":  "Chennai Waterbodies Map - 2019",
+        "url":  "https://data.opencity.in/dataset/7d0e0431-c9e9-4eb9-9331-3770513f6a00/resource/6eaf5021-4188-44df-a62c-a13373ff85cd/download/8d557090-c7db-4dca-8e4b-c2df22458129.kml",
+        "size":  2553102
+    },
+    {
+        "pkg":  "chennai-waterbodies",
+        "title":  "Chennai Waterbodies",
+        "fmt":  "KML",
+        "name":  "Chennai Basin Waterbodies Map",
+        "url":  "https://data.opencity.in/dataset/7d0e0431-c9e9-4eb9-9331-3770513f6a00/resource/ce38b4df-67d2-473d-9500-27205d150cef/download/47f392bd-e2e7-4794-873a-df9d054beb1f.kml",
+        "size":  18219281
+    },
+    {
+        "pkg":  "chennai-waterbodies",
+        "title":  "Chennai Waterbodies",
+        "fmt":  "KML",
+        "name":  "Chennai Rivers Map",
+        "url":  "https://data.opencity.in/dataset/7d0e0431-c9e9-4eb9-9331-3770513f6a00/resource/c8135603-f299-44d3-8c99-d0d01f6eb2cf/download/c6393f3d-c88f-45c3-af69-e685353e4543.kml",
+        "size":  335742
+    },
+    {
+        "pkg":  "tamil-nadu-water-bodies-census-data",
+        "title":  "Tamil Nadu and Chennai Water Bodies Census Data",
+        "fmt":  "KML",
+        "name":  "Chennai Water Census Map 2023",
+        "url":  "https://data.opencity.in/dataset/0b4ba0b3-7c78-4165-a45f-75414eb7207e/resource/88af5366-00aa-46a9-ac25-dff35a2bf85c/download/7e357cf5-fd50-400c-9f54-b592ac89b937.kml",
+        "size":  604972
+    },
+    {
+        "pkg":  "tamil-nadu-water-bodies-census-data",
+        "title":  "Tamil Nadu and Chennai Water Bodies Census Data",
+        "fmt":  "KML",
+        "name":  "Tamil Nadu Water Census Map 2023 - Part 1",
+        "url":  "https://data.opencity.in/dataset/0b4ba0b3-7c78-4165-a45f-75414eb7207e/resource/669de8ab-41b5-4856-be9e-113a209bb1e7/download/4b906063-f835-413d-8066-3c20cd8411aa.kml",
+        "size":  70821946
+    },
+    {
+        "pkg":  "tamil-nadu-water-bodies-census-data",
+        "title":  "Tamil Nadu and Chennai Water Bodies Census Data",
+        "fmt":  "KML",
+        "name":  "Tamil Nadu Water Census Map 2023 - Part 2",
+        "url":  "https://data.opencity.in/dataset/0b4ba0b3-7c78-4165-a45f-75414eb7207e/resource/dead6218-6bc0-4ac6-8240-9a566c55e1f4/download/67311ea2-c3b3-4da8-a550-7a856a96cae1.kml",
+        "size":  65451305
+    },
+    {
+        "pkg":  "tamil-nadu-water-bodies-census-data",
+        "title":  "Tamil Nadu and Chennai Water Bodies Census Data",
+        "fmt":  "KML",
+        "name":  "Tamil Nadu Water Census Map 2023 - Part 3",
+        "url":  "https://data.opencity.in/dataset/0b4ba0b3-7c78-4165-a45f-75414eb7207e/resource/1c12ae44-c801-4790-96f5-5255c05497ec/download/0f39e3c0-aa80-4aee-81f6-84871df93349.kml",
+        "size":  66924542
+    },
+    {
+        "pkg":  "chennai-ward-wise-groundwater-levels",
+        "title":  "Chennai Ward-wise Groundwater Levels",
+        "fmt":  "CSV",
+        "name":  "Ward-wise Monthly Ground Water Depth in 2024",
+        "url":  "https://data.opencity.in/dataset/8ed6e15c-ea1f-4f41-850a-9c52090f3647/resource/3a41ca9e-dbe1-495a-9ee3-c14aeaa988c6/download/a6f24910-b2cc-40e6-b08e-9dd7c37a1f4f.csv",
+        "size":  9785
+    },
+    {
+        "pkg":  "chennai-ward-wise-groundwater-levels",
+        "title":  "Chennai Ward-wise Groundwater Levels",
+        "fmt":  "CSV",
+        "name":  "Ward-wise Monthly Ground Water Depth in 2023",
+        "url":  "https://data.opencity.in/dataset/8ed6e15c-ea1f-4f41-850a-9c52090f3647/resource/2ccf989b-a340-4c49-8264-80a0b60717aa/download/fb45ece0-04ef-451c-bceb-95138b098c8c.csv",
+        "size":  22406
+    },
+    {
+        "pkg":  "chennai-ward-wise-groundwater-levels",
+        "title":  "Chennai Ward-wise Groundwater Levels",
+        "fmt":  "CSV",
+        "name":  "Ward-wise Monthly Ground Water Depth in 2022",
+        "url":  "https://data.opencity.in/dataset/8ed6e15c-ea1f-4f41-850a-9c52090f3647/resource/0e44c0a9-4965-4385-8988-ff4ed6f7534c/download/853e6067-9b2b-4944-b4cc-ec70777f949b.csv",
+        "size":  22261
+    },
+    {
+        "pkg":  "chennai-ward-wise-groundwater-levels",
+        "title":  "Chennai Ward-wise Groundwater Levels",
+        "fmt":  "CSV",
+        "name":  "Ward-wise Monthly Ground Water Depth in 2021",
+        "url":  "https://data.opencity.in/dataset/8ed6e15c-ea1f-4f41-850a-9c52090f3647/resource/61ef9b4e-feae-4e73-b503-aa2cba9eda50/download/933767dd-306d-41f3-894d-d7f4b5ee27e6.csv",
+        "size":  20840
+    },
+    {
+        "pkg":  "chennai-lakes-inflow-and-outflow",
+        "title":  "Chennai Lakes Inflow and Outflow",
+        "fmt":  "CSV",
+        "name":  "Chennai Lakes Water Infow and Outflow 2024",
+        "url":  "https://data.opencity.in/dataset/03f26c23-9dbf-4589-bf77-6902971bbe50/resource/ffd03472-f7ca-400b-a5d6-29bfac78d846/download/0988f0e4-f472-4a62-9cc9-3ef2c749b9d3.csv",
+        "size":  18021
+    },
+    {
+        "pkg":  "chennai-lakes-inflow-and-outflow",
+        "title":  "Chennai Lakes Inflow and Outflow",
+        "fmt":  "CSV",
+        "name":  "Chennai Lakes Water Infow and Outflow 2023",
+        "url":  "https://data.opencity.in/dataset/03f26c23-9dbf-4589-bf77-6902971bbe50/resource/ef52d282-82dd-4f24-ab69-ab8e53adc152/download/56ab728f-63ee-48f6-90c2-109c54d30bf0.csv",
+        "size":  56447
+    },
+    {
+        "pkg":  "chennai-lakes-inflow-and-outflow",
+        "title":  "Chennai Lakes Inflow and Outflow",
+        "fmt":  "CSV",
+        "name":  "Chennai Lakes Water Infow and Outflow 2022",
+        "url":  "https://data.opencity.in/dataset/03f26c23-9dbf-4589-bf77-6902971bbe50/resource/a85b6deb-c504-4476-a8cf-464f149def5e/download/a6a1a4a5-4360-4835-9c0c-727844d09445.csv",
+        "size":  57404
+    },
+    {
+        "pkg":  "chennai-lakes-inflow-and-outflow",
+        "title":  "Chennai Lakes Inflow and Outflow",
+        "fmt":  "CSV",
+        "name":  "Chennai Lakes Water Infow and Outflow 2021",
+        "url":  "https://data.opencity.in/dataset/03f26c23-9dbf-4589-bf77-6902971bbe50/resource/4f5ccbad-573e-4cea-bc9c-bf8921f4b686/download/084f9b30-f38e-4ab4-9782-42ca16e74bc0.csv",
+        "size":  54250
+    },
+    {
+        "pkg":  "chennai-lake-leves-since-2003",
+        "title":  "Chennai Lake Levels Since 2003",
+        "fmt":  "CSV",
+        "name":  "Poondi Lake Storage Levels from 2003",
+        "url":  "https://data.opencity.in/dataset/9e2dca14-2011-475c-93b1-2174d4c7fa43/resource/8b0c0edc-4204-4f0f-8dc7-2db4817af04f/download/e7000bbf-9db8-42a2-9564-c57c33dfbd5b.csv",
+        "size":  1139
+    },
+    {
+        "pkg":  "chennai-lake-leves-since-2003",
+        "title":  "Chennai Lake Levels Since 2003",
+        "fmt":  "CSV",
+        "name":  "Cholavaram Lake Storage Levels from 2003",
+        "url":  "https://data.opencity.in/dataset/9e2dca14-2011-475c-93b1-2174d4c7fa43/resource/20dc9876-ef1d-4cf1-9c42-f9d6c1f137db/download/321ab75f-29bf-4bf7-8784-3e2c32bfdf1f.csv",
+        "size":  916
+    },
+    {
+        "pkg":  "chennai-lake-leves-since-2003",
+        "title":  "Chennai Lake Levels Since 2003",
+        "fmt":  "CSV",
+        "name":  "Chembarambakkam Lake Storage Levels from 2003",
+        "url":  "https://data.opencity.in/dataset/9e2dca14-2011-475c-93b1-2174d4c7fa43/resource/db41b1a4-5746-46d0-a006-e8fe2b1545a9/download/9c99a6e3-8abc-4f61-925a-6710eb062c42.csv",
+        "size":  1162
+    },
+    {
+        "pkg":  "chennai-lake-leves-since-2003",
+        "title":  "Chennai Lake Levels Since 2003",
+        "fmt":  "CSV",
+        "name":  "Veeranam Lake Storage Levels from 2003",
+        "url":  "https://data.opencity.in/dataset/9e2dca14-2011-475c-93b1-2174d4c7fa43/resource/a2f9aaad-7ac2-4a01-90d6-801eeef7d4b6/download/4c3c1771-4867-4995-8ce6-0e58f179b41a.csv",
+        "size":  1029
+    },
+    {
+        "pkg":  "chennai-lake-leves-since-2003",
+        "title":  "Chennai Lake Levels Since 2003",
+        "fmt":  "CSV",
+        "name":  "Kannankottai Lake Storage Levels from 2020",
+        "url":  "https://data.opencity.in/dataset/9e2dca14-2011-475c-93b1-2174d4c7fa43/resource/e0355257-d2d9-48be-a31e-6596a5fcdc07/download/109dc3c7-7d5d-4f1d-bd64-2227a1bd1f81.csv",
+        "size":  139
+    },
+    {
+        "pkg":  "chennai-lake-leves-since-2003",
+        "title":  "Chennai Lake Levels Since 2003",
+        "fmt":  "CSV",
+        "name":  "Red Hills Lake (Puzhal Aeri) Storage Levels from 2003",
+        "url":  "https://data.opencity.in/dataset/9e2dca14-2011-475c-93b1-2174d4c7fa43/resource/febf2951-71eb-4807-9a06-246dadc1ef04/download/35219738-923b-4685-a0bf-0147f7ceaac7.csv",
+        "size":  1228
+    },
+    {
+        "pkg":  "chennai-road-centerline-map",
+        "title":  "Chennai Road Centerline Map",
+        "fmt":  "KML",
+        "name":  "Chennai Road Centerline Map",
+        "url":  "https://data.opencity.in/dataset/483b17e7-b099-479b-b7d9-ab29c5973752/resource/9bdf789d-7f92-42bd-a55c-15b18125e9e0/download/1ef735dc-2397-4dc3-88e8-d98ea0b8339b.kml",
+        "size":  35331745
+    },
+    {
+        "pkg":  "chennai-census-2011-data",
+        "title":  "Chennai - Census 2011 Data",
+        "fmt":  "CSV",
+        "name":  "Chennai - Ward-wise Census Data - 2011",
+        "url":  "https://data.opencity.in/dataset/db288d43-56e3-48f4-9932-710d80872155/resource/14e58af6-7ed9-4445-bb47-acc931364c12/download/af83d302-a504-479a-8be9-b3208eb5b6e7.csv",
+        "size":  473252
+    },
+    {
+        "pkg":  "chennai-census-2011-data",
+        "title":  "Chennai - Census 2011 Data",
+        "fmt":  "XLSX",
+        "name":  "Chennai - ST Households Amenities and Assets 2011",
+        "url":  "https://data.opencity.in/dataset/db288d43-56e3-48f4-9932-710d80872155/resource/3c3d42b0-e549-42d1-847e-a6a1e24cf166/download/f6a732cb-081a-462a-a542-7292f9bfbb11.xlsx",
+        "size":  157099
+    },
+    {
+        "pkg":  "chennai-census-2011-data",
+        "title":  "Chennai - Census 2011 Data",
+        "fmt":  "XLSX",
+        "name":  "Housing and Houselisting Data - 2011",
+        "url":  "https://data.opencity.in/dataset/db288d43-56e3-48f4-9932-710d80872155/resource/7dee8eaa-e4d8-44af-a5de-4b8e96da0c95/download/6716ca64-fea5-4235-b573-95459911b04f.xlsx",
+        "size":  136642
+    },
+    {
+        "pkg":  "chennai-slums",
+        "title":  "Chennai Slums",
+        "fmt":  "KML",
+        "name":  "Chennai Slums Map",
+        "url":  "https://data.opencity.in/dataset/5ddfadb0-3bb5-4f0f-b00d-3d76cd7e4806/resource/1c6e94ae-478a-43b6-8346-50b7ad4aaf8a/download/02144a0c-72ae-4dff-8860-7297bec30227.kml",
+        "size":  386552
+    },
+    {
+        "pkg":  "chennai-slums",
+        "title":  "Chennai Slums",
+        "fmt":  "KML",
+        "name":  "Chennai Slum Boundaries Map",
+        "url":  "https://data.opencity.in/dataset/5ddfadb0-3bb5-4f0f-b00d-3d76cd7e4806/resource/6b9b86ec-0564-4ae0-8e5b-8c27d77e5a2c/download/5959f0f4-8dba-4522-9b5d-f245006220b4.kml",
+        "size":  2471686
+    },
+    {
+        "pkg":  "chennai-slums",
+        "title":  "Chennai Slums",
+        "fmt":  "CSV",
+        "name":  "Slum Housing and Population - 2011",
+        "url":  "https://data.opencity.in/dataset/5ddfadb0-3bb5-4f0f-b00d-3d76cd7e4806/resource/194afb7d-c0fc-4bbb-93bd-732c0a324627/download/fd5be328-79eb-465a-88fe-f6e755d4541b.csv",
+        "size":  351
+    },
+    {
+        "pkg":  "chennai-parks",
+        "title":  "Chennai Parks",
+        "fmt":  "CSV",
+        "name":  "Chennai Parks",
+        "url":  "https://data.opencity.in/dataset/00932ac5-bd1c-4e53-8bb5-c8e757289090/resource/5f145eaf-d964-43bf-bc9d-c9b3cecf707f/download/f3611a21-38f8-4a07-9416-c33d7ff55bc4.csv",
+        "size":  19204
+    },
+    {
+        "pkg":  "chennai-parks",
+        "title":  "Chennai Parks",
+        "fmt":  "KML",
+        "name":  "Chennai Neighbourhood Parks Map",
+        "url":  "https://data.opencity.in/dataset/00932ac5-bd1c-4e53-8bb5-c8e757289090/resource/eb97a8bc-b471-4229-87c2-b55097bb4cf4/download/81043b6d-cc37-4555-b7a4-e0f5de8953ca.kml",
+        "size":  817516
+    },
+    {
+        "pkg":  "chennai-parks",
+        "title":  "Chennai Parks",
+        "fmt":  "KML",
+        "name":  "Chennai Community Parks Map",
+        "url":  "https://data.opencity.in/dataset/00932ac5-bd1c-4e53-8bb5-c8e757289090/resource/3bb83ef1-1d4a-4774-99f0-c5218b4c92ea/download/6ad98719-102d-45b2-af2e-fc30c67bf9f0.kml",
+        "size":  89211
+    },
+    {
+        "pkg":  "chennai-parks",
+        "title":  "Chennai Parks",
+        "fmt":  "KML",
+        "name":  "Chennai City Parks Map",
+        "url":  "https://data.opencity.in/dataset/00932ac5-bd1c-4e53-8bb5-c8e757289090/resource/5751e836-4068-4600-b454-81ff20d97dc5/download/8fead661-d8c0-4e0f-ae36-b8c90716d040.kml",
+        "size":  45424
+    },
+    {
+        "pkg":  "chennai-parks",
+        "title":  "Chennai Parks",
+        "fmt":  "CSV",
+        "name":  "Open Spaces in Chennai - Jan 2019",
+        "url":  "https://data.opencity.in/dataset/00932ac5-bd1c-4e53-8bb5-c8e757289090/resource/6def54af-3968-4487-9da9-3475ba97ddf7/download/7896ed13-3d9e-4dbf-bc80-de234ce797c6.csv",
+        "size":  14291
+    },
+    {
+        "pkg":  "chennai-parks",
+        "title":  "Chennai Parks",
+        "fmt":  "CSV",
+        "name":  "Ward-wise Area under Parks and Open Spaces - Jan 2019",
+        "url":  "https://data.opencity.in/dataset/00932ac5-bd1c-4e53-8bb5-c8e757289090/resource/35c4f419-f8b8-4639-9f68-97f4682bb756/download/3978c10b-db92-459c-96cf-21ed42c65218.csv",
+        "size":  9818
+    },
+    {
+        "pkg":  "chennai-water-supply",
+        "title":  "Chennai Water Supply",
+        "fmt":  "CSV",
+        "name":  "Chennai CMWSSB Divisions",
+        "url":  "https://data.opencity.in/dataset/ce53de1e-5a35-494f-a7f4-132c0043c5c3/resource/eed22efa-133e-4e7d-8e18-1ff3156a67b6/download/a48e7feb-0d76-4c0b-85f9-48342e804eb5.csv",
+        "size":  33104
+    },
+    {
+        "pkg":  "chennai-water-supply",
+        "title":  "Chennai Water Supply",
+        "fmt":  "CSV",
+        "name":  "Zone-wise Daily Water Supply and Consumption - January 2019",
+        "url":  "https://data.opencity.in/dataset/ce53de1e-5a35-494f-a7f4-132c0043c5c3/resource/1c22bdb5-e9e0-4246-8248-740bbbb9945d/download/1c288ca9-d0ec-4640-b93c-6edcc841d2cf.csv",
+        "size":  996
+    },
+    {
+        "pkg":  "chennai-sewerage-collection-system",
+        "title":  "Chennai Sewerage Collection System",
+        "fmt":  "KML",
+        "name":  "Sewerage Command Area",
+        "url":  "https://data.opencity.in/dataset/c9844771-3129-4bc8-99d7-398dd93db1fa/resource/84f4fb43-7a36-4203-ba22-63fb094aee08/download/b186696c-251b-49b1-960f-a9e02130ed5f.kml",
+        "size":  1070341
+    },
+    {
+        "pkg":  "chennai-sewerage-collection-system",
+        "title":  "Chennai Sewerage Collection System",
+        "fmt":  "KMZ",
+        "name":  "Sewer Main Network",
+        "url":  "https://data.opencity.in/dataset/c9844771-3129-4bc8-99d7-398dd93db1fa/resource/a819c121-0d4a-4f6e-943d-2bcc610f6954/download/673f4683-9987-4101-b25c-8df48b448378.kmz",
+        "size":  9745761
+    },
+    {
+        "pkg":  "chennai-sewerage-collection-system",
+        "title":  "Chennai Sewerage Collection System",
+        "fmt":  "TXT",
+        "name":  "Sewer Main Codes",
+        "url":  "https://data.opencity.in/dataset/c9844771-3129-4bc8-99d7-398dd93db1fa/resource/86b92108-8080-494d-bec5-7bd98a75594d/download/d4e27f2a-f5dc-4874-b96d-862f81e63db0.txt",
+        "size":  459
+    },
+    {
+        "pkg":  "chennai-sewerage-collection-system",
+        "title":  "Chennai Sewerage Collection System",
+        "fmt":  "KML",
+        "name":  "Sewer Terminal Chambers",
+        "url":  "https://data.opencity.in/dataset/c9844771-3129-4bc8-99d7-398dd93db1fa/resource/ca265e4e-ff0e-4bac-bed1-d66a74ea2bb8/download/507c87e3-d3ad-479b-88a7-ae058f5f1229.kml",
+        "size":  7594092
+    },
+    {
+        "pkg":  "chennai-sewerage-collection-system",
+        "title":  "Chennai Sewerage Collection System",
+        "fmt":  "KML",
+        "name":  "Sewage Valves",
+        "url":  "https://data.opencity.in/dataset/c9844771-3129-4bc8-99d7-398dd93db1fa/resource/de1063d4-1d81-4bda-817c-11ceeac7da38/download/79010f3e-1b5e-4a66-be3b-a322fd693e23.kml",
+        "size":  6386820
+    },
+    {
+        "pkg":  "chennai-sewerage-collection-system",
+        "title":  "Chennai Sewerage Collection System",
+        "fmt":  "KML",
+        "name":  "Sewage Ventilating Columns",
+        "url":  "https://data.opencity.in/dataset/c9844771-3129-4bc8-99d7-398dd93db1fa/resource/05bc9277-395e-43e1-a698-4701dbac0cd2/download/5d31106a-538c-466a-abd3-513f27967e61.kml",
+        "size":  2101302
+    },
+    {
+        "pkg":  "chennai-sewerage-collection-system",
+        "title":  "Chennai Sewerage Collection System",
+        "fmt":  "KMZ",
+        "name":  "Sewage Release Points",
+        "url":  "https://data.opencity.in/dataset/c9844771-3129-4bc8-99d7-398dd93db1fa/resource/e5ed2402-91b0-4f21-ab54-996d851a4c7b/download/d088d875-ff9a-4c5d-a923-a013f9350d23.kmz",
+        "size":  12307153
+    },
+    {
+        "pkg":  "chennai-sewerage-collection-system",
+        "title":  "Chennai Sewerage Collection System",
+        "fmt":  "KMZ",
+        "name":  "Sewage Inclusion Points",
+        "url":  "https://data.opencity.in/dataset/c9844771-3129-4bc8-99d7-398dd93db1fa/resource/47fa29cb-c151-4647-81bf-edc5535bc1f1/download/131647fd-f101-4d79-959f-7fd9cba6d468.kmz",
+        "size":  981675
+    },
+    {
+        "pkg":  "chennai-sewerage-collection-system",
+        "title":  "Chennai Sewerage Collection System",
+        "fmt":  "KMZ",
+        "name":  "Sewage Head Shafts",
+        "url":  "https://data.opencity.in/dataset/c9844771-3129-4bc8-99d7-398dd93db1fa/resource/f5703782-4220-4382-94a4-1d3bb9fe8835/download/bef54185-8e8a-4019-9d3b-b281bf9d66c2.kmz",
+        "size":  2301223
+    },
+    {
+        "pkg":  "chennai-sewerage-collection-system",
+        "title":  "Chennai Sewerage Collection System",
+        "fmt":  "KMZ",
+        "name":  "Sewage Machine Holes",
+        "url":  "https://data.opencity.in/dataset/c9844771-3129-4bc8-99d7-398dd93db1fa/resource/3c0b5148-7d79-4935-9992-56ddf5098e63/download/738b4ed5-1f42-42a6-91ea-43d766cc7b57.kmz",
+        "size":  9047649
+    },
+    {
+        "pkg":  "chennai-healthcare-uphcs-and-uchcs",
+        "title":  "Chennai Health Centres",
+        "fmt":  "CSV",
+        "name":  "Chennai - List of UCHCs",
+        "url":  "https://data.opencity.in/dataset/e08b7485-40ab-4401-861f-f790ed8e5328/resource/f6cbbd29-1ec1-4760-977b-e9fb6ec88b2a/download/4d246902-7230-492e-a464-6ef430fb8c07.csv",
+        "size":  1186
+    },
+    {
+        "pkg":  "chennai-healthcare-uphcs-and-uchcs",
+        "title":  "Chennai Health Centres",
+        "fmt":  "CSV",
+        "name":  "Chennai - List of UPHCs",
+        "url":  "https://data.opencity.in/dataset/e08b7485-40ab-4401-861f-f790ed8e5328/resource/5d8a7a71-d61a-4b50-9aaa-d701df9adda6/download/3bb49b92-7951-4ecc-9764-344fd4eb546e.csv",
+        "size":  10438
+    },
+    {
+        "pkg":  "chennai-healthcare-uphcs-and-uchcs",
+        "title":  "Chennai Health Centres",
+        "fmt":  "KML",
+        "name":  "Chennai UPHCs Map",
+        "url":  "https://data.opencity.in/dataset/e08b7485-40ab-4401-861f-f790ed8e5328/resource/5a81427f-0aa1-4270-8df4-5d4cef250912/download/a33b403b-f341-4214-8613-88e2ec227359.kml",
+        "size":  100497
+    },
+    {
+        "pkg":  "chennai-healthcare-uphcs-and-uchcs",
+        "title":  "Chennai Health Centres",
+        "fmt":  "KML",
+        "name":  "Chennai UCHCs Map",
+        "url":  "https://data.opencity.in/dataset/e08b7485-40ab-4401-861f-f790ed8e5328/resource/cd4effee-997f-4fe0-b376-8801080c6962/download/a604ea86-6bed-45ab-89cf-074fb5a59bfc.kml",
+        "size":  14155
+    },
+    {
+        "pkg":  "chennai-healthcare-uphcs-and-uchcs",
+        "title":  "Chennai Health Centres",
+        "fmt":  "KML",
+        "name":  "Chennai Tuberculosis Centres Map",
+        "url":  "https://data.opencity.in/dataset/e08b7485-40ab-4401-861f-f790ed8e5328/resource/d598f3e2-fe70-4cfb-a083-b1c180e22b08/download/36ae8785-fc7a-44cb-a114-3cbc51c09c07.kml",
+        "size":  34900
+    },
+    {
+        "pkg":  "chennai-healthcare-uphcs-and-uchcs",
+        "title":  "Chennai Health Centres",
+        "fmt":  "KML",
+        "name":  "Chennai Maternity Hospitals Map",
+        "url":  "https://data.opencity.in/dataset/e08b7485-40ab-4401-861f-f790ed8e5328/resource/4e57c154-eaf1-4738-ae6f-aa96df0c9d0d/download/6fd870e9-33e0-4f1d-843c-49692ea81eaf.kml",
+        "size":  7111
+    },
+    {
+        "pkg":  "chennai-healthcare-uphcs-and-uchcs",
+        "title":  "Chennai Health Centres",
+        "fmt":  "KML",
+        "name":  "Chennai VPHCs Map",
+        "url":  "https://data.opencity.in/dataset/e08b7485-40ab-4401-861f-f790ed8e5328/resource/f810b27c-53e6-4ea2-a75e-158a2fd9b967/download/31330b3a-7ae1-4379-94a9-3cd54296b7ec.kml",
+        "size":  4222
+    },
+    {
+        "pkg":  "chennai-healthcare-uphcs-and-uchcs",
+        "title":  "Chennai Health Centres",
+        "fmt":  "KML",
+        "name":  "Chennai Animal Birth Control Centres Map",
+        "url":  "https://data.opencity.in/dataset/e08b7485-40ab-4401-861f-f790ed8e5328/resource/1f16022b-3e52-4f37-85e0-b60086fa4a04/download/7a88dc80-7454-4f14-b26a-ad102cab1729.kml",
+        "size":  4232
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "KML",
+        "name":  "Chennai Storm Water Drains - SWD - Map 2023",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/107ac467-2381-4718-9632-645560bc8360/download/c4907fed-934b-4342-a3f4-74226853719d.kml",
+        "size":  28102866
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 28",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/81df58f4-e90f-4e46-ac42-6e82cf56a5f7/download/ff407a92-a806-41cb-8ae7-1656e0761d57.pdf",
+        "size":  2037594
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 33",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/c274080d-6214-45cb-8649-88588e31bb09/download/7e0a67fd-0b6a-422e-bb6f-eee303c1025c.pdf",
+        "size":  2085994
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 34",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/5d59a244-5482-4549-bf19-6e83a587f68e/download/54db7a6a-0fb9-4b3c-a681-3114e8e9bbb4.pdf",
+        "size":  2184876
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 35",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/1b59afa6-6eae-4671-b8f3-d46666ed8f0e/download/ab066bec-eeeb-4966-865d-ae5c362210c4.pdf",
+        "size":  2287800
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 36",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/e93e2bcf-4c53-445e-8ea4-b097448035dc/download/bf9c0a4e-4f3a-4869-b510-e56daa73c490.pdf",
+        "size":  2674872
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 37",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/873330eb-ba78-40f3-8ee2-2dd7bde1d19c/download/d9923177-2003-4a70-95cb-c346a92bcf38.pdf",
+        "size":  2625362
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 38",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/edfd2dc2-f473-40a9-8864-6f0dabecabc4/download/11297cd4-8ec6-445c-87b3-d69e89e872b6.pdf",
+        "size":  2361153
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 39",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/b80af340-3d2e-4345-95a8-ae20d2eb0be8/download/b4ae7cc3-c2c7-4811-bee3-54fbbafd7bb0.pdf",
+        "size":  1734614
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 40",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/07e2612a-2213-4046-a3bc-fdc03b904ba9/download/ecbe866a-1083-464e-bbc5-13f823de86bf.pdf",
+        "size":  1855017
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 41",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/e4b4e482-5919-4065-a032-fd293160c52e/download/bdb8395d-27ea-406b-8bd0-e23d27e9ce81.pdf",
+        "size":  1821563
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 42",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/59e38100-1cb7-4eff-8f16-cffd703d02d7/download/df720769-a3bf-43cc-b6bd-ea0a92925830.pdf",
+        "size":  1796356
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 43",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/f5df710b-e7dc-49d1-bf71-0fe4caf4ad6c/download/348c692c-0ec1-4a62-8805-8210bd9212ab.pdf",
+        "size":  1739769
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 44",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/c1159699-57c1-4dc1-8c02-3e50dcfb333f/download/0c5e21d3-db4e-4c0c-bd5f-6f735f180609.pdf",
+        "size":  1923064
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 45",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/f3aa58c5-76cd-4d76-947c-5a33aec444bb/download/874b82d2-1df3-414f-bf0e-7ecdf7e7026e.pdf",
+        "size":  1844487
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 46",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/28cea0b3-9206-4c3c-a202-2ecdba863133/download/c99d52e8-059c-4b0d-ab73-7a9a68d900d0.pdf",
+        "size":  1806901
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 47",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/3d009b12-0106-4810-a19a-20aa7eb8451a/download/19ef0b7e-02b3-480a-830a-5f8102d687a7.pdf",
+        "size":  2078291
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 49",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/9867322c-adff-46d2-b6d9-3dd3db1e4f69/download/1c22378c-4e86-4002-9dd8-d22612f9ec48.pdf",
+        "size":  1699466
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 50",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/a035d750-c7ce-4418-9f01-bf15f6495c7e/download/dde72507-73f2-4a2e-afb7-4b1c4b604d8d.pdf",
+        "size":  1913441
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 51",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/606da541-7f61-4831-b817-8420af6e7a74/download/624530c3-57c1-4f63-87cc-62db3ce6b727.pdf",
+        "size":  1559382
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 52",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/5be54552-ae5c-40f0-be43-e9ec86823b66/download/678c7c0b-bcee-4912-a149-1e58737ee685.pdf",
+        "size":  1635278
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 53",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/f117fec5-ba82-499a-a800-19621dcba73e/download/684eea9b-58fb-46cf-b970-4aef9473b97b.pdf",
+        "size":  2391133
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 54",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/ccc60c59-8194-4080-8ffa-549185da98c9/download/cc1ec4c4-3aad-49fc-9330-6e8e157559d0.pdf",
+        "size":  1612764
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 55",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/24bdf8c8-0eb6-46f0-a3e8-91fb70be55cb/download/b1ecee7f-8772-4fe5-a94f-5520e800c4f8.pdf",
+        "size":  1649239
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 56",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/767a3c1a-4559-4ed0-b38d-1c22e7ba821b/download/5af82994-bafd-4c0e-88e1-169f093ac4b7.pdf",
+        "size":  1792286
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 57",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/dc213e3a-f53c-4918-98ac-26fc0cd73c37/download/0d189c49-eb10-48bb-a919-dc9df534e3bb.pdf",
+        "size":  1695229
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 58",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/3e07d3e4-f434-4bab-8a19-4f4fb9144c14/download/4cd3edff-168e-4eb6-a95a-a3ebec0a4d85.pdf",
+        "size":  2744043
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 59",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/8e296651-4f0d-4e12-a3b5-ae5b502fa795/download/c9bb53ed-b571-415c-aa1a-e9e57e67ed49.pdf",
+        "size":  2538279
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 60",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/a3f6ac21-caaf-4a4a-b14f-cae5d89243f4/download/4e44e539-d64d-4f02-bf02-503f59dd5f0b.pdf",
+        "size":  2713695
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 61",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/d64e9c53-1189-4330-8305-9a0485208762/download/868bae11-a719-47f2-bfa9-e6244ed866ad.pdf",
+        "size":  2489798
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 62",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/d5f58814-edf4-4aec-b5c1-e6c2f1dd6fc9/download/4682e485-422b-4857-bd89-ab10b4f59de8.pdf",
+        "size":  2419030
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 63",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/6081f5e1-cd40-4fb6-81ac-3b3af8a25121/download/859f6911-d2b6-4123-9a4c-8d7dd3c29ae6.pdf",
+        "size":  2079118
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 64",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/34c4f1bf-f253-4399-9a09-361267c071db/download/46fcf691-47b1-4f14-8872-dbecb367f939.pdf",
+        "size":  3207279
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 65",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/da7eb638-66fc-4f38-83a8-7f287fc84c06/download/7d12d309-2fb9-4778-ac29-a88a56847543.pdf",
+        "size":  2268219
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 66",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/e05fab72-d197-4808-880f-2aeaf141c0f5/download/68c72937-a057-4ce9-92cf-ce6ea2afb46b.pdf",
+        "size":  2656944
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 67",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/6b22e77d-9475-4a3c-9bad-ec3c331ed75a/download/cff0a262-ee85-4208-92c2-42877898fc36.pdf",
+        "size":  2260040
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 68",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/97ae3579-4847-4dba-8f33-67ca78879581/download/8d1e2b3f-711c-4213-a019-666ba3ed9d98.pdf",
+        "size":  1755676
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 69",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/1ac3af52-15ed-457a-866e-b727ed365b14/download/d49e71b2-521e-4964-ad43-2afaa3132b1c.pdf",
+        "size":  2482099
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 70",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/99ef1754-a0b3-4eb4-9fbf-15ff49ad908a/download/1ee0ace4-e790-441a-b0b8-2646e7184a88.pdf",
+        "size":  2062236
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 71",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/4c8b15be-4f49-4af0-b027-23ce39781521/download/0b54e6b3-c482-4705-b862-7ef78f6b8aab.pdf",
+        "size":  2061072
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 72",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/2915e68f-d810-4b04-9236-cb6bb3420b27/download/a7775fec-b163-48d1-a39a-5d1946c016c4.pdf",
+        "size":  1751161
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 73",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/ac5ef5ad-041a-46a8-8548-434c497d935e/download/44c055bb-acda-4f6d-9dd3-bd0889162ad9.pdf",
+        "size":  1951556
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 74",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/2b493937-8bb9-4289-91be-4a8373741e52/download/92404a37-c9be-4a75-8673-a24d8265f2d5.pdf",
+        "size":  1777164
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 75",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/57ced645-58a5-411a-a209-b06d1dd117b0/download/1f9986d1-7cce-4b6b-8a85-8b7d818c1781.pdf",
+        "size":  1690393
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 76",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/951cd87e-1a4d-46b4-b2e8-23b2faf12ebe/download/545228e7-d630-47cd-b107-3e96a4fe0622.pdf",
+        "size":  1756311
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 77",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/5f226872-a4aa-43eb-8ef7-ddccb6b87a33/download/c3bfd684-89ef-4f02-b4b7-91240bbf5426.pdf",
+        "size":  1888910
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 78",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/4bca3105-e6c2-4279-8155-7364f9ef58a0/download/302cfa2c-ab59-4934-83e9-e7ab0e658d10.pdf",
+        "size":  1651954
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 90",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/aead603a-4bcf-44d7-8bf7-0e14ab184047/download/ce03dbc2-f0d0-4c3d-914b-fa43d9c0bc15.pdf",
+        "size":  2460985
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 93",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/684422fb-b113-4d55-a486-f0b9a1058e11/download/bbcec76a-b923-4833-a977-c261461626eb.pdf",
+        "size":  2300874
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 94",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/0e4ca416-1c32-4114-b395-a51e230ac32c/download/ad57cc89-d624-413a-b972-922ea8e3105e.pdf",
+        "size":  2526310
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 95",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/d9da6175-6868-4ebd-ab21-b1ffc667ef4c/download/db518175-fd2d-4e45-b042-fed6168a3c9c.pdf",
+        "size":  2700335
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 96",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/9257b39c-f2df-43ba-9023-6fb4abd94aeb/download/26fe1e28-43be-4c09-9f49-534ddda887e0.pdf",
+        "size":  4243171
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 97",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/f70f76d3-2468-447c-9ca7-a4f870e59d58/download/e09bd8e5-08f9-4380-b6bf-faad07864bcf.pdf",
+        "size":  1925160
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 98",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/45aedfcb-5e6c-409a-8079-3585b0f88007/download/f50b6ad8-a1c3-4c09-adfb-650b2e0736fb.pdf",
+        "size":  1667093
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 99",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/58bed1e9-febc-4e14-80ed-fb999f93ad88/download/61010415-b5c5-4181-a01a-111ccf13456d.pdf",
+        "size":  2453049
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 100",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/8954d153-1a8a-43fa-a8ad-1627f6601163/download/c200be6d-477a-42a4-8ffd-1c6e68479f95.pdf",
+        "size":  2870738
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 101",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/39527e9c-8480-44d1-a1b6-2ca45feda9ef/download/2347759b-ef1b-489d-aa49-9658a822651b.pdf",
+        "size":  5127114
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 102",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/30f1dd63-ca10-4805-ad66-01249e1091cb/download/8ab59613-4fbd-4dd3-829c-74e3c1611f9d.pdf",
+        "size":  2033945
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 104",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/18b344ce-4cdb-4849-aeb6-f4d0cbcbc0eb/download/23f39f18-f934-40e5-af0e-6da076fe3aee.pdf",
+        "size":  1696680
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 105",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/57a3872f-f7df-4171-9414-63b20170807e/download/9963a2c2-32eb-4e9c-9983-65457108fee5.pdf",
+        "size":  2323603
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 106",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/91a22dae-e718-40d3-98ab-cfc01f9014fd/download/31ef83a7-343e-4020-b249-68e94bd91e4a.pdf",
+        "size":  2572349
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 108",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/2bc859ab-1f53-4c97-8237-ed21d5cbb73f/download/4cab427a-ce51-4d6f-a3cf-3cda5021a478.pdf",
+        "size":  2219824
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 109",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/cc9a9345-ffeb-4812-8de0-10269b099261/download/39db0c64-c916-4b71-bd7b-6073cfbd7012.pdf",
+        "size":  2686272
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 110",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/9df9f999-f14e-4aed-a1fe-b3ed06e5da1a/download/17c03114-5d21-4684-a205-6ae9cb3b4cb2.pdf",
+        "size":  2461349
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 111",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/68a3dc5a-24f9-4e64-820d-df9a4c18bd67/download/89b13e03-2fb8-4b51-b58b-602d4868466a.pdf",
+        "size":  2242731
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 112",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/a0057113-2f8b-4719-99f7-38eaf817ed32/download/d3cdd489-128f-4281-97b1-2024aefb6fa3.pdf",
+        "size":  2813717
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 113",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/fc8c4264-0792-4cc3-a330-f74ea814861a/download/b69039d9-5d72-4620-ac5a-59a39d76c52c.pdf",
+        "size":  2011829
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 114",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/c9ca8807-f5a9-420b-9d43-291db77da39f/download/abc69675-4f31-4284-9572-809d7d8cd9b8.pdf",
+        "size":  4819204
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 115",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/9f4859c2-7efa-46f5-80d6-84aaba2a36c0/download/30cfdde7-717b-4826-aee4-b5bc72534fe4.pdf",
+        "size":  1649401
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 116",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/24dea3c5-fd70-4d40-915e-1a5364bb0bf1/download/f7382d32-a8ea-4b45-a74f-a7169a299337.pdf",
+        "size":  1871262
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 117",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/5871ef2c-8f62-4933-8a66-0eaac4b378ed/download/fb304a36-d489-44af-9625-b47b3fbfa4f5.pdf",
+        "size":  2574124
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 118",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/377ef348-6ffd-41a4-8585-3342fecacf5d/download/604ab0ab-5d8f-41c6-8154-f26726a74f5b.pdf",
+        "size":  2224701
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 119",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/5e4e162f-2ce3-48a3-bb98-661c58f24ed5/download/3185d852-5a45-4583-98c6-af8a4e8cc734.pdf",
+        "size":  2008859
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 120",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/fb7512da-2e94-4c78-8bb2-2f568d6efd2e/download/5af85e6f-3ee9-4855-a33c-40ebd8c9fbed.pdf",
+        "size":  1863184
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 121",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/49f93e73-2ba6-4c3c-b156-205aa4d21120/download/fe0304a5-bef5-48d5-b4c9-ec548c83b298.pdf",
+        "size":  2322316
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 122",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/bc8430eb-0bc5-4039-b19b-ffffafa3c00b/download/b8dbbe8f-5856-4def-a9fe-03a2a3febfc8.pdf",
+        "size":  5046836
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 123",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/7b5937fb-b6b1-4c06-93ba-e33b031115d7/download/1d7e7ab0-db28-4cb0-8c85-31bf9369ef93.pdf",
+        "size":  3372727
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 124",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/353c5566-6eb8-4220-8b12-43e5e3ade35f/download/a489bd60-8004-4111-ba34-644332a684ad.pdf",
+        "size":  2590460
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 125",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/b74b6375-0c24-4004-b680-469d1ec34c45/download/7fa813bd-0991-4fa2-b87f-1bfa92fe18fe.pdf",
+        "size":  2204920
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 126",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/7ea5f152-1488-4271-994b-d5c62f5600a8/download/abb5db57-f223-4687-aee8-3032b1720540.pdf",
+        "size":  2121779
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 127",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/69f0a923-f4a0-42a4-b485-f50debca2f45/download/833802bc-097d-4a4c-b11b-876c951bfb29.pdf",
+        "size":  3654671
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 128",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/4f0e53e5-416d-4bb3-88fa-97d7feda25f8/download/dc702e3e-13de-46f2-ab4c-1811076dbdb5.pdf",
+        "size":  2894403
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 129",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/8c3368bf-7b97-4d4f-a89f-1e4ad4484709/download/c2d884f7-968f-41f7-b50b-64d9ab675938.pdf",
+        "size":  2806032
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 130",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/73d0a0a9-0d0f-4958-8ceb-2bc59e01d530/download/3f6bf0cd-8be7-4428-b6ae-0dd362cbd21c.pdf",
+        "size":  1911116
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 131",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/9e70fe87-51d6-4a79-9674-f85176470db2/download/6a554420-2913-4ae0-adc3-4af645e16d82.pdf",
+        "size":  2801341
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 132",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/2fae67f8-a376-4fb3-bf7d-d659ea16cd44/download/78744693-b3a6-4096-a508-20601dd355ce.pdf",
+        "size":  2757544
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 133",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/6fe21806-198c-4c1e-bf45-508b1b59086e/download/1a8b3a1e-459c-4310-b175-93b7e8236935.pdf",
+        "size":  2382487
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 134",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/b51618be-89bd-483d-bd9b-79aa8960a27e/download/c42bd25e-b414-46ac-8fca-13306a0e1d6a.pdf",
+        "size":  2511958
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 135",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/0016db15-11de-47b6-9da4-ff0626181082/download/f0e0dff1-63cf-4520-a098-7a4c328bd1d2.pdf",
+        "size":  2010790
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 136",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/0b485406-6c52-471c-bb89-4ae4078257c3/download/1fce938d-60be-428c-8df9-77d047462462.pdf",
+        "size":  2061510
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 137",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/ea75ab3e-f748-4b1e-8c78-46de21d633f2/download/27a61682-1d00-45a6-8878-553bb457f0fa.pdf",
+        "size":  2668498
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 138",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/a4d457cf-c2ad-4041-b87c-1136c709627a/download/5406ba4d-e5b3-48a5-914c-59ebd90d4ea9.pdf",
+        "size":  2427263
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 139",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/10bc2df2-9559-49f5-b4fd-7f0877e6c481/download/33421bcc-e5b0-47ae-8c4f-555a8f358646.pdf",
+        "size":  2266546
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 140",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/d44e361b-064c-4714-a0fe-11627e2c1859/download/86d0c21d-7f9d-4138-9ac1-692d7478e6e0.pdf",
+        "size":  1906723
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 141",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/62008f0b-35a2-4ed5-bb24-d19a30ae097d/download/288980cb-f319-4652-aa23-b5de8b3b1567.pdf",
+        "size":  1954514
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 142",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/048e7aef-7991-465a-8610-3333dc8bae01/download/defa811d-c745-499b-8ab2-767684133253.pdf",
+        "size":  2249280
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 145",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/bf9d228b-bd29-4eac-89ad-b063c4f074fd/download/7215e7bf-44df-47a5-992a-7acfea16ece2.pdf",
+        "size":  3150559
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 170",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/cafbd62d-3629-4e4e-97f9-b963df5b0c40/download/71e8c7c6-d3f0-42ec-901b-5f082b78c510.pdf",
+        "size":  3581374
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 171",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/3d804c05-ba25-4062-a89d-5e2e4e37c39d/download/291eeb5a-100f-4562-88f0-f49705271f65.pdf",
+        "size":  2864108
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 172",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/b3bc899e-e1a2-4d48-8326-2bf4cefe04c4/download/25a8929f-e042-4241-ae8d-87af00a6bf9f.pdf",
+        "size":  2610707
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 173",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/24dd2ea4-0a6b-4e8d-8684-013b278fe790/download/7bebcbc7-77c1-4f2b-a0ee-f3904cfac654.pdf",
+        "size":  5007222
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 174",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/4afc6f99-f4d2-4cda-8ca8-2245ba26af8e/download/3ebbb95b-ca5d-4ea0-bd33-89882694cb0f.pdf",
+        "size":  2602392
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 175",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/b7168e1c-df24-442e-a987-988b786de1fe/download/4d302432-fa2b-4a29-a4ea-ee0af37d0e4f.pdf",
+        "size":  3021885
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 176",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/b39952e3-f487-41f8-be3e-c2f4978597b3/download/0b9356be-b1ca-44ea-8f32-3bc1eeeff0fb.pdf",
+        "size":  2748009
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 177",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/c0679272-b81e-4419-b6b8-48c60a29e5f3/download/39417541-45c7-463c-85c2-dd18714175c6.pdf",
+        "size":  3140855
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 178",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/21841a1e-bc16-43d3-a5f9-aba6593c7e11/download/4838fe53-7f1c-4a0b-a4d2-68d7a3a8833e.pdf",
+        "size":  2430790
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 179",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/6f0bd995-fecd-489e-a59f-58f2af83c085/download/0278ac8a-2295-42fc-a6ff-8d5d424eefc0.pdf",
+        "size":  3876341
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 180",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/2cc550a5-e50e-4ed0-a057-1de1dc580afa/download/d5c402ec-58c8-453c-8352-f4ace7740a66.pdf",
+        "size":  3211273
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 181",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/b8196885-beeb-439d-8a40-8e9d49c993cc/download/aa181867-70e8-4fa9-b3bf-7988c021e253.pdf",
+        "size":  2085854
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 182",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/59df5562-3567-445b-a7cb-e81ce974d57a/download/2c4e53e6-0754-460f-8143-a976dc8316ed.pdf",
+        "size":  2909217
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 29",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/01d52dda-6051-4610-a4d0-74ff23b11ed7/download/cb8e3a10-a3c7-4598-a2fc-69349f19ab4b.pdf",
+        "size":  1840725
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 48",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/f16f2141-9919-4fd3-acdb-68fbacd0ebb1/download/89294ed2-34b4-4ae2-8c4c-2afa3f103a89.pdf",
+        "size":  1625773
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 103",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/cd8fd13f-0a24-4eb2-99d1-7a747ad15981/download/65431730-f246-4f6c-98ba-2d9c115336fc.pdf",
+        "size":  2011528
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 107",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/f0564403-d301-49bc-a04b-96c2e89badcf/download/283ac1b8-73bf-49a3-bdd2-4a76a22e2b30.pdf",
+        "size":  2267775
+    },
+    {
+        "pkg":  "chennai-stormwater-drain-swd-maps",
+        "title":  "Chennai - Stormwater Drain (SWD) Maps",
+        "fmt":  "PDF",
+        "name":  "Chennai - SWD Map - Ward 160",
+        "url":  "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/e0de21a4-e87b-4e7b-8415-6df5ea3a90b9/download/d05af6ec-639d-41c4-af5b-3edf6a9e7fe1.pdf",
+        "size":  2430972
+    }
+]

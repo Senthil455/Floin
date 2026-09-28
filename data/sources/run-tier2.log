@@ -1,0 +1,175 @@
+[collect] catalog: 15 external + 47 OpenCity/GCC = 62
+[collect] -> data/sources/source-catalog.json (62 sources)
+[collect] selected 7 sources
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.01.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.02.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.03.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.04.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.05.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.06.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.07.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.08.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.09.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.10.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.11.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.12.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.13.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.14.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.15.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.16.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.17.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.18.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.19.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.20.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.21.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.22.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.23.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.24.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.25.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.26.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.27.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.28.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.29.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.11.30.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.01.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.02.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.03.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.04.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.05.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.06.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.07.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.08.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.09.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.10.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.11.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.12.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.13.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.14.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.15.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.16.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.17.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.18.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.19.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.20.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.21.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.22.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.23.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.24.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.25.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.26.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.27.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.28.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.29.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.30.tif.gz
+[collect]   cached data\raw\rainfall\chirps\chirps-v2.0.2015.12.31.tif.gz
+[collect]   ok        3349.9 KB      4.2s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.01.tif.gz
+[collect]   ok        3301.2 KB      3.6s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.02.tif.gz
+[collect]   ok        3612.7 KB      3.8s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.03.tif.gz
+[collect]   ok        3391.2 KB      3.7s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.04.tif.gz
+[collect]   ok        2916.0 KB      5.2s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.05.tif.gz
+[collect]   ok        3158.5 KB      3.7s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.06.tif.gz
+[collect]   ok        3085.3 KB      5.3s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.07.tif.gz
+[collect]   ok        3074.4 KB      3.5s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.08.tif.gz
+[collect]   ok        2933.3 KB      3.4s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.09.tif.gz
+[collect]   ok        3637.2 KB      3.7s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.10.tif.gz
+[collect]   ok        3350.2 KB      3.8s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.11.tif.gz
+[collect]   ok        2623.8 KB      3.3s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.12.tif.gz
+[collect]   ok        3111.1 KB      3.4s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.13.tif.gz
+[collect]   ok        3301.2 KB      3.6s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.14.tif.gz
+[collect]   ok        3078.5 KB      3.6s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.15.tif.gz
+[collect]   ok        2902.5 KB      3.4s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.16.tif.gz
+[collect]   ok        3016.2 KB      3.5s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.17.tif.gz
+[collect]   ok        3040.9 KB      3.5s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.18.tif.gz
+[collect]   ok        2801.4 KB      4.8s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.19.tif.gz
+[collect]   ok        2906.7 KB      4.8s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.20.tif.gz
+[collect]   ok        3111.4 KB      3.4s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.21.tif.gz
+[collect]   ok        3100.7 KB      3.4s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.22.tif.gz
+[collect]   ok        3401.4 KB      3.6s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.23.tif.gz
+[collect]   ok        3484.4 KB      3.7s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.24.tif.gz
+[collect]   ok        3466.6 KB      3.8s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.25.tif.gz
+[collect]   ok        3379.7 KB      3.6s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.26.tif.gz
+[collect]   ok        3130.5 KB      3.5s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.27.tif.gz
+[collect]   ok        3343.9 KB      3.6s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.28.tif.gz
+[collect]   ok        3038.3 KB      4.0s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.29.tif.gz
+[collect]   ok        3049.2 KB      3.4s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.30.tif.gz
+[collect]   ok        3283.2 KB      3.5s  data\raw\rainfall\chirps\chirps-v2.0.2023.12.31.tif.gz
+[collect]   ok        2655.4 KB      5.7s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.01.tif.gz
+[collect]   ok        2343.2 KB      3.1s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.02.tif.gz
+[collect]   ok        2596.2 KB      3.2s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.03.tif.gz
+[collect]   ok        2730.4 KB      3.4s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.04.tif.gz
+[collect]   ok        2560.8 KB      3.4s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.05.tif.gz
+[collect]   ok        2809.5 KB      3.4s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.06.tif.gz
+[collect]   ok        2516.9 KB     22.9s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.07.tif.gz
+[collect]   ok        2785.1 KB      3.5s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.08.tif.gz
+[collect]   ok        2675.2 KB      3.4s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.09.tif.gz
+[collect]   ok        2282.4 KB      5.9s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.10.tif.gz
+[collect]   ok        2820.3 KB      3.7s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.11.tif.gz
+[collect]   ok        2728.2 KB      3.2s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.12.tif.gz
+[collect]   ok        2928.0 KB      3.6s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.13.tif.gz
+[collect]   ok        3175.8 KB      3.5s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.14.tif.gz
+[collect]   ok        3629.1 KB      4.0s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.15.tif.gz
+[collect]   ok        3432.4 KB      3.8s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.16.tif.gz
+[collect]   ok        3346.8 KB      3.6s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.17.tif.gz
+[collect]   ok        3348.5 KB      6.8s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.18.tif.gz
+[collect]   ok        3064.4 KB      3.4s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.19.tif.gz
+[collect]   ok        2954.5 KB      3.4s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.20.tif.gz
+[collect]   ok        2973.1 KB      3.7s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.21.tif.gz
+[collect]   ok        2871.1 KB      6.9s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.22.tif.gz
+[collect]   ok        2522.7 KB      3.5s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.23.tif.gz
+[collect]   ok        2713.5 KB      3.3s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.24.tif.gz
+[collect]   ok        3163.6 KB      3.7s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.25.tif.gz
+[collect]   ok        3304.6 KB      5.8s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.26.tif.gz
+[collect]   ok        3342.2 KB      3.7s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.27.tif.gz
+[collect]   ok        3436.2 KB      5.0s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.28.tif.gz
+[collect]   ok        2811.7 KB      4.2s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.29.tif.gz
+[collect]   ok        3120.2 KB      3.7s  data\raw\rainfall\chirps\chirps-v2.0.2020.11.30.tif.gz
+[collect]   ok        3388.9 KB      7.4s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.01.tif.gz
+[collect]   ok        3335.3 KB      4.0s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.02.tif.gz
+[collect]   ok        3231.2 KB      4.9s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.03.tif.gz
+[collect]   ok        3099.6 KB      3.6s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.04.tif.gz
+[collect]   ok        3367.1 KB      3.8s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.05.tif.gz
+[collect]   ok        3399.9 KB      3.7s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.06.tif.gz
+[collect]   ok        3152.5 KB      4.5s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.07.tif.gz
+[collect]   ok        2813.1 KB      4.1s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.08.tif.gz
+[collect]   ok        3397.4 KB      5.4s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.09.tif.gz
+[collect]   ok        3374.2 KB      5.6s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.10.tif.gz
+[collect]   ok        3115.4 KB      3.7s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.11.tif.gz
+[collect]   ok        2889.9 KB      3.4s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.12.tif.gz
+[collect]   ok        2712.3 KB      3.1s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.13.tif.gz
+[collect]   ok        3018.3 KB      7.2s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.14.tif.gz
+[collect]   ok        3051.3 KB      3.5s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.15.tif.gz
+[collect]   ok        3441.3 KB      3.7s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.16.tif.gz
+[collect]   ok        3061.5 KB      6.6s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.17.tif.gz
+[collect]   ok        2987.4 KB      4.2s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.18.tif.gz
+[collect]   ok        3016.1 KB      3.6s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.19.tif.gz
+[collect]   ok        3006.2 KB      3.6s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.20.tif.gz
+[collect]   ok        3421.4 KB      3.8s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.21.tif.gz
+[collect]   ok        3281.1 KB      3.7s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.22.tif.gz
+[collect]   ok        3212.3 KB      5.6s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.23.tif.gz
+[collect]   ok        3019.7 KB      4.3s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.24.tif.gz
+[collect]   ok        3387.9 KB      4.6s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.25.tif.gz
+[collect]   ok        3543.7 KB      7.7s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.26.tif.gz
+[collect]   ok        3117.9 KB      3.7s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.27.tif.gz
+[collect]   ok        3218.9 KB      4.1s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.28.tif.gz
+[collect]   ok        3381.4 KB      4.2s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.29.tif.gz
+[collect]   ok        3395.5 KB      4.5s  data\raw\rainfall\chirps\chirps-v2.0.2021.11.30.tif.gz
+[collect]   ok       65694.3 KB     37.0s  data\raw\flood-obs\FL20151123IND_shp.zip
+[collect]   ok      116275.2 KB     60.5s  data\raw\lulc\ESA_WorldCover_10m_2021_v200_N12E078.tif
+[collect]   shp->geojson    1132.4 KB  fl20151123ind_shp_ls8_20151014_preflood.geojson
+[collect]   shp->geojson       0.4 KB  fl20151123ind_shp_ls8_20151014_preflood_analysis_extent.geojson
+[collect]   shp->geojson    5930.4 KB  fl20151123ind_shp_s1_20150901_preflood.geojson
+[collect]   shp->geojson       0.4 KB  fl20151123ind_shp_s1_20150901_preflood_analysis_extent.geojson
+[collect]   shp->geojson   10577.9 KB  fl20151123ind_shp_s1_20151112_flood.geojson
+[collect]   shp->geojson       0.4 KB  fl20151123ind_shp_s1_20151112_flood_analysis_extent.geojson
+[collect]   shp->geojson    6902.5 KB  fl20151123ind_shp_s1_20151124_flood.geojson
+[collect]   shp->geojson       0.4 KB  fl20151123ind_shp_s1_20151124_flood_analysis_extent.geojson
+[collect]   public/    1132.4 KB  fl20151123ind_shp_ls8_20151014_preflood.geojson
+[collect]   public/       0.4 KB  fl20151123ind_shp_ls8_20151014_preflood_analysis_extent.geojson
+[collect]   public/    5930.4 KB  fl20151123ind_shp_s1_20150901_preflood.geojson
+[collect]   public/       0.4 KB  fl20151123ind_shp_s1_20150901_preflood_analysis_extent.geojson
+[collect]   SKIP public/    10.3 MB > cap  fl20151123ind_shp_s1_20151112_flood.geojson
+[collect]   public/       0.4 KB  fl20151123ind_shp_s1_20151112_flood_analysis_extent.geojson
+[collect]   public/    6902.5 KB  fl20151123ind_shp_s1_20151124_flood.geojson
+[collect]   public/       0.4 KB  fl20151123ind_shp_s1_20151124_flood_analysis_extent.geojson
+[collect] promote: 7 copied, 1 skipped over cap (8.0 MB)
+[collect] -> data/sources/FETCHED.json (154 items)
