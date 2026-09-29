@@ -7,6 +7,18 @@ RAST_COP = RAST/"rasters_COP30"
 DB = os.environ.get("DATABASE_URL", "postgresql://floin:floin@localhost:5432/floin")
 DB_PG = os.environ.get("PG_CONN", "host=localhost dbname=floin user=floin password=floin")
 
+if os.name == "nt":
+    # Auto-pick GDAL + PG client tools from common Windows installs
+    # (QGIS ships ogr2ogr; EDB PostgreSQL ships psql; PostGIS adds raster2pgsql)
+    qgis_bins = list(pathlib.Path("C:/Program Files").glob("QGIS*/bin"))
+    pg_bins = (
+        list(pathlib.Path("C:/Program Files/PostgreSQL").glob("*/bin"))
+        + list(pathlib.Path("C:/Program Files (x86)/PostgreSQL").glob("*/bin"))
+    )
+    extra = ";".join([str(p) for p in qgis_bins + pg_bins if p.is_dir()])
+    if extra:
+        os.environ["PATH"] = extra + ";" + os.environ.get("PATH", "")
+
 def need_tool(name):
     if not shutil.which(name):
         print(f"ERROR: required tool '{name}' not found in PATH")
@@ -34,6 +46,9 @@ def main(dry=False):
         ("natural_water","natural_water.geojson"),
         ("waterway","waterway.geojson"),
         ("rainfall_stations","rainfall_stations.geojson"),
+        ("chennai2015_inundation","chennai2015_inundation.geojson"),
+        ("chennai2015_hotspots","chennai2015_hotspots.geojson"),
+        ("chennai2015_flooded_streets","chennai2015_flooded_streets.geojson"),
     ]
     for table, fname in vectors:
         src = VEC/fname
