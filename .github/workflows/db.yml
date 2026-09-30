@@ -1,0 +1,126 @@
+# FLOIN — share the spatial database over GitHub.
+#
+# The PostGIS database is a *build product* of data/vectors (+ the gitignored
+# data/rasters TIFFs), so it is never committed. This workflow builds it, verifies the
+# contract the Next.js API depends on, and publishes it two ways:
+#   1. ghcr.io/<owner>/floin-postgis:<tag>   — one pull = a running, loaded DB
+#   2. Release asset floin-<utc>.dump        — pg_dump -Fc for non-Docker consumers
+# Decision matrix + consumer commands: docs/DB_SHARING.md
+
+name: db
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "db/**"
+      - "scripts/load_postgis.py"
+      - "scripts/db_share.py"
+      - "data/vectors/**"
+      - "data/rasters/**"
+      - ".github/workflows/db.yml"
+  pull_request:
+    paths:
+      - "db/**"
+      - "scripts/db_share.py"
+      - "data/vectors/**"
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Also push the image to GHCR and upload the dump"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write # release assets
+  packages: write # ghcr.io push
+
+concurrency:
+  group: db-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-load-verify-dump:
+    name: build image, load, verify, pg_dump
+    runs-on: ubuntu-latest
+    env:
+      IMAGE: ghcr.io/${{ github.repository_owner }}/floin-postgis
+      FLOIN_DB_CONTAINER: floin-db
+      DATABASE_URL: postgresql://floin:floin@localhost:5432/floin
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the shared PostGIS image (schema + data baked in)
+        run: docker build -f db/Dockerfile -t floin-postgis:ci .
+
+      - name: Boot it and wait for the first-boot load
+        run: |
+          docker run -d --name floin-db \
+            -e POSTGRES_USER=floin -e POSTGRES_DB=floin -e POSTGRES_PASSWORD=floin \
+            -p 5432:5432 floin-postgis:ci
+          for attempt in $(seq 1 90); do
+            rows=$(docker exec floin-db psql -U floin -d floin -tAc \
+              "SELECT count(*) FROM buildings" 2>/dev/null || echo 0)
+            echo "attempt ${attempt}: buildings=${rows}"
+            [ "${rows}" -gt 0 ] && break
+            sleep 5
+          done
+
+      - name: Verify with the repo tool (fails on empty vector layers)
+        run: python scripts/db_share.py verify
+
+      - name: Check the API contract directly
+        run: |
+          docker exec floin-db psql -U floin -d floin -v ON_ERROR_STOP=1 \
+            -c "SELECT postgis_full_version();"
+          docker exec floin-db psql -U floin -d floin -v ON_ERROR_STOP=1 -c \
+            "SELECT count(*) AS geom_layers FROM geometry_columns
+              WHERE f_table_schema='public' AND f_geometry_column='geom';"
+          docker exec floin-db psql -U floin -d floin -c "SELECT * FROM floin_db_report;"
+
+      - name: pg_dump -Fc via the repo tool (writes db/dumps + .meta.json)
+        run: python scripts/db_share.py dump
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: floin-db-dump
+          path: db/dumps/
+          retention-days: 30
+
+      - name: Log in to GHCR
+        if: startsWith(github.ref, 'refs/tags/') || inputs.publish
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push the image (GHCR requires a lowercase path)
+        if: startsWith(github.ref, 'refs/tags/') || inputs.publish
+        run: |
+          IMG="$(echo "${IMAGE}" | tr '[:upper:]' '[:lower:]')"
+          docker tag floin-postgis:ci "${IMG}:latest"
+          docker tag floin-postgis:ci "${IMG}:sha-${GITHUB_SHA::7}"
+          docker push "${IMG}:latest"
+          docker push "${IMG}:sha-${GITHUB_SHA::7}"
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            docker tag floin-postgis:ci "${IMG}:${GITHUB_REF_NAME}"
+            docker push "${IMG}:${GITHUB_REF_NAME}"
+          fi
+
+      - name: Attach the dump to the release (tags only)
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1 \
+            || gh release create "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" \
+                 --title "${GITHUB_REF_NAME}" --generate-notes
+          gh release upload "${GITHUB_REF_NAME}" \
+            db/dumps/*.dump db/dumps/*.meta.json \
+            --repo "${GITHUB_REPOSITORY}" --clobber
+
+      - name: Teardown
+        if: always()
+        run: docker rm -f floin-db || true

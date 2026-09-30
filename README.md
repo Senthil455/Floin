@@ -24,10 +24,20 @@ python scripts/preprocess.py        # → data/processed/vectors (8 clipped)
 python scripts/simulate.py --P 160 --CN 84 --t 60  # → result.json Q113.72 depth1.76 93%
 
 # PostGIS — 5 vector + 5 raster, ST_Intersects ready
-docker compose up -d
+docker compose up -d                 # schema auto-applied from db/schema.sql
 python scripts/load_postgis.py --dry-run
 python scripts/load_postgis.py      # ogr2ogr + raster2pgsql 256x256 srid 4326
+npm run db:verify                   # layers + SRID + row counts actually present
+
+# Share the DB over GitHub — schema in git, database as artifacts (docs/DB_SHARING.md)
+npm run db:dump && npm run db:publish   # -> GitHub Release asset (never in git history)
+npm run db:image                    # -> ghcr.io/senthil455/floin-postgis:latest
+npm run db:pull                     # consumer side: newest release -> pg_restore
 ```
+
+**DB:** `db/schema.sql` is the versioned contract (`geom` column, EPSG:4326, GIST) and doubles as the
+container init script. `data/rasters/*.tif` is gitignored, so a clean clone rebuilds a **vector-only**
+database — the raster layers ride along in the prebuilt image (`db/Dockerfile`) or a published dump.
 
 **Env:** copy `.env.example` → `.env` (`POSTGRES_PASSWORD` required, never commit `.env`).
 
@@ -163,6 +173,7 @@ All POST validate `xmin<xmax && ymin<ymax`, `400` for P, `98` for CN, `AbortSign
 - Print `@media print` hides header/aside/fixed, ledger 1px black. Skeleton `shimmer 1.2s` + empty/error states.
 - `npx tsc --noEmit` 0, `docker compose up -d` health `pg_isready 5s×10`, `raster2pgsql -t 256x256 -s 4326`.
 - Docs: `DESIGN.md` + `design/tokens.json` DTCG + `docs/{ARCHITECTURE,API,DATA,3D,DEMO_SOURCES}` + `DEPLOYMENT_SUMMARY v4` + `TEST_GUIDE 12 tests` + `IMPLEMENTATION_STATUS v4`.
+- DB sharing: `docs/DB_SHARING.md` — `db/schema.sql` (versioned DDL) + `db/Dockerfile` (GHCR image) + `scripts/db_share.py` (`verify/dump/restore/publish/pull/image`) + `.github/workflows/db.yml`. Database as artifact, never as git content.
 
 **Known limits:** `geotiff bilinear` cache not yet `WebGPU pipes`, `400 draws` not `BatchedMesh`, `ST_Intersects` optional (needs `DATABASE_URL` + `pg`).
 

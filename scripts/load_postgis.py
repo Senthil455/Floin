@@ -12,8 +12,8 @@ if os.name == "nt":
     # (QGIS ships ogr2ogr; EDB PostgreSQL ships psql; PostGIS adds raster2pgsql)
     qgis_bins = list(pathlib.Path("C:/Program Files").glob("QGIS*/bin"))
     pg_bins = (
-        list(pathlib.Path("C:/Program Files/PostgreSQL").glob("*/bin"))
-        + list(pathlib.Path("C:/Program Files (x86)/PostgreSQL").glob("*/bin"))
+        sorted(pathlib.Path("C:/Program Files/PostgreSQL").glob("*/bin"), reverse=True)
+        + sorted(pathlib.Path("C:/Program Files (x86)/PostgreSQL").glob("*/bin"), reverse=True)
     )
     extra = ";".join([str(p) for p in qgis_bins + pg_bins if p.is_dir()])
     if extra:
@@ -26,11 +26,22 @@ def need_tool(name):
     return True
 
 def run(cmd, dry=False):
-    print(f"$ {cmd}")
+    """Run a command and report failure.
+
+    A str goes through the shell (ogr2ogr and the raster2pgsql|psql pipeline need it).
+    A list is executed directly, which is required for any command that *ends* in a
+    quoted argument: cmd.exe strips the outermost quote pair of the whole line, so
+    `psql "URL" -c "SQL"` arrives at psql as `-c SQL` split in two and the SQL is
+    silently ignored ("extra command-line argument ... ignored").
+    """
+    printable = cmd if isinstance(cmd, str) else " ".join(
+        f'"{c}"' if " " in str(c) else str(c) for c in cmd
+    )
+    print(f"$ {printable}")
     if dry: return True
-    r=subprocess.run(cmd, shell=True)
+    r=subprocess.run(cmd, shell=isinstance(cmd, str))
     if r.returncode != 0:
-        print(f"WARN command failed with code {r.returncode}: {cmd}")
+        print(f"WARN command failed with code {r.returncode}: {printable}")
     return r.returncode==0
 
 def main(dry=False):
@@ -39,7 +50,10 @@ def main(dry=False):
     else:
         for tool in ["ogr2ogr","raster2pgsql","psql"]:
             need_tool(tool)
-        run(f'psql "{DB}" -c "CREATE EXTENSION IF NOT EXISTS postgis;"', dry)
+        # Options before the URL (psql <= 16 stops option parsing at the first positional
+        # argument) and argv instead of a string, so the SQL survives cmd.exe quoting.
+        psql = shutil.which("psql") or "psql"
+        run([psql, "-c", "CREATE EXTENSION IF NOT EXISTS postgis;", DB], dry)
     vectors=[
         ("buildings","buildings.geojson"),
         ("highway","highway.geojson"),

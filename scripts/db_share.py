@@ -28,6 +28,7 @@ import hashlib
 import json
 import os
 import pathlib
+import shlex
 import shutil
 import subprocess
 import sys
@@ -56,23 +57,33 @@ VECTOR_LAYERS = [
 
 
 def _augment_path() -> None:
-    """Windows: pick up pg_dump/psql from the usual PostgreSQL installs."""
+    """Windows: pick up pg_dump/psql from the usual PostgreSQL installs.
+
+    Newest first (reverse sort): PG 18 and PG 16 can both be installed, and every
+    client here is invoked with options *before* the database URL, which is the only
+    order psql/pg_dump/pg_restore <= 16 accept.
+    """
     if os.name != "nt":
         return
-    bins = sorted(pathlib.Path("C:/Program Files/PostgreSQL").glob("*/bin")) + sorted(
-        pathlib.Path("C:/Program Files (x86)/PostgreSQL").glob("*/bin")
+    bins = sorted(pathlib.Path("C:/Program Files/PostgreSQL").glob("*/bin"), reverse=True) + sorted(
+        pathlib.Path("C:/Program Files (x86)/PostgreSQL").glob("*/bin"), reverse=True
     )
     extra = ";".join(str(p) for p in bins if p.is_dir())
     if extra:
         os.environ["PATH"] = extra + ";" + os.environ.get("PATH", "")
 
 
-def sh(cmd, dry=False, capture=False) -> str:
-    """Run one shell command, echoing it first (the load_postgis.py convention)."""
-    print(f"$ {cmd}")
+def sh(args, dry=False, capture=False) -> str:
+    """Run one command (argv list) after echoing it, the load_postgis.py convention.
+
+    argv lists + shell=False on purpose: a shell would re-split quoted arguments, and
+    cmd.exe additionally strips the outermost quotes, which silently broke
+    `psql -c "SELECT …"` on Windows ('extra command-line argument ignored').
+    """
+    print("$ " + " ".join(shlex.quote(str(a)) for a in args))
     if dry:
         return ""
-    proc = subprocess.run(cmd, shell=True, capture_output=capture, text=True)
+    proc = subprocess.run(list(args), capture_output=capture, text=True)
     if capture and proc.returncode != 0:
         print((proc.stderr or "").strip()[:400], file=sys.stderr)
     return (proc.stdout or "") if capture else ""
@@ -117,9 +128,11 @@ def psql(sql: str, dry=False) -> str:
     user, name = db_identity()
     flat = " ".join(sql.split())
     if container_up() or dry:
-        cmd = f'docker exec -i {CONTAINER} psql -U {user} -d {name} -tA -c "{flat}"'
+        cmd = ["docker", "exec", "-i", CONTAINER, "psql", "-U", user, "-d", name, "-tA", "-c", flat]
     else:
-        cmd = f'psql -w "{DB_URL}" -tA -c "{flat}"'
+        # options before the URL: psql <= 16 stops option parsing at the first
+        # positional argument, so `psql URL -c SQL` silently drops the SQL.
+        cmd = ["psql", "-w", "-tA", "-c", flat, DB_URL]
     return sh(cmd, dry=dry, capture=True).strip()
 
 
@@ -182,27 +195,32 @@ def cmd_verify(args) -> int:
     print()
     print(f"  {'layer':<30} {'role':<7} {'rows':>8}  {'srid':<5} geom")
     print(f"  {'-' * 30} {'-' * 7} {'-' * 8}  {'-' * 5} ----")
-    missing = []
+    missing_vectors, missing_rasters = [], []
     for row in rows:
         name, role, present = row["layer_name"], row["layer_role"], row["table_present"]
         if role == "vector":
             n = counts.get(name, -1)
             if not present or n <= 0:
-                missing.append(name)
+                missing_vectors.append(name)
             print(f"  {name:<30} {role:<7} {n:>8}  {row['srid'] or '-':<5} {row['actual_geom_type'] or '-'}")
         else:
             loaded = name in rasters
             if not loaded:
-                missing.append(name)
+                missing_rasters.append(name)
             print(f"  {name:<30} {role:<7} {'-':>8}  {row['srid'] or '-':<5} {'raster' if loaded else 'MISSING'}")
 
     print()
-    if missing:
-        print(f"  {len(missing)} layer(s) not loaded: {', '.join(missing)}")
-        print("  vector -> npm run db:load (or npm run db:pull); missing rasters are expected")
-        print("  on a clean clone because data/rasters/*.tif is gitignored (see data/rasters/.gitkeep)")
+    if missing_vectors:
+        print(f"  FAIL — {len(missing_vectors)} vector layer(s) empty/missing: {', '.join(missing_vectors)}")
+        print("  load them: npm run db:load    (or restore a shared dump: npm run db:pull)")
         return 1
-    print("  all expected layers present")
+    if missing_rasters:
+        print(f"  note — {len(missing_rasters)} raster layer(s) absent: {', '.join(missing_rasters)}")
+        print("  expected on a clean clone: data/rasters/*.tif is gitignored (data/rasters/.gitkeep).")
+        print("  bake them into a locally built image: npm run db:image")
+        if getattr(args, "strict", False):
+            return 1
+    print("  OK — vector contract (geom/EPSG:4326) satisfied")
     return 0
 
 
@@ -236,12 +254,12 @@ def cmd_dump(args) -> int:
     if container_up():
         print(f"[db_share] client: docker exec {CONTAINER}")
         remote = f"/tmp/{name}"
-        sh(f"docker exec {CONTAINER} pg_dump -U {user} -d {db} -Fc -f {remote}", dry)
-        sh(f'docker cp {CONTAINER}:{remote} "{out}"', dry)
-        sh(f"docker exec {CONTAINER} rm -f {remote}", dry)
+        sh(["docker", "exec", CONTAINER, "pg_dump", "-U", user, "-d", db, "-Fc", "-f", remote], dry)
+        sh(["docker", "cp", f"{CONTAINER}:{remote}", str(out)], dry)
+        sh(["docker", "exec", CONTAINER, "rm", "-f", remote], dry)
     else:
         print("[db_share] client: pg_dump from PATH")
-        sh(f'pg_dump -w "{DB_URL}" -Fc -f "{out}"', dry)
+        sh(["pg_dump", "-w", "-Fc", "-f", str(out), DB_URL], dry)
 
     meta = {
         "dump": name,
@@ -274,15 +292,21 @@ def cmd_restore(args) -> int:
     if container_up():
         print(f"[db_share] client: docker exec {CONTAINER}")
         remote = f"/tmp/{src.name}"
-        sh(f'docker cp "{src}" {CONTAINER}:{remote}', dry)
+        sh(["docker", "cp", str(src), f"{CONTAINER}:{remote}"], dry)
         sh(
-            f"docker exec {CONTAINER} pg_restore --clean --if-exists --no-owner "
-            f"-U {user} -d {db} {remote}",
+            [
+                "docker", "exec", CONTAINER, "pg_restore",
+                "--clean", "--if-exists", "--no-owner",
+                "-U", user, "-d", db, remote,
+            ],
             dry,
         )
     else:
         print("[db_share] client: pg_restore from PATH")
-        sh(f'pg_restore -w --clean --if-exists --no-owner -d "{DB_URL}" "{src}"', dry)
+        sh(
+            ["pg_restore", "-w", "--clean", "--if-exists", "--no-owner", "-d", DB_URL, str(src)],
+            dry,
+        )
 
     print("[db_share] next: npm run db:verify")
     return 0
@@ -323,12 +347,17 @@ def cmd_publish(args) -> int:
             encoding="utf-8",
         )
     if not exists:
-        sh(f'gh release create "{tag}" --repo {REPO} --title "FLOIN DB {tag}" --notes-file "{notes}"', dry)
+        sh(
+            [
+                "gh", "release", "create", tag,
+                "--repo", REPO,
+                "--title", f"FLOIN DB {tag}",
+                "--notes-file", str(notes),
+            ],
+            dry,
+        )
     payload = [str(src)] + ([str(meta)] if meta.exists() else [])
-    sh(
-        f'gh release upload "{tag}" ' + " ".join(f'"{p}"' for p in payload) + f" --repo {REPO} --clobber",
-        dry,
-    )
+    sh(["gh", "release", "upload", tag, *payload, "--repo", REPO, "--clobber"], dry)
     print(f"[db_share] consumers: npm run db:pull -- --tag {tag}")
     return 0
 
@@ -352,8 +381,13 @@ def cmd_pull(args) -> int:
     DUMP_DIR.mkdir(parents=True, exist_ok=True)
     print(f"[db_share] pull — GitHub Release '{tag or '<latest db-*>'}' -> db/dumps")
     sh(
-        f'gh release download "{tag}" --repo {REPO} -p "*.dump" -p "*.meta.json" '
-        f'-D "{DUMP_DIR}" --clobber',
+        [
+            "gh", "release", "download", tag,
+            "--repo", REPO,
+            "-p", "*.dump", "-p", "*.meta.json",
+            "-D", str(DUMP_DIR),
+            "--clobber",
+        ],
         dry,
     )
     if args.no_restore:
@@ -375,11 +409,11 @@ def cmd_image(args) -> int:
     print(f"[db_share] image — db/Dockerfile (schema + data baked in) -> {IMAGE}:{tag}")
     if IMAGE != IMAGE.lower():
         print(f"[db_share] WARN: GHCR requires a lowercase image path, got {IMAGE}")
-    sh(f'docker build -f db/Dockerfile -t {IMAGE}:{tag} "{ROOT}"', dry)
+    sh(["docker", "build", "-f", "db/Dockerfile", "-t", f"{IMAGE}:{tag}", str(ROOT)], dry)
     if args.no_push:
         print("[db_share] --no-push: built locally only")
         return 0
-    sh(f"docker push {IMAGE}:{tag}", dry)
+    sh(["docker", "push", f"{IMAGE}:{tag}"], dry)
     print(f"[db_share] consumers: docker pull {IMAGE}:{tag}")
     return 0
 
@@ -395,6 +429,7 @@ def main() -> int:
     sub = parser.add_subparsers(dest="command", required=True)
 
     p = sub.add_parser("verify", parents=[common], help="diff the live DB against floin_expected_layers")
+    p.add_argument("--strict", action="store_true", help="also fail when gitignored raster layers are absent")
     p.set_defaults(func=cmd_verify)
     p = sub.add_parser("dump", parents=[common], help="pg_dump -Fc into db/dumps + .meta.json")
     p.add_argument("--name", help="dump file name (default floin-<utc>.dump)")
