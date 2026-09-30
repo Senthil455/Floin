@@ -7,6 +7,7 @@
   "files": [
     "app",
     "components",
+    "db",
     "hooks",
     "public",
     "data/vectors",
@@ -20,7 +21,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "python scripts/preprocess.py && python scripts/simulate.py --P 120 --CN 78 --t 45 && echo \"All module tests passed\""
+    "test": "python scripts/preprocess.py && python scripts/simulate.py --P 120 --CN 78 --t 45 && echo \"All module tests passed\"",
+    "db:up": "docker compose up -d",
+    "db:load": "python scripts/load_postgis.py",
+    "db:verify": "python scripts/db_share.py verify",
+    "db:dump": "python scripts/db_share.py dump",
+    "db:restore": "python scripts/db_share.py restore",
+    "db:publish": "python scripts/db_share.py publish",
+    "db:pull": "python scripts/db_share.py pull",
+    "db:image": "python scripts/db_share.py image"
   },
   "dependencies": {
     "@types/pg": "^8.23.1",

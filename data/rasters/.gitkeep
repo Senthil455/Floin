@@ -1,0 +1,18 @@
+FLOIN raster inputs (gitignored — see .gitignore: data/rasters/*.tif).
+
+This file exists so the directory is present in a clean clone and in CI, which lets
+db/Dockerfile `COPY data/rasters/` unconditionally:
+
+  * Raster layers (dem, flow_direction, flow_accumulation, watershed, streams) are only
+    loaded when the TIFFs are present. Drop them in next to this file:
+
+      rasters_COP30/DEM.tif    Copernicus GLO-30, s3://copernicus-dem-30m
+      Flow_Direction.tif       derived, QGIS D8
+      Flow_Accumulation.tif    derived, QGIS D8
+      Watershed.tif            derived, QGIS D8
+      Streams.tif              derived, QGIS D8
+
+  * A clean clone therefore rebuilds a VECTOR-ONLY database. To share the raster layers
+    over GitHub, build the image locally while the TIFFs are present
+    (`npm run db:image`) or push a dump produced from your machine (`npm run db:publish`).
+    See docs/DB_SHARING.md.

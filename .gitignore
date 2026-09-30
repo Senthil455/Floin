@@ -35,9 +35,18 @@ data/processed/
 # Build cache
 *.tsbuildinfo
 
+# Shared database artifacts — never commit a materialised DB.
+# Publish dumps as GitHub Release assets instead (`npm run db:publish`),
+# see docs/DB_SHARING.md. pgdata/ is what a local volume/`initdb` would produce.
+db/dumps/
+db/pgdata/
+pgdata/
+
 # OS
 .DS_Store
 Thumbs.db
+.tmp_*.txt
+.tmp_*
 
 # 2015 raw + Esri clone (keep GeoJSON, ignore raw)
 Chennai Floods 2015 Data.zip
