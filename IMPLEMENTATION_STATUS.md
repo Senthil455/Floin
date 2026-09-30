@@ -1,6 +1,8 @@
-# FLOIN — Implementation Status v4 · Ledger + Live 3D
+# FLOIN — Implementation Status v5 · Ledger + Live 3D
 
-**REV 06D9C60 · 2026-09-04 · build ✓ 7 routes · TS strict · NSE 0.892**
+**REV 077079e · 2026-09-30 · build 9 routes · TS strict · NSE 0.892**
+
+> v5 (2026-09-30): local-only caches removed; counts corrected to 9 routes / 303 registry entries; `src/` prototype removed. No functional code changes.
 
 ---
 
@@ -21,7 +23,7 @@
 ---
 
 ## 1. Data Discovery — `GET /api/datasets` ✅
-18 datasets (`terrain 1 + analysis 2 + vector 2 + rainfall 2 + reference 11`), `byCategory`, `featureCount` via `public/*.geojson` + `fs` validate, wards 201 + soil/LULC/drainage + GCC 2015, 30m COP-30.
+303 registry entries validated against `public/` (~320 GeoJSON), `byCategory`, `featureCount` via `fs`, wards 201 + soil/LULC/drainage + GCC 2015, COP-30 via `data/datasets/floodmap-net/`.
 
 ## 2. Location Query — `POST /api/location/query` ✅
 `ST_Intersects(ST_MakeEnvelope $1-4 4326)` if `DATABASE_URL` else `fileFallbackQuery` bounds check. 7× `covers/featureCount`, `requestId` race.
@@ -36,7 +38,7 @@ Same dual path, `limit 600`, `source postgis/file` tag.
 `blendedP`, `S/Ia/Q`, `floodDepth,velocity,affectedBuildings,extent`, `timeSeries 0-6h tanh*exp`, `0.2+depth*0.5`.
 
 ## 6-7. Projects/Scenarios — `GET/POST` ✅
-`app/lib/db-schema.ts` file-backed `Map` + `persistProjects/persistScenarios` atomic.
+`app/lib/db-schema.ts` file-backed `Map` + `persistProjects/persistScenarios` atomic (files created on first POST; clean clone has none).
 
 ## 8. Scene — `FloodSimulation.tsx ~650 LOC` ✅
 `requestIdRef+AbortController+cache 20 LRU+disposeScene(controls/renderer)` zero-base. `Basin×View` 42 lands `90-520 cap/basin`. `OrbitControls damping 0.08` + hover `E6B422` tooltip + ripple `rippleCenter/Time` + measure `M` dashed km + compass `azimuth`/`scale` + `Rain 600`. Dynamic `wardDamage(ward, rainfall, cn)` not hardcoded, `seg=Math.round(sqrt)`, `shared LineBasic depthWrite:false`, `1024 shadow`.
@@ -71,7 +73,7 @@ Cache `key` includes `viewMode`, so `depth_heatmap` ≠ `hydrology`.
 - [x] `OrbitControls` hover/measure/ripple/compass
 - [x] `1024 shadow` + shared mats + `frustumCulled`
 - [x] print + skeleton + empty/error
-- [x] `next build` 7 routes, `preprocess` 4001/750, `simulate Q113`
+- [x] `next build` 9 routes, `preprocess` 4001/750, `simulate Q113`
 - [ ] `BatchedMesh` for varied extrusions (next)
 - [ ] `Line2` width + `WebGPURenderer TSL` (next)
 - [ ] `3D Tiles` streaming (Kempsey LOD)

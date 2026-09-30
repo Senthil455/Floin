@@ -1,5 +1,7 @@
 # DATA — Provenance Ledger
 
+> Last verified `2026-09-30`. Canonical source is `data/vectors/` (331 files, ~110 MB, tracked). Runtime serves `public/*.geojson` (~320 files). Registry in `app/api/datasets/route.ts` holds 303 entries. Local-only caches (`data/raw/`, `data/qgis/`, `data/arcgis_api/`, `data/chennai2015/`, `data/rasters/*.tif`, `data/processed/*` generated) were removed 2026-09-30 per `.gitignore`; rasters rebuild via image/dump.
+
 | Id | Geo | Count | CRS | Path | Source | Provenance |
 |---|---|---|---|---|---|---|
 | buildings | Polygon | 1,811 → 90–520 cap/basin | 4326 | `data/vectors/buildings.geojson` → `public/buildings.geojson` | OSM + GCC survey | clipped `80.10/12.88-80.35/13.25` `preprocess.py`, capped per basin |
@@ -17,13 +19,13 @@
 | chennai2015_flooded_streets | LineString | 4,001 | 4326 | `chennai2015_flooded_streets.geojson` | GCC 2015 | — |
 | chennai2015_inundation/stagnation | Polygon | 750 | 4326 | `chennai2015_inundation` etc | GCC 2015 | depth_m/flood_extent |
 | chennai2015_crowd | Point | 1,000 | 4326 | `chennai2015_crowd.geojson` | GCC 2015 crowd-sourced | — |
-| DEM | Raster 30m | 5,802KB | 4326 | `rasters/rasters_COP30/DEM.tif` `s3://copernicus-dem-30m` | Copernicus GLO-30 | `geotiff` bilinear `Float32` cache `sampleDemBilinear` fallback `chennaiTopography` |
-| Flow_Dir/Acc/Watershed/Streams | Raster | 735K–3,371K | 4326 | `rasters/*.tif` | QGIS D8 | `sampleDemGrid` 12-120 |
+| DEM | Raster 30m | gitignored locally | 4326 | `data/datasets/floodmap-net/COP30_SRTM_TNM_N13E080_30m.tif` + Mapzen Terrarium png + ETOPO1 csv | Copernicus GLO-30 | `geotiff` bilinear `Float32` cache `sampleDemBilinear` fallback `chennaiTopography` |
+| Flow_Dir/Acc/Watershed/Streams | Raster | gitignored locally | 4326 | `data/rasters/*.tif` (QGIS D8; present only via image/dump) | QGIS D8 | `sampleDemGrid` 12-120 |
 | Live | REST 30s | — | — | `api.open-meteo.com 13.0827,80.2707` | CC-BY | `current precip/temp/humidity/wind + daily sum` blended `P*0.6+live*0.4` |
 | Ward analytics | derived | 8 (FloodML) | 4326 | `app/lib/floodml-chennai.ts` + `chennai-data.ts` | Chennai ward analytics | `wardFloodProb Q/80` → `wardDamage` `damage=prob*pop*0.004*(1+p/200)` |
 
-**Registry:** `app/api/datasets/route.ts` 18 entries (`terrain 1 + analysis 2 + vector 2 + rainfall 2 + reference 11`) → `GET /api/datasets` validates `public/*.geojson` via `fs` + `featureCount`. `DATASET_REGISTRY` in `chennai-data.ts` 7 ledger items for UI. `preprocess.py` `CRS84` clip `12292` `.DS_Store` ignored → `MANIFEST.json`. `load_postgis.py` `ogr2ogr -nln -lco GIST` + `raster2pgsql -t 256x256 -s 4326` → PostGIS `buildings,highway,natural_water,waterway,rainfall_stations` + `dem,flow_*` raster.
+**Registry:** `app/api/datasets/route.ts` 303 entries validated at request time against `public/*.geojson` via `fs` + `featureCount`. `DATASET_REGISTRY` in `chennai-data.ts` 7 ledger items for UI. `preprocess.py` `CRS84` clip → `data/processed/vectors/` + `MANIFEST.json` (generated outputs cleaned 2026-09-30; only `MANIFEST.json` + `vectors/buildings.geojson` ship). `load_postgis.py` `ogr2ogr -nln -lco GIST` + `raster2pgsql -t 256x256 -s 4326` → PostGIS 8 vectors + 5 rasters.
 
-Public `17 GeoJSON` + `simulation-result.json` served. All `EPSG:4326`. No secrets in repo (`env_file` + `.env` ignored).
+Public `~320 GeoJSON` + `simulation-result.json` served. All `EPSG:4326`. No secrets in repo (`.env*` ignored; compose reads `.env`, Next.js reads `.env.local` — copy both from `.env.example`).
 
 **Shared DB:** `db/schema.sql` is the canonical, idempotent DDL (`floin_meta`, `floin_expected_layers`, 8 vector skeletons with `geom geometry(Geometry,4326)` + GIST, `floin_ingest_log`, `floin_db_report` view, read grants) applied by `docker compose up -d` on first boot and baked into `db/Dockerfile`. The materialised database is shared as a GitHub Release `pg_dump -Fc` asset and/or a GHCR image — `docs/DB_SHARING.md`. Note `data/rasters/*.tif` is gitignored, so clones rebuild vector layers only; `npm run db:verify` reports which raster layers are absent.

@@ -1,16 +1,19 @@
-# API — 8 Routes (34 Datasets + FloodMap.net Bathtub)
+# API — 9 Routes (303 Registry Entries + FloodMap.net Bathtub + Unified Predict)
+
+> Last verified `2026-09-30` against `main 077079e`. 9 route files, 10 endpoints (terrain GET+POST).
 
 | # | Route | Method | Body | Resp |
 |---|---|---|---|---|
-|1|`/api/datasets`|GET|—|`{status,totalDatasets:34,datasets[{id,name,category,format,featureCount,status}],summary{byCategory:{terrain:5,vector:2,rainfall:5,analysis:2,reference:20}}}`|
+|1|`/api/datasets`|GET|—|`{status,totalDatasets:303,datasets[{id,name,category,format,featureCount,status}],summary{byCategory}}` validated against `public/*.geojson` (~320 files)|
 |2|`/api/location/query`|POST|`{aoi{center,bounds},requestId}`|`{requestId,aoi,timestamp,datasets[{covers,featureCount}],summary}` `ST_Intersects` if `DATABASE_URL` else `file` bounds check|
 |3|`/api/location/features`|POST|`{aoi,datasets[],limit?,requestId}`|`{features:{id:{type:FeatureCollection,features,count,source:postgis/file}}}` limit 600|
 |4|`/api/location/terrain`|GET|—|`{demFilePresent,demSource,rasters{dem,flow_direction,flow_accumulation,watershed,streams},postgisConfigured,note}`|
 |4b|`/api/location/terrain`|POST|`{aoi}`|`{terrain{gridWidth,gridHeight,elevations[],min,max,resolution,source,provenance},statistics{min,max,range,mean,gridPoints}}` `geotiff` bilinear `Float32` cache 12-120 or `chennaiTopography` fallback|
 |5|`/api/simulate`|POST|`{aoi,rainfall,cn,duration,requestId}`|`{hydrology{s,ia,q,runoff_mm},results{floodDepth,velocity,affectedBuildings,extent},timeSeries[7]} ` `blendedP=P*0.6+live*0.4` `tanh*exp`|
 |5b|`/api/location/bathtub`|POST|`{aoi,floodLevel:number,includeSeaDepth?,palette?}`|`{floodLevel,statistics{flooded,total,pct,maxDepth,meanDepth},cells[≤600 {lng,lat,elev,depth}],source,provenance}` bathtub `elev < floodLevel` — FloodMap.net parity, ETOPO bathy|
-|6|`/api/projects`|GET/POST|`{name,location}`|`{projects[],count}` / `{project{id,createdAt}}` file `projects.json` atomic `tmp→rename`|
-|7|`/api/scenarios`|GET `?projectId`/POST|`{projectId,name,parameters,aoi}`|`{scenarios[]}` / `{scenario{id,createdAt}}` file `scenarios.json` `draft/running/completed`|
+|6|`/api/projects`|GET/POST|`{name,location}`|`{projects[],count}` / `{project{id,createdAt}}` file `projects.json` atomic `tmp→rename` (created on first POST; not present in clean clone)|
+|7|`/api/scenarios`|GET `?projectId`/POST|`{projectId,name,parameters,aoi}`|`{scenarios[]}` / `{scenario{id,createdAt}}` file `scenarios.json` `draft/running/completed` (created on first POST)|
+|8|`/api/predict`|POST|`{aoi,rainfall,cn,duration,livePrecip?}`|`{scs,dem,contributions[],composite{riskScore,depthM,velocityMs,floodedPct,lossCr},provenance}` unified ensemble (see `docs/PREDICTION.md`)|
 
 Validation: `xmin<xmax && ymin<ymax`, `P 0-400`, `CN 30-98`. `AbortSignal` respected. `MAX_CACHE 20` LRU key `id-xmin/xmax/ymin/ymax-P-CN-t-viewMode` + `requestId+AbortController` race-safe.
 

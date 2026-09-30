@@ -1,6 +1,11 @@
-# FLOIN — Deployment Summary v4 · Ledger Live
+# FLOIN — Deployment Summary v5 · Ledger Live
 
-**REV 06D9C60 · 2026-09-04 · 7 routes · `geotiff 3.0` · `PostGIS 16` · `OrbitControls`**
+**REV 077079e · 2026-09-30 · 9 routes · 303 registry entries · `geotiff 3.0` · `PostGIS 16` · `OrbitControls`**
+
+## v5 changes (2026-09-30)
+- Removed local-only caches: `Github_demos/` (7 nested repos, 297 MB), `.next/`, `data/raw/`, `data/arcgis_api/`, `data/chennai2015/`, `data/qgis/`, `data/rasters/*.tif`, generated `data/processed/*`, `Chennai Floods 2015 Data.zip`; removed unreferenced `src/` Vite prototype.
+- Corrected counts everywhere: 9 route files / 10 endpoints (added `bathtub` + `predict`), 303 registry entries, `data/vectors/` 331 files, `public/` ~320 GeoJSON.
+- `data/processed/` clean clone ships only `MANIFEST.json` + `vectors/buildings.geojson`; `projects.json/scenarios.json` are created on first POST.
 
 ## What Shipped Since v1 (Aug 30)
 
@@ -19,7 +24,7 @@
 ## Build
 
 ```
-npm run build → ✓ 7 routes (datasets, query, features, terrain GET+POST, simulate, projects, scenarios)
+npm run build → ✓ 9 routes (datasets, query, features, terrain GET+POST, bathtub, simulate, predict, projects, scenarios)
                 TS strict 0, Turbopack 4.5s, validator.ts
 python scripts/preprocess.py → 4001 inundation, 750 stagnation, 555 water (clipped 80.10/12.88-80.35/13.25)
 python scripts/simulate.py --P 160 --CN 84 --t 60 → Q113.72 depth1.76 93.3% 3359/16384
@@ -28,7 +33,7 @@ docker compose up -d -- health pg_isready 5s×10, raster2pgsql 256x256
 
 ## API — 7 + Live (18 Datasets)
 
-`GET /datasets 18` (terrain1/analysis2/vector2/rainfall2/reference11, wards 201 + soil/LULC/drainage validated) · `POST /query ST_Intersects?/fileFallback` · `POST /features 600` `source postgis/file` · `GET /terrain 5 rasters getRasterMeta` · `POST /terrain geotiff Float32 bilinear 12-120 sampleDemGrid + fallback` · `POST /simulate blendedP 6h tanh dynamic wardDamage` · `projects/scenarios` file-backed atomic.
+`GET /datasets 303` (validated against `public/` ~320 GeoJSON) · `POST /query ST_Intersects?/fileFallback` · `POST /features 600` `source postgis/file` · `GET /terrain 5 rasters getRasterMeta` · `POST /terrain geotiff Float32 bilinear 12-120 sampleDemGrid + fallback` · `POST /bathtub` · `POST /simulate blendedP 6h tanh dynamic wardDamage` · `POST /predict unified ensemble` · `projects/scenarios` file-backed atomic (created on first POST).
 
 ## 3D — Instrument
 

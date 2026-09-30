@@ -1,16 +1,18 @@
-# FLOIN — Test Guide v4 · Ledger Live
+# FLOIN — Test Guide v5 · Ledger Live
+
+> Verified `2026-09-30` · 9 routes · 303 registry entries. `data/processed/projects.json/scenarios.json` are created on first POST (absent in clean clone).
 
 ## 0. Start
 
 ```bash
 npm install
 npm run dev      # http://localhost:3000
-npm run build    # 7 routes
+npm run build    # 9 routes
 python scripts/preprocess.py && python scripts/simulate.py --P 160 --CN 84 --t 60
 docker compose up -d && python scripts/load_postgis.py --dry-run
 ```
 
-## 1. Datasets — `GET /api/datasets` → 18, buildings 1,811, wards 201, soil/LULC/drainage, `byCategory terrain1/vector2/rainfall2/analysis2/reference11`, `featureCount` + `summary`
+## 1. Datasets — `GET /api/datasets` → 303 registry entries, `public/` ~320 GeoJSON, buildings 1,811, wards 201, soil/LULC/drainage, `byCategory`, `featureCount` + `summary`
 
 ## 2. Query — `POST /api/location/query` `{aoi{bounds,center}}` → `covers/featureCount` 7×, `summary` + `source postgis/file`
 

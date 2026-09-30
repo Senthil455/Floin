@@ -1,4 +1,6 @@
-# ARCHITECTURE — Ledger Live (v4 · 18 Datasets · Dynamic Ward Damage)
+# ARCHITECTURE — Ledger Live (v5 · 303 Registry Entries · Dynamic Ward Damage)
+
+> Last verified `2026-09-30` against `main 077079e`. 9 route files / 10 endpoints. Local-only caches removed (`Github_demos/`, `data/raw/`, `data/qgis/`, `data/rasters/*.tif`); `src/` prototype removed.
 
 ```
 User click 13.07,80.26 (1.5km) → aoi {xmin,xmax,ymin,ymax,center} + blendedP(P*0.6+live*0.4) via useChennaiLive 30s
@@ -16,7 +18,7 @@ User click 13.07,80.26 (1.5km) → aoi {xmin,xmax,ymin,ymax,center} + blendedP(P
 
 Cache: `key` includes `viewMode`, so `depth_heatmap ≠ hydrology`. Race: `if(current!==reqId) return` + `AbortError` silent.
 
-Persist: `app/lib/db-schema.ts` `Map` + `tmp→rename` atomic `projects.json/scenarios.json` (git-kept via `!data/processed/*.json`).
+Persist: `app/lib/db-schema.ts` `Map` + `tmp→rename` atomic `projects.json/scenarios.json` (created on first POST; clean clone ships only `data/processed/MANIFEST.json` + `vectors/buildings.geojson`).
 
 PostGIS: `app/lib/postgis.ts` `try import("pg") catch null → fileFallbackQuery` manual bbox `ST_Intersects`. `raster.ts` `getRasterMeta` 5 candidates + `loadDem() geotiff fromFile→fromArrayBuffer fallback` `Float32` cache + `sampleDemBilinear tx/ty` + `sampleDemGrid 12-120` + `getDemAvailability()`.
 

@@ -90,7 +90,7 @@ export default function Page() {
 
   const handleExportReport = () => {
     const w = window.open("", "_blank"); if (!w) return;
-    w.document.write(`<!DOCTYPE html><html><head><title>FLOIN Ledger — ${selectedArea.name}</title><style>body{font-family:IBM Plex Sans,system-ui;padding:32px;color:#111210}h1{font-family:Instrument Serif,Georgia;font-size:22px;border-bottom:1px solid #111210;padding-bottom:8px}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #E6E1D8;padding:6px 8px;text-align:left}th{background:#F8F6F1;font-family:IBM Plex Mono}</style></head><body><h1>01 // FLOIN LEDGER — ${selectedArea.name}</h1><p style="font:11px IBM Plex Mono">${selectedArea.basin} · P ${rainfall}mm · CN ${cn} · Q ${Q.toFixed(1)}mm · Depth ${economicLoss.depthVal}m · Loss ₹${economicLoss.directLossCrores}Cr</p><table><tr><th>Scenario</th><th>P</th><th>CN</th><th>Q</th><th>Depth</th></tr>${scenarios.map(s=>`<tr><td>${s.name}</td><td>${s.P}</td><td>${s.CN}</td><td>${s.runoff}</td><td>${s.depth}</td></tr>`).join("")}</table><p style="font:10px IBM Plex Mono;color:#6B6B63;margin-top:24px;border-top:1px solid #E6E1D8;padding-top:8px">FLOIN REV 06D9C60 · 2026-09-04 · EPSG:4326 · NSE 0.892</p></body></html>`);
+    w.document.write(`<!DOCTYPE html><html><head><title>FLOIN Ledger — ${selectedArea.name}</title><style>body{font-family:IBM Plex Sans,system-ui;padding:32px;color:#111210}h1{font-family:Instrument Serif,Georgia;font-size:22px;border-bottom:1px solid #111210;padding-bottom:8px}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #E6E1D8;padding:6px 8px;text-align:left}th{background:#F8F6F1;font-family:IBM Plex Mono}</style></head><body><h1>01 // FLOIN LEDGER — ${selectedArea.name}</h1><p style="font:11px IBM Plex Mono">${selectedArea.basin} · P ${rainfall}mm · CN ${cn} · Q ${Q.toFixed(1)}mm · Depth ${economicLoss.depthVal}m · Loss ₹${economicLoss.directLossCrores}Cr</p><table><tr><th>Scenario</th><th>P</th><th>CN</th><th>Q</th><th>Depth</th></tr>${scenarios.map(s=>`<tr><td>${s.name}</td><td>${s.P}</td><td>${s.CN}</td><td>${s.runoff}</td><td>${s.depth}</td></tr>`).join("")}</table><p style="font:10px IBM Plex Mono;color:#6B6B63;margin-top:24px;border-top:1px solid #E6E1D8;padding-top:8px">FLOIN REV 077079e · 2026-09-30 · EPSG:4326 · NSE 0.892</p></body></html>`);
     w.document.close(); pushToast("LEDGER EXPORTED");
   };
   const handleExportGeoJSON = () => {
@@ -174,7 +174,7 @@ export default function Page() {
               <div style={{ color:"var(--vermillion)", fontWeight:600 }}>LOSS ₹{economicLoss.directLossCrores}Cr · {economicLoss.displacedPop}</div>
             </div>
             <div style={{ marginTop:8, height:2, background:"var(--rule)", position:"relative" }}><div style={{ position:"absolute", left:0, top:0, bottom:0, width:`${Math.min(100, rainfall/300*100)}%`, background:"var(--ink)" }} /></div>
-            <div style={{ marginTop:8, fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)" }}>REV 06D9C60 · 2026-09-04 · NSE 0.892</div>
+            <div style={{ marginTop:8, fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)" }}>REV 077079e · 2026-09-30 · NSE 0.892</div>
           </div>
         </aside>
 
@@ -327,7 +327,7 @@ export default function Page() {
               </div>
 
               <div style={{ marginTop:8, fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", borderTop:"1px solid var(--rule)", paddingTop:8, display:"flex", justifyContent:"space-between" }}>
-                <span>REV 06D9C60 · 2026-09-04 · EPSG:4326</span><span>CHENNAI LEDGER · NSE 0.892 · SRTM 30m</span>
+                <span>REV 077079e · 2026-09-30 · EPSG:4326</span><span>CHENNAI LEDGER · NSE 0.892 · SRTM 30m</span>
               </div>
             </div>
           )}
@@ -442,7 +442,7 @@ export default function Page() {
       </div>
 
       <footer style={{ borderTop:"1px solid var(--rule-strong)", background:"var(--paper)", padding:"8px 12px", display:"flex", gap:8, flexWrap:"wrap", justifyContent:"space-between", fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", letterSpacing:"0.06em" }}>
-        <span style={{ whiteSpace:"nowrap" }}>FLOIN · CHENNAI FLOOD LEDGER · REV 06D9C60 · 2026-09-04</span><span style={{ whiteSpace:"nowrap" }}>OKLCH · IBM PLEX · ZERO RADIUS · RULES NOT SHADOWS</span>
+        <span style={{ whiteSpace:"nowrap" }}>FLOIN · CHENNAI FLOOD LEDGER · REV 077079e · 2026-09-30</span><span style={{ whiteSpace:"nowrap" }}>OKLCH · IBM PLEX · ZERO RADIUS · RULES NOT SHADOWS</span>
       </footer>
 
       {showHelp && (
@@ -456,7 +456,7 @@ export default function Page() {
               <div><div style={{ fontWeight:700, borderBottom:"1px solid var(--rule)", paddingBottom:4 }}>3D VIEW</div><div style={{ marginTop:6, display:"grid", gap:4, color:"var(--muted2)" }}><div><span className="kbd">DRAG</span> orbit · <span className="kbd">WHEEL</span> zoom · <span className="kbd">SHIFT+DRAG</span> pan</div><div><span className="kbd">DBL-CLICK</span> focus terrain · <span className="kbd">M</span> measure · <span className="kbd">R</span> reset · <span className="kbd">F</span> AOI</div><div><span className="kbd">⛶ FULL</span> fullscreen · <span className="kbd">◰ PNG</span> screenshot</div></div></div>
               <div><div style={{ fontWeight:700, borderBottom:"1px solid var(--rule)", paddingBottom:4 }}>TIME & DATA</div><div style={{ marginTop:6, display:"grid", gap:4, color:"var(--muted2)" }}><div><span className="kbd">SPACE</span> +1H · <span className="kbd">←</span><span className="kbd">→</span> scrub · 6H hydrograph linked to water</div><div><span className="kbd">CLICK</span> building/terrain → inspector · water ripple</div><div>Ward bars ↔ 3D fly · Hydrograph ↔ velocity</div></div></div>
             </div>
-            <div style={{ padding:"8px 14px", borderTop:"1px solid var(--rule)", fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", display:"flex", justifyContent:"space-between" }}><span>REV 06D9C60 · EPSG:4326 · NSE 0.892</span><span>press ? again to close</span></div>
+            <div style={{ padding:"8px 14px", borderTop:"1px solid var(--rule)", fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", display:"flex", justifyContent:"space-between" }}><span>REV 077079e · EPSG:4326 · NSE 0.892</span><span>press ? again to close</span></div>
           </div>
         </div>
       )}

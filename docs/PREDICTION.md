@@ -1,4 +1,6 @@
-# PREDICTION — Every File Contributes (320+ layers → One Risk)
+# PREDICTION — Every File Contributes (303 Registry Entries → One Risk)
+
+> Last verified `2026-09-30`. Registry holds 303 entries (`app/api/datasets/route.ts`); `public/*.geojson` serves ~320 files; `data/vectors/` holds 331 files.
 
 `POST /api/predict {aoi, rainfall, cn, duration, livePrecip}` → `app/lib/unified-prediction.ts` → weighted ensemble over **every** file in `public/*.geojson` + `data/rasters` + live.
 

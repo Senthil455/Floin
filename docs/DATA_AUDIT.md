@@ -1,6 +1,7 @@
 # DATA AUDIT — What is real, what is stub
 
-Generated `2026-09-28T00:06:27` by `python scripts/audit_data.py`.
+> Historical record generated `2026-09-28T00:06:27` by `python scripts/audit_data.py`.
+> Local-only caches referenced below (`data/raw/`, `data/rasters/*.tif`, `data/processed/*` generated) were removed `2026-09-30` per `.gitignore`. This file is preserved as the audit record; re-run `audit_data.py` after re-fetching to regenerate. `data/processed/AUDIT.json` was also cleaned.
 
 ## Verdict counts
 

@@ -1,5 +1,7 @@
 # DB SHARING — how the spatial database travels over GitHub
 
+> Last verified `2026-09-30`. Expected layers: 8 vectors + 5 rasters = 13 (`db/schema.sql` + `floin_expected_layers`). Local TIFFs cleaned 2026-09-30; rebuild via image/dump or re-drop TIFFs into `data/rasters/`.
+
 > The database is a **build product**, not source. `data/vectors/*.geojson` + `data/rasters/*.tif`
 > are the inputs, `db/schema.sql` + `scripts/load_postgis.py` are the recipe, and the materialised
 > PostGIS instance is distributed as **artifacts** (GitHub Releases + GHCR), never as git content.

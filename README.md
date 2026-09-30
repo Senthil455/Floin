@@ -6,7 +6,9 @@
 
 ![Next](https://img.shields.io/badge/Next.js-16-black) ![Three](https://img.shields.io/badge/Three.js-0.185-black) ![Tailwind](https://img.shields.io/badge/Tailwind-3.4-06B6D4) ![PostGIS](https://img.shields.io/badge/PostGIS-16-336791) ![geotiff](https://img.shields.io/badge/geotiff-3.0-111210) ![build](https://img.shields.io/badge/build-%E2%9C%93%20passing-brightgreen)
 
-**Live:** `npm run dev` → http://localhost:3000 · `REV 06D9C60 · 2026-09-04 · NSE 0.892 · EPSG:4326`
+**Live:** `npm run dev` → http://localhost:3000 · `REV 077079e · 2026-09-30 · NSE 0.892 · EPSG:4326`
+
+> Docs last verified `2026-09-30` against `main 077079e`. Local-only caches (`Github_demos/`, `.next/`, `data/raw/`, `data/arcgis_api/`, `data/chennai2015/`, `data/qgis/`, `data/rasters/*.tif`, `data/processed/*` generated) were removed; see `.gitignore`. `src/` Vite prototype removed.
 
 ---
 
@@ -16,7 +18,7 @@
 # Frontend — Swiss ledger, zero-radius, OKLCH
 npm install
 npm run dev          # http://localhost:3000
-npm run build        # typecheck + 7 routes
+npm run build        # typecheck + 9 routes
 
 # Python — D8 + SCS-CN
 pip install -r requirements.txt
@@ -76,20 +78,24 @@ Floin/
    floodml-chennai.ts               # 8 wards, wardFloodProb/wardForLngLat
    workspaces/{Hydrology,Validation,Registry}.tsx  # ledger tables
   api/
-   datasets · location/{query,features,terrain} · simulate · projects · scenarios  # 7, PostGIS+file dual
+   datasets · location/{query,features,terrain,bathtub} · simulate · predict · projects · scenarios  # 9 route files, PostGIS+file dual
  components/
   FloodSimulation.tsx 554 LOC        # BASIN_PROFILE 6×7 views, OrbitControls, hover tooltip, ripple, measure M, compass/scale, 400 cap per basin, wardProb, shared mats, 1024 shadow
   ChennaiMap.tsx                    # ledger LAYERS, ink AOI 4 4, geoCache
   EvacuationRouting.tsx              # ledger 05.1/05.2, detour 1.05-1.45
   CrisisCommandCenter.tsx            # 5-role GOV/POL/HOS/FIR/CIT + live precip
   FloodMLAnalytics.tsx               # bubble r8+prob28 + heat 4×2 + table
+   AnalyticsSuite.tsx                 # rainfall/CN/duration + hour-slider ward analytics
+   UnifiedPredictionPanel.tsx         # unified SCS+live+bathtub panel
+   InsightStrip.tsx                   # top KPI strip
+   RainParticleOverlay.tsx            # rain particles for 3D
   WebFloodEngine.tsx 128²            # shallow-water FBO
  hooks/useChennaiLive.ts · useHydrology.ts
   data/
-   vectors/ 17 GeoJSON (buildings 1811, highway 28, wards 201, soil/LULC/drainage, GCC 2015) + rasters/ 5 TIF (DEM 5.8MB) + qgis/ + raw/
-   processed/ vectors + projects.json/scenarios.json (git-kept) + MANIFEST.json
-   public/ 17 GeoJSON + simulation-result.json + tiles/ (ignored)
-   docs/ ARCHITECTURE, API, DATA, 3D, DEMO_SOURCES
+   vectors/ 331 files (~110 MB, tracked) + rasters/ .gitkeep only (*.tif gitignored) + datasets/floodmap-net/ 4 + sources/ 7 (raw/qgis/arcgis caches removed 2026-09-30)
+   processed/ MANIFEST.json + vectors/buildings.geojson only (generated cache cleaned; projects.json/scenarios.json created on first POST)
+   public/ ~320 GeoJSON + simulation-result.json + tiles/ (ignored)
+   docs/ ARCHITECTURE, API, DATA, DATA_AUDIT, DATA_COLLECTION, DB_SHARING, PREDICTION, 3D
 ```
 
 **42 lands:** 6 basins `all/central/adyar/ennore/velachery/chembarambakkam` × 7 views `digital_twin/progression/depth_heatmap/velocity_field/infrastructure_impact/hydrology/data_quality` → distinct `BASIN_PROFILE base/roughness/marsh/hill/urban` + view warp (hydrology ridge, velocity 18 arrows, depth bowl, checker) + per-basin mat/height/cap.
@@ -123,18 +129,20 @@ Click 13.07,80.26 (1.5km AOI) → aoi {xmin,xmax,ymin,ymax,center} + blendedP(P*
 
 ---
 
-## 6. API — 7 + Dual PostGIS/File
+## 6. API — 9 routes + Dual PostGIS/File
 
 | # | Route | Method | Query | Response |
 |---|---|---|---|---|
-| 1 | `/api/datasets` | GET | — | 18 datasets (3 terrain/analysis, 2 vector, 2 rainfall, 11 reference), `byCategory`, `featureCount` via `fs public/*.geojson` |
+| 1 | `/api/datasets` | GET | — | 303 registry entries validated against `public/*.geojson` (~320 files), `byCategory`, `featureCount` |
 | 2 | `/api/location/query` | POST | `{aoi{bounds,center},requestId}` | `ST_Intersects` if `DATABASE_URL` else `fileFallback`, 7× `covers/featureCount`, `summary` |
 | 3 | `/api/location/features` | POST | `{aoi,datasets[],limit}` | `FeatureCollection` per id, `source postgis/file` |
 | 4 | `/api/location/terrain` | GET | — | `getDemAvailability()` 5 rasters |
 | 4b | `/api/location/terrain` | POST | `{aoi}` | `sampleDemGrid bilinear` or `chennaiTopography` fallback, `statistics min/max/mean/range` |
 | 5 | `/api/simulate` | POST | `{aoi,rainfall,cn,duration}` | `blendedP`, `S/Ia/Q`, `floodDepth,velocity,affectedBuildings,extent`, `timeSeries 0-6h tanh*exp` |
-| 6 | `/api/projects` | GET/POST | `{name,location}` | `Map file data/processed/projects.json` atomic |
-| 7 | `/api/scenarios` | GET/POST | `{projectId,name,parameters,aoi}` | `Map file scenarios.json`, `tags draft/running/completed` |
+| 5b | `/api/location/bathtub` | POST | `{aoi,floodLevel}` | bathtub `elev < floodLevel` cells + stats, FloodMap.net parity |
+| 5c | `/api/predict` | POST | `{aoi,rainfall,cn,duration}` | unified ensemble risk + per-dataset contributions |
+| 6 | `/api/projects` | GET/POST | `{name,location}` | file store `data/processed/projects.json` atomic (created on first POST) |
+| 7 | `/api/scenarios` | GET/POST | `{projectId,name,parameters,aoi}` | file store `scenarios.json`, `tags draft/running/completed` |
 
 All POST validate `xmin<xmax && ymin<ymax`, `400` for P, `98` for CN, `AbortSignal` respected.
 
@@ -157,8 +165,8 @@ All POST validate `xmin<xmax && ymin<ymax`, `400` for P, `98` for CN, `AbortSign
 | hotspots | Point | 327 | 4326 | GCC 2015 `chennai2015_hotspots` | observed |
 | flooded_streets | LineString | 4,001 | 4326 | GCC 2015 + crowd 1,000 | observed |
 | inundation/stagnation | Polygon | 750 | 4326 | GCC 2015 | observed |
-| DEM | 30m raster | 5,802KB | 4326 | Copernicus GLO-30 `rasters_COP30/DEM.tif` s3://copernicus-dem-30m | Copernicus |
-| Flow_Dir/Acc/Watershed/Streams | 30m raster | 735K–3,371K | 4326 | QGIS D8 | — |
+| DEM | 30m raster | gitignored locally | 4326 | Copernicus GLO-30 `data/datasets/floodmap-net/COP30_SRTM_TNM_N13E080_30m.tif` + Mapzen Terrarium + ETOPO1 csv | Copernicus |
+| Flow_Dir/Acc/Watershed/Streams | 30m raster | gitignored locally | 4326 | QGIS D8 (rebuilt via image/dump, see `docs/DB_SHARING.md`) | — |
 | IMD monthly | CSV | 1901-2021 | — | `opencity.in 39ee6182` 16.8KB | Public Domain |
 | Live | REST | 30s | — | `api.open-meteo.com 13.0827,80.2707` | CC-BY |
 | 8 wards analytics | derived | 8 | 4326 | Chennai ward analytics `app/lib/floodml-chennai.ts` | — |
@@ -169,10 +177,10 @@ All POST validate `xmin<xmax && ymin<ymax`, `400` for P, `98` for CN, `AbortSign
 
 ## 8. Production & Docs
 
-- `next build` → `.next` + 7 routes (datasets, query, features, terrain GET+POST, simulate, projects, scenarios), `validator.ts`, 5.5s TS.
+- `next build` → `.next` + 9 routes (datasets, query, features, terrain GET+POST, bathtub, simulate, predict, projects, scenarios), 5.5s TS.
 - Print `@media print` hides header/aside/fixed, ledger 1px black. Skeleton `shimmer 1.2s` + empty/error states.
 - `npx tsc --noEmit` 0, `docker compose up -d` health `pg_isready 5s×10`, `raster2pgsql -t 256x256 -s 4326`.
-- Docs: `DESIGN.md` + `design/tokens.json` DTCG + `docs/{ARCHITECTURE,API,DATA,3D,DEMO_SOURCES}` + `DEPLOYMENT_SUMMARY v4` + `TEST_GUIDE 12 tests` + `IMPLEMENTATION_STATUS v4`.
+- Docs: `DESIGN.md` + `design/tokens.json` DTCG + `docs/{ARCHITECTURE,API,DATA,DATA_AUDIT,DATA_COLLECTION,DB_SHARING,PREDICTION,3D}` + `DEPLOYMENT_SUMMARY v5` + `TEST_GUIDE 12 tests` + `IMPLEMENTATION_STATUS v5`.
 - DB sharing: `docs/DB_SHARING.md` — `db/schema.sql` (versioned DDL) + `db/Dockerfile` (GHCR image) + `scripts/db_share.py` (`verify/dump/restore/publish/pull/image`) + `.github/workflows/db.yml`. Database as artifact, never as git content.
 
 **Known limits:** `geotiff bilinear` cache not yet `WebGPU pipes`, `400 draws` not `BatchedMesh`, `ST_Intersects` optional (needs `DATABASE_URL` + `pg`).
@@ -183,4 +191,4 @@ All POST validate `xmin<xmax && ymin<ymax`, `400` for P, `98` for CN, `AbortSign
 
 **MIT** — see [`LICENSE`](./LICENSE). Copyright (c) 2026 FLOIN — Chennai Flood Intelligence Ledger.
 
-FLOIN Chennai Flood Intelligence — REV 06D9C60. Built on `Three.js r185`, `Leaflet 1.9`, `Copernicus DEM`, `Open-Meteo`, `OSM`, `GCC 2015`. See `data/tEAM fLOIN.pdf`.
+FLOIN Chennai Flood Intelligence — REV 077079e · 2026-09-30. Built on `Three.js r185`, `Leaflet 1.9`, `Copernicus DEM`, `Open-Meteo`, `OSM`, `GCC 2015`. See `data/tEAM fLOIN.pdf`.

@@ -6,10 +6,12 @@ sources that were collected to close the gap.
 Regenerate the evidence:
 
 ```bash
-python scripts/audit_data.py           # -> data/processed/AUDIT.json, docs/DATA_AUDIT.md
+python scripts/audit_data.py           # -> data/processed/AUDIT.json, docs/DATA_AUDIT.md (AUDIT.json cleaned 2026-09-30; re-runs recreate it)
 python scripts/collect_chennai_data.py --list
-python scripts/collect_chennai_data.py --tier 1
+python scripts/collect_chennai_data.py --tier 1   # re-fetches data/raw/ removed 2026-09-30
 ```
+
+> Note `2026-09-30`: `data/raw/`, `data/qgis/`, `data/arcgis_api/`, `data/chennai2015/`, `data/rasters/*.tif` were removed as gitignored caches. Section 3 below describes what the collector fetches; re-run it to restore.
 
 ---
 
